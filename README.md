@@ -8,7 +8,7 @@ pure, unit-tested TypeScript in `src/domain`.
 
 ```bash
 npm install
-npm test          # 58 tests: 15 advisor scenarios, conversations (EN/HI), LLM fallback, cart rules, 2,000-profile fuzz, K01–K12
+npm test          # 83 tests incl. K01–K12 end to end on the real images (~40 s)
 npm run typecheck
 npm run dev       # http://localhost:3000
 npx tsx scripts/kyc-report.ts   # print the K01–K12 verdict board
@@ -58,8 +58,24 @@ Open http://localhost:3000 → chat in English, हिंदी or Hinglish (voi
 
 Keys: copy `.env.example` to `.env.local` and fill `GEMINI_API_KEY`, `GROQ_API_KEY`.
 
+## Smart KYC (step 4)
+
+`/kyc`: DPDP consent (itemised purposes, nothing pre-ticked) → upload 4 documents or pick a sample applicant K01–K12 →
+verdict with a check-by-check card per document.
+
+- `src/adapters/vision/image-quality.ts` — blur score (Laplacian variance) and skew angle (projection profile); auto-straighten up to 15°.
+- `src/adapters/vision/extract.ts` — cache (by image SHA-256) → Gemini vision → Tesseract offline. No API keys? Still 12/12.
+- Second reader on the GSTIN: a digit Tesseract sees in a letter position beats an AI "correction" (K08 stays caught).
+- `src/server/audit-log.ts` — append-only, hash-chained log of consent and KYC events (no personal data). `GET /api/audit` verifies the chain.
+- Images are never written to disk; responses carry masked identifiers.
+
+```bash
+npx tsx scripts/kyc-check-all.ts        # all 12 applicants through the real pipeline (fills the AI read cache)
+npx tsx scripts/kyc-check-all.ts --ocr  # offline reader only
+```
+
 ## Next
 
 3. ~~Advisor chat (LLM extracts `BusinessProfile`, explains the computed bundle) → quote UI~~ done
-4. KYC upload: real extraction (Tesseract + vision model) feeding `runKycChecks`, consent screen
+4. ~~KYC upload, real extraction, consent screen~~ done
 5. Order tracker · 6. Partner rescue queue + propensity · 7. Hindi/voice, ops dashboard

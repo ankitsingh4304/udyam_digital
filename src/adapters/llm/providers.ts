@@ -65,6 +65,7 @@ async function withModels<T>(provider: string, models: string[], call: (model: s
 /** Google Gemini via the Generative Language REST API (free tier works). */
 export class GeminiProvider implements LlmProvider {
   readonly name = "gemini";
+  readonly supportsVision = true;
   constructor(
     private apiKey: string,
     private models: string[],
@@ -102,11 +103,14 @@ export class GeminiProvider implements LlmProvider {
 /** Groq via its OpenAI-compatible endpoint (free tier works). */
 export class GroqProvider implements LlmProvider {
   readonly name = "groq";
+  readonly supportsVision: boolean;
   constructor(
     private apiKey: string,
     private chatModels: string[],
     private visionModels: string[],
-  ) {}
+  ) {
+    this.supportsVision = visionModels.length > 0;
+  }
 
   async complete(req: JsonRequest, opts: { json: boolean; vision?: boolean; signal?: AbortSignal }) {
     const messages: unknown[] = [{ role: "system", content: req.system }];

@@ -97,3 +97,13 @@ describe("GSTIN validator", () => {
     expect(validateGstin("24X0RXG9365M1Z3").ok).toBe(false);
   });
 });
+
+import { mergeGstinReads } from "@/domain/kyc/parse-ocr";
+describe("two readers for the GSTIN", () => {
+  it("K08: AI 'fixes' 0→O in a letter position; Tesseract's printed 0 wins, so the defect is still caught", () => {
+    expect(mergeGstinReads("24XORXG9365M1Z3", "24X0RXG9365M1Z3")).toEqual({ gstin: "24X0RXG9365M1Z3", overridden: [4] });
+  });
+  it("K10: both read letters (J vs I) → the AI read stands", () => {
+    expect(mergeGstinReads("27QHJXK0658U1ZL", "27QHIXK0658U1ZL").gstin).toBe("27QHJXK0658U1ZL");
+  });
+});

@@ -13,6 +13,8 @@ export interface JsonRequest {
 
 export interface LlmProvider {
   readonly name: string;
+  /** False when no image-capable model is configured; the chain skips it for vision calls. */
+  readonly supportsVision?: boolean;
   /** Returns the raw text the model produced (expected to be JSON when json=true). */
   complete(req: JsonRequest, opts: { json: boolean; vision?: boolean; signal?: AbortSignal }): Promise<string>;
 }

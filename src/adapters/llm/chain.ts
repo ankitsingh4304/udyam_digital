@@ -32,8 +32,13 @@ export class LlmChain {
     return this.providers.map((p) => p.name);
   }
 
+  get hasVision() {
+    return this.providers.some((p) => p.supportsVision !== false);
+  }
+
   async json<T>(schema: z.ZodType<T>, req: JsonRequest, opts: { vision?: boolean } = {}): Promise<ChainResult<T> | null> {
     for (const p of this.providers) {
+      if ((opts.vision || req.image) && p.supportsVision === false) continue;
       const until = this.cooldownUntil.get(p.name) ?? 0;
       if (this.now() < until) {
         this.record({ provider: p.name, outcome: "skipped_cooldown" });

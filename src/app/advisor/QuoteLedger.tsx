@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { AddonOption } from "@/domain/catalogue/addons";
 import type { Bundle } from "@/domain/catalogue/types";
@@ -131,9 +132,9 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
         </ul>
 
         <div className="px-5 py-4">
-          <button disabled className="w-full rounded-xl bg-ink py-3 font-medium text-white opacity-90" title="Coming in the next step">
+          <Link href="/kyc" className="block w-full rounded-xl bg-ink py-3 text-center font-medium text-white">
             {t.next}
-          </button>
+          </Link>
         </div>
       </div>
 
