@@ -11,7 +11,7 @@ import { WRITABLE_DIR } from "./paths";
 export interface AuditEntry {
   seq: number;
   ts: string;
-  type: "CONSENT_GIVEN" | "CONSENT_WITHDRAWN" | "KYC_PROCESSED" | "DOCS_DISCARDED";
+  type: "CONSENT_GIVEN" | "CONSENT_WITHDRAWN" | "KYC_PROCESSED" | "DOCS_DISCARDED" | "ORDER_PLACED" | "ESIGN_COMPLETED";
   caseId: string;
   data: Record<string, unknown>;
   prevHash: string;

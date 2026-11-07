@@ -27,6 +27,13 @@ export function mergeDelta(draft: ProfileDraft, d: ProfileDelta): ProfileDraft {
     out.fleetSize = d.fleetSize;
     if (!out.needs.includes("fleet")) out.needs.push("fleet");
   }
+  if (d.currentInternet) {
+    out.currentInternet = d.currentInternet;
+    // A business already on a leased line needs a dedicated line again, not plain broadband.
+    if (d.currentInternet === "leased_line" && !out.needs.includes("leased_line")) out.needs.push("leased_line");
+  }
+  if (d.currentProvider) out.currentProvider = d.currentProvider;
+  if (d.hasPos != null) out.hasPos = d.hasPos;
   if (d.requestedProducts) for (const p of d.requestedProducts) if (!out.requestedProducts.includes(p)) out.requestedProducts.push(p);
   // A small business with 3+ sites is a multi-site business (case appendix A2).
   if (out.sites && out.sites >= 3 && (out.segment === "micro" || out.segment === "prof")) out.segment = "multi";
@@ -38,16 +45,22 @@ const filled = (d: ProfileDraft): Record<Slot, boolean> => ({
   size: d.employees != null && d.sites != null,
   city: d.cityTier != null,
   gstin: d.gstinStatus != null,
+  tools: d.currentInternet != null,
   needs: d.needs.length > 0 || !!d.mobileOnly,
 });
 
 /** Next question to ask, or undefined when we can recommend. Each slot is asked at most twice. */
 export function nextSlot(state: AdvisorState, needsAnswered: boolean): Slot | undefined {
   const f = filled(state.draft);
-  const order: Slot[] = ["businessType", "size", "city", "gstin", "needs"];
+  const order: Slot[] = ["businessType", "size", "city", "gstin", "tools", "needs"];
   for (const slot of order) {
     if (slot === "needs") {
       if (!f.needs && !needsAnswered && !state.asked.includes("needs")) return "needs";
+      continue;
+    }
+    // "Current tools" is asked once; the advice still works if the owner skips it.
+    if (slot === "tools") {
+      if (!f.tools && !state.asked.includes("tools") && !state.draft.mobileOnly) return "tools";
       continue;
     }
     if (!f[slot] && state.asked.filter((s) => s === slot).length < 2) return slot;
@@ -75,7 +88,7 @@ export function toProfile(d: ProfileDraft): BusinessProfileInput {
 }
 
 /** One-line readback of the profile, so the owner can spot a misunderstanding before trusting the price. */
-export function summarizeProfile(p: BusinessProfileInput, city: string | undefined, lang: Lang): string {
+export function summarizeProfile(p: BusinessProfileInput, city: string | undefined, lang: Lang, current?: import("./state").CurrentInternet): string {
   const c = COPY[lang];
   const parts = [
     `${p.businessType ? `${p.businessType} (${c.segment[p.segment]})` : c.segment[p.segment]}`,
@@ -83,6 +96,7 @@ export function summarizeProfile(p: BusinessProfileInput, city: string | undefin
     city ? `${city} (tier ${p.cityTier})` : `tier ${p.cityTier}`,
     c.gstin[p.gstinStatus],
   ];
+  if (current) parts.push(`${c.todayLabel}: ${c.current[current]}`);
   if (p.needs?.length) parts.push(`${c.needsLabel}: ${p.needs.join(", ")}`);
   if (p.wantsSpeed) parts.push(p.wantsSpeed === "1g" ? "1 Gbps" : `${p.wantsSpeed} Mbps`);
   if (p.fibreAvailable === false) parts.push("no fibre");

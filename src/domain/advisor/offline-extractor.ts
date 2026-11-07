@@ -80,6 +80,16 @@ export function extractOffline(raw: string, lastAsked?: Slot): ProfileDelta {
   const sims = text.match(new RegExp(`${NUM}\\s*(?:sims?|lines?|connections?|सिम)`));
   if (sims) d.simCount = toNum(sims[1]);
 
+  // Current tools (asked as "what do you use today?").
+  if (/hotspot|mobile data|phone (ka )?(data|net)|हॉटस्पॉट|मोबाइल डेटा/.test(text)) d.currentInternet = "hotspot";
+  else if (/home broadband|ghar ka|घर का|home wifi|home wi-fi/.test(text)) d.currentInternet = "home_broadband";
+  else if (/leased line|लीज़्ड लाइन|लीज्ड लाइन|dedicated line/.test(text) && lastAsked === "tools") d.currentInternet = "leased_line";
+  else if (/broadband|ब्रॉडबैंड|fibre|fiber/.test(text) && lastAsked === "tools") d.currentInternet = "business_broadband";
+  else if (lastAsked === "tools" && (/no internet|internet nahi|इंटरनेट नहीं|nothing|kuch nahi|abhi nahi/.test(text) || NO.test(text))) d.currentInternet = "none";
+  const provider = text.match(/\b(jio|airtel|vi|vodafone|bsnl|act|hathway|tata play|excitel)\b/);
+  if (provider) d.currentProvider = provider[1];
+  if (/billing machine|pos machine|swipe machine|बिलिंग मशीन/.test(text)) d.hasPos = !/no |nahi|नहीं/.test(text);
+
   const codes = raw.toUpperCase().match(/\bP\d{2}\b/g);
   if (codes) d.requestedProducts = [...new Set(codes)];
 

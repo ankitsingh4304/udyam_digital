@@ -1,7 +1,7 @@
 /** Print the KYC verdict board for K01–K12: npx tsx scripts/kyc-report.ts */
 import { runKycChecks } from "../src/domain/kyc/checks";
 import { getRegistry } from "../src/server/data";
-import { KYC_FIXTURES } from "../tests/fixtures/kyc-extracted";
+import { KYC_FIXTURES } from "../src/domain/kyc/sample-extractions";
 
 for (const [id, docs] of Object.entries(KYC_FIXTURES)) {
   const r = runKycChecks(docs, getRegistry());

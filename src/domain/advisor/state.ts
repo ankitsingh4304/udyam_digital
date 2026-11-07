@@ -5,7 +5,11 @@ export const LANGS = ["en", "hi", "hinglish"] as const;
 export type Lang = (typeof LANGS)[number];
 
 /** Questions the advisor can ask, in order. At most one round of each. */
-export const SLOTS = ["businessType", "size", "city", "gstin", "needs"] as const;
+export const SLOTS = ["businessType", "size", "city", "gstin", "tools", "needs"] as const;
+
+/** What the business uses today (PS: "current tools"). */
+export const CURRENT_INTERNET = ["hotspot", "home_broadband", "business_broadband", "leased_line", "none"] as const;
+export type CurrentInternet = (typeof CURRENT_INTERNET)[number];
 export type Slot = (typeof SLOTS)[number];
 
 /** What one user message adds. Produced by the LLM or the offline parser. */
@@ -25,6 +29,9 @@ export const ProfileDeltaSchema = z.object({
   fleetSize: z.number().int().min(1).max(1000).nullish(),
   requestedProducts: z.array(z.string().regex(/^P\d{2}$/)).nullish(),
   noMoreNeeds: z.boolean().nullish(),
+  currentInternet: z.enum(CURRENT_INTERNET).nullish(),
+  currentProvider: z.string().max(40).nullish(),
+  hasPos: z.boolean().nullish(),
 });
 export type ProfileDelta = z.infer<typeof ProfileDeltaSchema>;
 
@@ -47,6 +54,9 @@ export const ProfileDraftSchema = z.object({
   simCount: z.number().int().optional(),
   fleetSize: z.number().int().optional(),
   requestedProducts: z.array(z.string()).default([]),
+  currentInternet: z.enum(CURRENT_INTERNET).optional(),
+  currentProvider: z.string().optional(),
+  hasPos: z.boolean().optional(),
 });
 export type ProfileDraft = z.infer<typeof ProfileDraftSchema>;
 
