@@ -1,5 +1,6 @@
 "use client";
 
+import { fromPacks } from "@/i18n/packs";
 import { useEffect, useState } from "react";
 import { CITIES } from "@/domain/advisor/lexicon";
 import type { Lang } from "@/domain/advisor/state";
@@ -9,6 +10,7 @@ const T: Record<Lang, Record<string, string>> = {
   en: { title: "What I understood", change: "Change", apply: "Update my bundle", cancel: "Cancel", type: "Business type", staff: "Staff", sites: "Sites", city: "City tier", gstin: "GSTIN", fibre: "Fibre available at the site", needs: "Needs", active: "Active", inactive: "Cancelled / suspended", none: "None", t1: "Tier 1 city", t2: "Tier 2 city" },
   hi: { title: "मैंने क्या समझा", change: "बदलें", apply: "बंडल अपडेट करें", cancel: "रद्द करें", type: "बिज़नेस का प्रकार", staff: "स्टाफ", sites: "जगहें", city: "शहर", gstin: "GSTIN", fibre: "साइट पर फ़ाइबर उपलब्ध", needs: "ज़रूरतें", active: "एक्टिव", inactive: "रद्द / निलंबित", none: "नहीं", t1: "टियर 1 शहर", t2: "टियर 2 शहर" },
   hinglish: { title: "Maine kya samjha", change: "Badlein", apply: "Bundle update karein", cancel: "Cancel", type: "Business type", staff: "Staff", sites: "Jagah", city: "City", gstin: "GSTIN", fibre: "Site par fibre available", needs: "Zaroorat", active: "Active", inactive: "Cancelled / suspended", none: "Nahi", t1: "Tier 1 city", t2: "Tier 2 city" },
+  ...fromPacks("profile"),
 };
 const SEG: Record<(typeof SEGMENTS)[number], string> = { micro: "Shop / small service", prof: "Professional office", multi: "Multi-site", mfg: "Manufacturer" };
 

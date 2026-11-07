@@ -1,3 +1,4 @@
+import { fromPacks } from "@/i18n/packs";
 import type { Lang } from "../advisor/state";
 
 export interface OrderPayload {
@@ -74,6 +75,7 @@ const COPY: Record<Lang, Record<Milestone["key"], [string, (x: Record<string, st
     install: ["Installation aur line test", (x) => `Aapki site par line lagakar test hogi. ${x.installDay} tak.`],
     live: ["Aap live hain", (x) => `Saari services chalu. Pehla bill ${x.billDay} ko; sab ke liye ek hi bill.`],
   },
+  ...fromPacks("tracker"),
 };
 
 /**

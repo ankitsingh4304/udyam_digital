@@ -36,8 +36,9 @@ export async function POST(req: Request) {
     out.set("response_format", "json");
     out.set("temperature", "0");
     // Hindi script for हिंदी; leave Hinglish/English to auto-detect so Latin-script words survive.
-    if (lang === "hi") out.set("language", "hi");
-    if (lang === "en") out.set("language", "en");
+    // Native script for each Indian language; Hinglish auto-detects so Latin-script words survive.
+    const WHISPER: Record<string, string> = { en: "en", hi: "hi", mr: "mr", gu: "gu", kn: "kn", te: "te", ta: "ta", bn: "bn" };
+    if (WHISPER[lang]) out.set("language", WHISPER[lang]);
     const res = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", { method: "POST", headers: { authorization: `Bearer ${key}` }, body: out });
     if (res.ok) {
       const data = (await res.json()) as { text?: string };

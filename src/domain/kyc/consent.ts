@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fromPacks } from "@/i18n/packs";
 import type { Lang } from "../advisor/state";
 
 export const NOTICE_VERSION = "2026-11-v1";
@@ -13,7 +14,7 @@ export const ConsentRequestSchema = z.object({
   noticeVersion: z.literal(NOTICE_VERSION),
 });
 
-type NoticeText = {
+export type NoticeText = {
   title: string;
   intro: string;
   purposes: Record<Purpose, { label: string; detail: string }>;
@@ -88,4 +89,5 @@ export const NOTICE: Record<Lang, NoticeText> = {
     optional: "Optional",
     agree: "Sahmat hoon, aage badhein",
   },
+  ...fromPacks("consent"),
 };

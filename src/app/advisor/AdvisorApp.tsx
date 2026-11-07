@@ -1,5 +1,6 @@
 "use client";
 
+import { fromPacks } from "@/i18n/packs";
 import {
   Briefcase,
   CheckCircle2,
@@ -41,11 +42,12 @@ const UI: Record<Lang, Record<string, string>> = {
   en: { placeholder: "Type here, or tap the mic", send: "Send", listen: "Tap and speak", listening: "Listening… tap to stop", readAloud: "Read replies aloud", restart: "Start again", source: "Understood by", pickMany: "Tap all that you need, then continue", next: "Continue", none: "Nothing else", seeBundle: "See my bundle", perMonth: "/month", thinking: "Thinking…", noVoice: "Voice input isn't available in this browser. Please type, or use Chrome.", failed: "The advisor didn't answer. Check your internet and send again.", micBlocked: "Microphone is blocked. Tap the lock icon in the address bar and allow the microphone.", noSpeech: "I didn't hear anything. Tap the mic and speak a little louder.", sttFailed: "Couldn't understand the recording. Please try again or type.", transcribing: "Writing down what you said…", ttsNoVoice: "This phone has no Hindi voice installed. Add Hindi in your phone's text-to-speech settings, or switch to Hinglish.", ttsUnsupported: "Read aloud isn't supported in this browser.", replay: "Listen" },
   hi: { placeholder: "यहाँ लिखें, या माइक दबाएँ", send: "भेजें", listen: "दबाएँ और बोलें", listening: "सुन रहे हैं… रोकने के लिए दबाएँ", readAloud: "जवाब सुनाएँ", restart: "फिर से शुरू करें", source: "समझा गया:", pickMany: "जो चाहिए सब चुनें, फिर आगे बढ़ें", next: "आगे बढ़ें", none: "और कुछ नहीं", seeBundle: "मेरा बंडल देखें", perMonth: "/महीना", thinking: "सोच रहे हैं…", noVoice: "इस ब्राउज़र में आवाज़ नहीं चलती। कृपया लिखें या Chrome इस्तेमाल करें।", failed: "जवाब नहीं आया। इंटरनेट जाँचें और फिर भेजें।", micBlocked: "माइक बंद है। एड्रेस बार में ताले के निशान को दबाकर माइक की अनुमति दें।", noSpeech: "कुछ सुनाई नहीं दिया। माइक दबाकर थोड़ा ज़ोर से बोलें।", sttFailed: "रिकॉर्डिंग समझ नहीं आई। फिर कोशिश करें या लिखें।", transcribing: "आपकी बात लिख रहे हैं…", ttsNoVoice: "इस फ़ोन में हिंदी आवाज़ नहीं है। फ़ोन की टेक्स्ट-टू-स्पीच सेटिंग में हिंदी जोड़ें, या Hinglish चुनें।", ttsUnsupported: "इस ब्राउज़र में सुनने की सुविधा नहीं है।", replay: "सुनें" },
   hinglish: { placeholder: "Yahan likhein, ya mic dabayein", send: "Bhejein", listen: "Dabayein aur bolein", listening: "Sun rahe hain… rokne ke liye dabayein", readAloud: "Jawab sunayein", restart: "Phir se shuru karein", source: "Samjha gaya:", pickMany: "Jo chahiye sab chunein, phir aage badhein", next: "Aage badhein", none: "Aur kuch nahi", seeBundle: "Mera bundle dekhein", perMonth: "/month", thinking: "Soch rahe hain…", noVoice: "Is browser mein voice nahi chalti. Please likhein ya Chrome use karein.", failed: "Jawab nahi aaya. Internet check karke phir bhejein.", micBlocked: "Mic blocked hai. Address bar mein lock icon dabakar mic allow karein.", noSpeech: "Kuch sunai nahi diya. Mic dabakar thoda zor se bolein.", sttFailed: "Recording samajh nahi aayi. Phir try karein ya likhein.", transcribing: "Aapki baat likh rahe hain…", ttsNoVoice: "Is phone mein Hindi voice nahi hai. Phone ki text-to-speech setting mein Hindi add karein.", ttsUnsupported: "Is browser mein sunne ki suvidha nahi hai.", replay: "Sunein" },
+  ...fromPacks("advisorUi"),
 };
 
 
 export function AdvisorApp() {
-  const { lang } = useLang();
+  const { lang, ready } = useLang();
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
   const [state, setState] = useState<AdvisorState | undefined>();
   const [quick, setQuick] = useState<string[]>([]);
@@ -69,6 +71,7 @@ export function AdvisorApp() {
     return () => io.disconnect();
   }, [result, total]);
   const endRef = useRef<HTMLDivElement>(null);
+  const generation = useRef(0);
   const ui = UI[lang];
 
   const lastSpoken = useRef<string[]>([]);
@@ -85,6 +88,7 @@ export function AdvisorApp() {
 
   const turn = useCallback(
     async (message: string, opts: { state?: AdvisorState; lang?: Lang } = {}) => {
+      const gen = generation.current;
       setBusy(true);
       try {
         const res = await fetch("/api/advisor", {
@@ -94,6 +98,7 @@ export function AdvisorApp() {
         });
         if (!res.ok) throw new Error(`Advisor returned ${res.status}`);
         const r = (await res.json()) as AdvisorTurnResult;
+        if (gen !== generation.current) return; // a restart (e.g. language change) happened meanwhile
         setState(r.state);
         setQuick(r.quickReplies);
         setPicked([]);
@@ -112,6 +117,7 @@ export function AdvisorApp() {
 
   const start = useCallback(
     (l: Lang) => {
+      generation.current += 1;
       setBubbles([]);
       setResult(undefined);
       setState(undefined);
@@ -123,10 +129,10 @@ export function AdvisorApp() {
   // Start (and restart when the language changes). Guarded against React Strict Mode double effects.
   const startedFor = useRef<Lang | null>(null);
   useEffect(() => {
-    if (startedFor.current === lang) return;
+    if (!ready || startedFor.current === lang) return;
     startedFor.current = lang;
     start(lang);
-  }, [lang, start]);
+  }, [lang, ready, start]);
 
   useEffect(() => {
     // Braces matter: newer browsers return a Promise from scrollIntoView, which React would treat as a cleanup.

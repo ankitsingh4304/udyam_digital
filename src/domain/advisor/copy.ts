@@ -1,6 +1,7 @@
+import { fromPacks } from "@/i18n/packs";
 import type { Lang, Slot } from "./state";
 
-type Copy = {
+export type Copy = {
   greet: string;
   questions: Record<Slot, string>;
   quick: Record<Slot, string[]>;
@@ -140,6 +141,7 @@ export const COPY: Record<Lang, Copy> = {
     setup: "one-time setup",
     contract: (m) => `${m} mahine ka contract`,
   },
+  ...fromPacks("copy"),
 };
 
 export const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;

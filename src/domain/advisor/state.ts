@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { NEEDS, SEGMENTS } from "../catalogue/types";
 
-export const LANGS = ["en", "hi", "hinglish"] as const;
+/** English, Hindi, Hinglish + the six regional languages with the most leads (≈96% of leads together). */
+export const LANGS = ["en", "hi", "hinglish", "mr", "gu", "kn", "te", "ta", "bn"] as const;
 export type Lang = (typeof LANGS)[number];
 
 /** Questions the advisor can ask, in order. At most one round of each. */

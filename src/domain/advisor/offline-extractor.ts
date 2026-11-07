@@ -17,7 +17,8 @@ const toNum = (s: string) => (/^\d+$/.test(s) ? Number(s) : NUMBER_WORDS[s]);
 const STAFF_UNITS = "staff|employees?|people|persons?|workers?|members?|log|logon|karmachari|kaamgaar|स्टाफ|लोग|कर्मचारी|आदमी";
 const SITE_UNITS = "sites?|outlets?|branch(?:es)?|stores?|shops?|locations?|offices?|centres?|centers?|clinics?|dukaan(?:e|en)?|शाखा(?:एं|एँ)?|दुकान(?:ें)?|ब्रांच";
 
-const NO = /^(no|nope|nahi|nahin|na|नहीं|नही|none|don'?t have|not registered)(?![a-z])/;
+// "No" in English, Hindi/Hinglish, Marathi, Gujarati, Kannada, Telugu, Tamil, Bengali.
+const NO = /^(no|nope|nahi|nahin|na|नहीं|नही|नाही|ના|ನಹಿ|ಇಲ್ಲ|లేదు|இல்லை|না|নেই|none|don'?t have|not registered)(?![a-z])/;
 
 /**
  * Deterministic parser for English, Hindi and Hinglish. Used when no LLM is
@@ -66,7 +67,7 @@ export function extractOffline(raw: string, lastAsked?: Slot): ProfileDelta {
   const needs: Need[] = [];
   for (const { need, words } of NEED_KEYWORDS) if (words.some((w) => hasWord(text, w))) needs.push(need);
   if (needs.length) d.needs = needs;
-  if (lastAsked === "needs" && !needs.length && (NO.test(text) || /^(nothing|that'?s all|bas|बस|kuch nahi|just internet)/.test(text))) d.noMoreNeeds = true;
+  if (lastAsked === "needs" && !needs.length && (NO.test(text) || /^(nothing|that'?s all|bas|बस|ಸಾಕು|చాలు|போதும்|ব্যস|kuch nahi|just internet)/.test(text))) d.noMoreNeeds = true;
 
   const fleet = text.match(new RegExp(`${NUM}\\s*(?:vehicles?|vans?|trucks?|bikes?|गाड़ियाँ|gaadi)`));
   if (fleet) d.fleetSize = toNum(fleet[1]);

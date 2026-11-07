@@ -1,5 +1,6 @@
 "use client";
 
+import { fromPacks } from "@/i18n/packs";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { AddonOption } from "@/domain/catalogue/addons";
@@ -29,6 +30,7 @@ const T: Record<Lang, Record<string, string>> = {
     why: "Yeh kyun sahi hai", blocked: "Yeh nahi mil sakte, aur kyun", addons: "Jodein ya hatayein", unavailable: "Aapke business ke liye available nahi",
     next: "Aage: documents upload karein  →", qty: "Quantity", none: "Koi setup fee nahi", remove: "Hatayein", add: "Jodein",
   },
+  ...fromPacks("quote"),
 };
 
 export function QuoteLedger({ result, lang, onTotal }: { result?: AdvisorTurnResult; lang: Lang; onTotal?: (monthly: number) => void }) {
