@@ -423,5 +423,137 @@
   "city": "Visakhapatnam",
   "state": "Andhra Pradesh",
   "dateOfRegistration": "2024-02-03"
+ },
+ "f0e1bb788506d27ce71a18a4a9054a09994d4c23d37a61ef849ec320ef44f7dc": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-AP-00-9751562",
+  "enterpriseName": "Kaveri Insurance Advisors",
+  "majorActivity": "Services",
+  "city": "Visakhapatnam",
+  "state": "Andhra Pradesh",
+  "dateOfRegistration": "2023-07-04"
+ },
+ "fa85f282f5e64a224c6a82a5850e9515e3ac16f3640b4431677bf7ea454e7975": {
+  "docType": "signatory",
+  "name": "Nisha Arora",
+  "designation": "Owner",
+  "business": "Kaveri Stays LLP",
+  "validTill": "2029-06-01"
+ },
+ "2331a714627354cfe5c6ec8d36f3fa74ec25572c04f439f1a66bab1b0a4463c6": {
+  "docType": "gst",
+  "gstin": "27QHJXK0658U1ZL",
+  "legalName": "Kaveri Stays LLP",
+  "tradeName": "Kaveri Stays LLP",
+  "constitution": "Limited Liability Partnership",
+  "address": "Shop/Unit 21, Sector 14, Mumbai, Maharashtra - 570043",
+  "dateOfLiability": "2022-07-13"
+ },
+ "fa323e2bf8383e80dbd47404d93fd7d5a6e8e7f90694ff6ec6af163b33119283": {
+  "docType": "addressProof",
+  "address": "Shop/Unit 21, Sector 14, Mumbai, Maharashtra - 570043",
+  "billedTo": "Kaveri Stays LLP",
+  "billDate": "2026-06-18"
+ },
+ "901d6ccf3e8d3b1d56b6854591d6755a0aa705ef65533067d8c7df1cd9ac6989": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-MH-00-7183141",
+  "enterpriseName": "Kaveri Stays LLP",
+  "majorActivity": "Services",
+  "city": "Mumbai",
+  "state": "Maharashtra",
+  "dateOfRegistration": "2024-01-09"
+ },
+ "ocr:7417ff6b7f5dabd56c22089e197d7d95ec49f3581baf332b486e96f630e6fe36": {
+  "docType": "gst",
+  "gstin": "27QHIXK0658U1ZL",
+  "legalName": "Kaveri Stays LLP",
+  "tradeName": "Kaveri Stays LLP",
+  "constitution": "Limited Liability Partnership",
+  "address": "Shop/Unit 21, Sector 14, Mumbai, Maharashtra - 570043",
+  "dateOfLiability": "2022-07-13",
+  "gstinConfidence": 62
+ },
+ "41a0b9aef1fd58783a2abcc71cae32f8a4f23df674bcc489141fb4382a59510d": {
+  "docType": "signatory",
+  "name": "Vikram Pillai",
+  "designation": "Owner",
+  "business": "Trinity Bake House Pvt Ltd",
+  "validTill": "2028-12-23"
+ },
+ "36b9aecc4ea59b8cee9b6f3f9b7c55d1b42cbdbcbfc83fa171efd686f45747e7": {
+  "docType": "gst",
+  "gstin": "03KGZXT1320R1ZZ",
+  "legalName": "Trinity Bake House Pvt Ltd",
+  "tradeName": "Trinity Bake House Pvt Ltd",
+  "constitution": "Private Limited Company",
+  "address": "Shop/Unit 188, Industrial Area Phase 2, Ludhiana, Punjab - 541498",
+  "dateOfLiability": "2019-08-19"
+ },
+ "303250a5472f8f6548fc3a1ddae8cc6c9e4d6a3f19a7dac1f37509670ba9040f": {
+  "docType": "addressProof",
+  "address": "Shop/Unit 188, Industrial Area Phase 2, Ludhiana, Punjab - 541498",
+  "billedTo": "Trinity Bake House Pvt Ltd",
+  "billDate": "2025-10-31"
+ },
+ "f16aed63c80030d5d5bc48a9f72e1204b0bdeff60c2ea1ae3cbc7c87097ae3f6": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-PB-00-9719478",
+  "enterpriseName": "Trinity Bake House Pvt Ltd",
+  "majorActivity": "Services",
+  "city": "Ludhiana",
+  "state": "Punjab",
+  "dateOfRegistration": "2025-09-15"
+ },
+ "ocr:779dcbedff4db4f4883dd65ecfe21f3be55d4a109841d285c938641b2b4ffc91": {
+  "docType": "gst",
+  "gstin": "03KGZXT1320R1ZZ",
+  "legalName": "Trinity Bake House Pvt Ltd",
+  "tradeName": "Trinity Bake House Pvt Ltd",
+  "constitution": "Private Limited Company",
+  "address": "Shop/Unit 188, Industrial Area Phase 2, Ludhiana, Punjab - 541498",
+  "dateOfLiability": "2019-08-19",
+  "gstinConfidence": 61
+ },
+ "970754fe9d9573b52776dc5a427e2808c96d2d32e52f055d45cf0b4c79b9c189": {
+  "docType": "signatory",
+  "name": "Pooja Agarwal",
+  "designation": "Owner",
+  "business": "Star Electronics",
+  "validTill": "2029-03-03"
+ },
+ "7d735237fc648f17be59721bc4edadbe4f00f5c58e810cb4221679c135fcfe4a": {
+  "docType": "addressProof",
+  "address": "Shop/Unit 216, Nehru Nagar, Visakhapatnam, Andhra Pradesh - 762071",
+  "billedTo": "Star Electronics",
+  "billDate": "2026-07-06"
+ },
+ "31917be127618bfe38547f2f20d21e8b5f47307519c460fd8f9c8e5b53318de6": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-AP-00-5186772",
+  "enterpriseName": "Star Electronics",
+  "majorActivity": "Services",
+  "city": "Visakhapatnam",
+  "state": "Andhra Pradesh",
+  "dateOfRegistration": "2024-02-03"
+ },
+ "380df624f93cc55666bf0790dc4acea3424ab7509ae598bf11ebb54ce645a946": {
+  "docType": "gst",
+  "gstin": "37NBLXS1145E1ZU",
+  "legalName": "Pooja Agarwal (Prop. Star Electronics)",
+  "tradeName": "Star Electronics",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 216, Nehru Nagar, Visakhapatnam, Andhra Pradesh - 762071",
+  "dateOfLiability": "2017-01-08"
+ },
+ "ocr:06caabacb02dee4146e82623f78ad3268948d9da52a6623f4fc4d552bfc85557": {
+  "docType": "gst",
+  "gstin": "37NBLXS1145E1ZU",
+  "legalName": "Pooja Agarwal (Prop. Star Electronics)",
+  "tradeName": "Star Electronics",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 216, Nehru Nagar, Visakhapatnam, Andhra Pradesh - 762071",
+  "dateOfLiability": "2017-01-08",
+  "gstinConfidence": 67
  }
 }
