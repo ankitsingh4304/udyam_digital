@@ -72,3 +72,18 @@ describe("consent, data rights and partner claims", () => {
     expect((await ops.claimsFor(["L00001", "L00002"]))["L00001"].partnerName).toBe("Sharma Telecom");
   });
 });
+
+describe("shared storage settings", async () => {
+  const { redisEnv } = await import("@/server/store");
+  it("finds Upstash credentials under a custom Vercel prefix and never uses the read-only token", () => {
+    const env = {
+      MY_REDIS_PREFIX_KV_URL: "rediss://x",
+      MY_REDIS_PREFIX_KV_REST_API_READ_ONLY_TOKEN: "ro",
+      MY_REDIS_PREFIX_KV_REST_API_URL: "https://x.upstash.io",
+      MY_REDIS_PREFIX_KV_REST_API_TOKEN: "rw",
+    };
+    expect(redisEnv(env)).toEqual({ url: "https://x.upstash.io", token: "rw" });
+    expect(redisEnv({ KV_REST_API_URL: "u", KV_REST_API_TOKEN: "t" })).toEqual({ url: "u", token: "t" });
+    expect(redisEnv({})).toEqual({});
+  });
+});
