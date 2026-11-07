@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["bom1"],
+  "functions": {
+    "src/app/api/kyc/documents/route.ts": { "maxDuration": 60 },
+    "src/app/api/advisor/route.ts": { "maxDuration": 30 }
+  }
+}

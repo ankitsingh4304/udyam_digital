@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/server/rate-limit";
 import { z } from "zod";
 import { listAddons, rebuildCart } from "@/domain/catalogue/addons";
 import { CartChangeSchema } from "@/domain/catalogue/quote";
@@ -15,6 +16,8 @@ const QuoteRequest = z.object({
 
 /** Re-price a cart. Every line is re-checked against the catalogue rules on the server. */
 export async function POST(req: Request) {
+  const limited = rateLimit(req, "quote", 120);
+  if (limited) return limited;
   const parsed = QuoteRequest.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid request", issues: parsed.error.issues }, { status: 400 });
   const { profile, cart, change } = parsed.data;

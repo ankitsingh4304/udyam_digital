@@ -1,6 +1,14 @@
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+
+// Isolated cache (set before modules load) so this test really runs Tesseract on every image.
+vi.hoisted(() => {
+  const { mkdtempSync } = require("node:fs") as typeof import("node:fs");
+  const { tmpdir } = require("node:os") as typeof import("node:os");
+  const { join } = require("node:path") as typeof import("node:path");
+  process.env.UDYAM_EXTRACT_CACHE = join(mkdtempSync(join(tmpdir(), "cache-")), "c.json");
+});
 import { shutdownOcr } from "@/adapters/vision/extract";
 import type { KycVerdict } from "@/domain/kyc/types";
 import { DOC_SLOTS, processKycDocuments, type KycCaseResult } from "@/server/kyc-service";
