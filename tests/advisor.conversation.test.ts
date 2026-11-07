@@ -124,3 +124,14 @@ describe("quote toggles", () => {
     expect(sdwan.reason).toContain("needs at least");
   });
 });
+
+describe("read-back", () => {
+  it("says what it understood before the bundle", async () => {
+    const r = await converse(["dental clinic", "4 staff, 1 clinic", "Nagpur", "no", "that's all"]);
+    const said = r.reply.join(" ");
+    expect(said).toContain("Here's what I understood");
+    expect(said).toContain("4 staff, 1 site");
+    expect(said).toContain("Nagpur (tier 2)");
+    expect(said).toContain("no GSTIN");
+  });
+});

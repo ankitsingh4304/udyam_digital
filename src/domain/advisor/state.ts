@@ -38,6 +38,8 @@ export const ProfileDraftSchema = z.object({
   cityKnown: z.boolean().optional(),
   gstinStatus: z.enum(["active", "inactive", "none"]).optional(),
   gstinMasked: z.string().optional(),
+  /** Full GSTIN as the owner typed it; stays in their browser state and pre-fills the document check. */
+  gstin: z.string().optional(),
   needs: z.array(z.enum(NEEDS)).default([]),
   fibreAvailable: z.boolean().optional(),
   wantsSpeed: z.enum(["100", "300", "1g"]).optional(),

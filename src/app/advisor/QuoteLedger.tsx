@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { AddonOption } from "@/domain/catalogue/addons";
-import type { Bundle } from "@/domain/catalogue/types";
+import type { Bundle, BusinessProfileInput } from "@/domain/catalogue/types";
+import { ProfileCard } from "./ProfileCard";
 import type { Lang } from "@/domain/advisor/state";
 import type { AdvisorTurnResult } from "@/server/advisor-service";
 
@@ -35,20 +36,23 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
   const [bundle, setBundle] = useState<Bundle | undefined>();
   const [addons, setAddons] = useState<AddonOption[]>([]);
   const [busy, setBusy] = useState(false);
+  const [profile, setProfile] = useState<BusinessProfileInput | undefined>();
+  const [blocked, setBlocked] = useState<Bundle["blocked"]>([]);
+  const [edited, setEdited] = useState(false);
 
-  const reprice = async (b: Bundle, change?: { productId: string; quantity: number }) => {
-    if (!result?.profile) return;
+  const reprice = async (b: Bundle, change?: { productId: string; quantity: number }, p: BusinessProfileInput | undefined = profile, keepBlocked = blocked) => {
+    if (!p) return;
     setBusy(true);
     try {
       const res = await fetch("/api/quote", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ profile: result.profile, cart: b.lines.map((l) => ({ productId: l.productId, quantity: l.quantity })), change }),
+        body: JSON.stringify({ profile: p, cart: b.lines.map((l) => ({ productId: l.productId, quantity: l.quantity })), change }),
       });
       if (res.ok) {
         const data = (await res.json()) as { bundle: Bundle; addons: AddonOption[] };
         // Keep the advisor's plain-language reasons and blocked list from the recommendation.
-        setBundle({ ...data.bundle, blocked: result.bundle?.blocked ?? [] });
+        setBundle({ ...data.bundle, blocked: keepBlocked });
         setAddons(data.addons);
       }
     } finally {
@@ -59,12 +63,31 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
   useEffect(() => {
     setBundle(result?.bundle);
     setAddons([]);
-    if (result?.bundle) void reprice(result.bundle);
+    setProfile(result?.profile);
+    setBlocked(result?.bundle?.blocked ?? []);
+    setEdited(false);
+    if (result?.bundle) void reprice(result.bundle, undefined, result.profile, result.bundle.blocked);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [result]);
 
+  /** Owner corrected what the advisor understood: rebuild the bundle with the rule engine. */
+  const applyProfile = async (p: BusinessProfileInput) => {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/recommend", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(p) });
+      if (!res.ok) return;
+      const fresh = (await res.json()) as Bundle;
+      setProfile(p);
+      setBlocked(fresh.blocked);
+      setEdited(true);
+      await reprice(fresh, undefined, p, fresh.blocked);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const defaultQty = (a: AddonOption) => {
-    const p = result?.profile;
+    const p = profile;
     if (!p) return 1;
     if (a.unit === "per site" || a.unit === "per counter") return p.sites ?? 1;
     if (a.unit === "per camera") return 2 * (p.sites ?? 1);
@@ -136,7 +159,7 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
             href="/kyc"
             onClick={() => {
               try {
-                sessionStorage.setItem("udyam.quote", JSON.stringify({ profile: result?.profile, cart: bundle.lines.map((l) => ({ productId: l.productId, quantity: l.quantity })) }));
+                sessionStorage.setItem("udyam.quote", JSON.stringify({ profile, gstin: result?.state.draft.gstin, cart: bundle.lines.map((l) => ({ productId: l.productId, quantity: l.quantity })) }));
               } catch {
                 /* private mode: the order step falls back to a starter bundle */
               }
@@ -148,7 +171,9 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
         </div>
       </div>
 
-      {result?.explanation && (
+      {profile && <ProfileCard profile={profile} city={result?.state.draft.city} lang={lang} busy={busy} onApply={applyProfile} />}
+
+      {result?.explanation && !edited && (
         <section className="mt-6">
           <h3 className="font-bold">{t.why}</h3>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-[15px]">

@@ -21,6 +21,8 @@ export interface DocFields {
   validTill?: string;
   billedTo?: string;
   billDate?: string;
+  /** OCR only: how sure Tesseract was about the GSTIN (0–100). */
+  gstinConfidence?: number;
 }
 
 export function classify(text: string): DocFields["docType"] {
@@ -101,7 +103,7 @@ export function parseOcrText(text: string): DocFields {
 }
 
 const DIGIT_SLOTS = [0, 1, 7, 8, 9, 10];
-const LETTER_TO_DIGIT: Record<string, string> = { O: "0", D: "0", I: "1", L: "1", S: "5", B: "8", Z: "2" };
+const LETTER_TO_DIGIT: Record<string, string> = { O: "0", D: "0", "©": "0", Q: "0", I: "1", L: "1", S: "5", B: "8", Z: "2" };
 
 /** Position 14 is always the letter Z; Tesseract often reads it as 7 or 2. */
 const Z_SLOT = 13;

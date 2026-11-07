@@ -15,7 +15,7 @@ const TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 /** Multipart upload: caseId + up to four files named gst, udyam, signatory, addressProof. */
 export async function POST(req: Request) {
-  const limited = rateLimit(req, "kyc", 12);
+  const limited = rateLimit(req, "kyc", 120);
   if (limited) return limited;
   const form = await req.formData().catch(() => null);
   if (!form) return NextResponse.json({ error: "Send the documents as multipart form data." }, { status: 400 });
@@ -34,7 +34,8 @@ export async function POST(req: Request) {
   }
   if (!docs.length) return NextResponse.json({ error: "Upload at least the GST certificate." }, { status: 400 });
 
-  const result = await processKycDocuments(docs, { registry: getRegistry(), llm: getLlm() });
+  const declaredGstin = String(form.get("declaredGstin") ?? "").slice(0, 20) || undefined;
+  const result = await processKycDocuments(docs, { registry: getRegistry(), llm: getLlm(), declaredGstin });
   // Buffers go out of scope here: images are never written to disk.
   appendAudit("KYC_PROCESSED", caseId, {
     verdict: result.verdict,
