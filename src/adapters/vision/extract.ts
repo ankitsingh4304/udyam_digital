@@ -4,6 +4,7 @@ import path from "node:path";
 import { z } from "zod";
 import type { LlmChain } from "@/adapters/llm/chain";
 import { parseOcrText, type DocFields } from "@/domain/kyc/parse-ocr";
+import { WRITABLE_DIR } from "@/server/paths";
 
 export type Reader = "vision" | "ocr" | "cache";
 
@@ -25,13 +26,23 @@ addressProof: billedTo, address (join wrapped lines), billDate (YYYY-MM-DD)
 CRITICAL: copy every identifier EXACTLY as printed, character by character. Do not correct, complete or normalise anything.
 If a GSTIN prints the digit zero where a letter would be expected, output the digit 0. If a field is blank on the document, omit it.`;
 
-/** Cache of vision reads keyed by image hash: repeat uploads (and the demo) never spend API quota. */
+/**
+ * Cache of reads keyed by image hash ("<sha>" = AI read, "ocr:<sha>" = Tesseract read), so repeat
+ * uploads and the demo spend no API quota and no OCR time. The committed file ships with the app;
+ * on read-only hosts new entries go to a writable overlay instead.
+ */
 const CACHE_FILE = process.env.UDYAM_EXTRACT_CACHE ?? path.join(process.cwd(), "data", "extract-cache.json");
+const OVERLAY_FILE = process.env.VERCEL ? path.join(WRITABLE_DIR, "extract-cache.json") : CACHE_FILE;
 let cache: Record<string, DocFields> | undefined;
-const loadCache = () => (cache ??= existsSync(CACHE_FILE) ? (JSON.parse(readFileSync(CACHE_FILE, "utf8")) as Record<string, DocFields>) : {});
+const readJson = (f: string) => (existsSync(f) ? (JSON.parse(readFileSync(f, "utf8")) as Record<string, DocFields>) : {});
+const loadCache = () => (cache ??= { ...readJson(CACHE_FILE), ...(OVERLAY_FILE !== CACHE_FILE ? readJson(OVERLAY_FILE) : {}) });
 function saveCache() {
-  mkdirSync(path.dirname(CACHE_FILE), { recursive: true });
-  writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 1));
+  try {
+    mkdirSync(path.dirname(OVERLAY_FILE), { recursive: true });
+    writeFileSync(OVERLAY_FILE, JSON.stringify(cache, null, 1));
+  } catch {
+    // Read-only filesystem: keep the in-memory cache only.
+  }
 }
 
 export const sha256 = (buf: Buffer) => createHash("sha256").update(buf).digest("hex");
@@ -41,7 +52,7 @@ async function ocrText(buf: Buffer): Promise<string> {
   worker ??= (async () => {
     const { createWorker } = await import("tesseract.js");
     const langPath = path.join(process.cwd(), "node_modules", "@tesseract.js-data", "eng", "4.0.0_best_int");
-    return createWorker("eng", 1, { langPath, gzip: true, cachePath: path.join(process.cwd(), ".data", "tesseract") });
+    return createWorker("eng", 1, { langPath, gzip: true, cachePath: path.join(WRITABLE_DIR, "tesseract") });
   })();
   const w = await worker;
   const { data } = await w.recognize(buf);
@@ -79,7 +90,12 @@ export async function extractDocument(
       return { fields, reader: "vision" };
     }
   }
-  return { fields: parseOcrText(await ocrText(image)), reader: "ocr" };
+  const ocrKey = `ocr:${key}`;
+  if (opts.useCache !== false && loadCache()[ocrKey]) return { fields: loadCache()[ocrKey], reader: "ocr" };
+  const fields = parseOcrText(await ocrText(image));
+  loadCache()[ocrKey] = fields;
+  saveCache();
+  return { fields, reader: "ocr" };
 }
 
 export async function shutdownOcr() {

@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { WRITABLE_DIR } from "./paths";
 
 /**
  * Append-only, hash-chained audit log (DPDP: accountability). Each entry stores the hash of
@@ -17,7 +18,7 @@ export interface AuditEntry {
   hash: string;
 }
 
-const FILE = process.env.UDYAM_AUDIT_LOG ?? path.join(process.cwd(), ".data", "audit.jsonl");
+const FILE = process.env.UDYAM_AUDIT_LOG ?? path.join(WRITABLE_DIR, "audit.jsonl");
 const GENESIS = "0".repeat(64);
 let entries: AuditEntry[] | undefined;
 

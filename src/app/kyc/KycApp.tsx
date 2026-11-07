@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { NOTICE, NOTICE_VERSION, PURPOSES, REQUIRED_PURPOSES, type Purpose } from "@/domain/kyc/consent";
 import type { Lang } from "@/domain/advisor/state";
@@ -23,7 +24,7 @@ const T: Record<Lang, Record<string, string>> = {
     optional: "optional", choose: "Take photo or choose file", replace: "Replace", sample: "Try a sample applicant", sampleHint: "Loads the hackathon specimen documents",
     check: "Check documents", checking: "Checking… usually under 20 seconds", collect: "What we ask for", keep: "How long we keep it",
     consentRef: "Consent recorded", withdraw: "Withdraw consent", withdrawn: "Consent withdrawn. Nothing more will be processed for this case.",
-    sharpness: "Sharpness", straightened: "Straightened by", readBy: "Read by", again: "Check different documents", next: "Continue to installation",
+    sharpness: "Sharpness", straightened: "Straightened by", readBy: "Read by", again: "Check different documents", next: "Place order and book installation",
     vision: "AI reader", ocr: "offline OCR", cache: "AI reader (saved)", preflight: "stopped before reading",
   },
   hi: {
@@ -63,12 +64,14 @@ const MARK: Record<KycCheck["status"], { sign: string; cls: string; label: strin
 export function KycApp() {
   const [lang, setLang] = useState<Lang>("en");
   const [purposes, setPurposes] = useState<Record<Purpose, boolean>>({ kyc: false, installation: false, offers: false });
-  const [caseInfo, setCaseInfo] = useState<{ caseId: string; consentRef: string } | undefined>();
+  const [caseInfo, setCaseInfo] = useState<{ caseId: string; consentRef: string; consentToken: string } | undefined>();
   const [files, setFiles] = useState<Partial<Record<DocKind, File>>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [result, setResult] = useState<KycCaseResult>();
   const [withdrawn, setWithdrawn] = useState(false);
+  const [placing, setPlacing] = useState(false);
+  const router = useRouter();
   const t = T[lang];
   const n = NOTICE[lang];
 
@@ -104,6 +107,7 @@ export function KycApp() {
     try {
       const form = new FormData();
       form.set("caseId", caseInfo.caseId);
+      form.set("consentToken", caseInfo.consentToken);
       for (const [slot, f] of Object.entries(files)) if (f) form.set(slot, f);
       const res = await fetch("/api/kyc/documents", { method: "POST", body: form });
       const data = await res.json();
@@ -114,6 +118,28 @@ export function KycApp() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const placeOrder = async () => {
+    if (!result) return;
+    setPlacing(true);
+    setError(undefined);
+    let quote: unknown;
+    try {
+      const raw = sessionStorage.getItem("udyam.quote");
+      quote = raw ? JSON.parse(raw) : undefined;
+    } catch {
+      quote = undefined;
+    }
+    const res = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ kycToken: (result as KycCaseResult & { kycToken: string }).kycToken, quote, demo: true }),
+    });
+    const data = await res.json();
+    setPlacing(false);
+    if (!res.ok) return setError(data.error ?? "The order couldn't be placed. Try again.");
+    router.push(`/track/${encodeURIComponent(data.token)}?lang=${lang}`);
   };
 
   const withdraw = async () => {
@@ -321,12 +347,13 @@ export function KycApp() {
                 </article>
               )}
 
+              {error && <p className="text-khata">{error}</p>}
               <div className="flex flex-wrap gap-3">
                 <button onClick={() => setResult(undefined)} className="rounded-xl border border-ink px-5 py-3 font-medium">
                   {t.again}
                 </button>
                 {(result.verdict === "PASS" || result.verdict === "PASS_WITH_WARNINGS") && (
-                  <button disabled className="rounded-xl bg-ink px-5 py-3 font-medium text-white opacity-90" title="Coming in the next step">
+                  <button onClick={placeOrder} disabled={placing} className="rounded-xl bg-ink px-5 py-3 font-medium text-white disabled:opacity-50">
                     {t.next}
                   </button>
                 )}

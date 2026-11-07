@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/server/rate-limit";
 import { getLlm } from "@/adapters/llm";
 import type { DocKind } from "@/domain/kyc/types";
 import { activeConsent, appendAudit } from "@/server/audit-log";
 import { getRegistry } from "@/server/data";
 import { DOC_SLOTS, processKycDocuments } from "@/server/kyc-service";
+import { signToken, verifyToken } from "@/server/signed-token";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -13,10 +15,13 @@ const TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 /** Multipart upload: caseId + up to four files named gst, udyam, signatory, addressProof. */
 export async function POST(req: Request) {
+  const limited = rateLimit(req, "kyc", 12);
+  if (limited) return limited;
   const form = await req.formData().catch(() => null);
   if (!form) return NextResponse.json({ error: "Send the documents as multipart form data." }, { status: 400 });
   const caseId = String(form.get("caseId") ?? "");
-  const consent = activeConsent(caseId);
+  const signed = verifyToken<{ caseId: string; purposes: Record<string, boolean> }>(String(form.get("consentToken") ?? ""));
+  const consent = signed?.caseId === caseId ? signed.purposes : activeConsent(caseId);
   if (!consent?.kyc) return NextResponse.json({ error: "Consent for verification is needed before documents can be checked." }, { status: 403 });
 
   const docs: { slot: DocKind; buffer: Buffer }[] = [];
@@ -37,5 +42,8 @@ export async function POST(req: Request) {
     readers: result.documents.map((d) => `${d.slot}:${d.reader ?? "preflight"}`),
   });
   appendAudit("DOCS_DISCARDED", caseId, { count: docs.length });
-  return NextResponse.json({ caseId, ...result });
+  // Signed proof of the verdict, so the order step can trust it without shared server memory.
+  const business = result.documents.find((d) => d.slot === "gst")?.fields?.tradeName ?? "Your business";
+  const kycToken = signToken({ caseId, verdict: result.verdict, business, iat: Date.now() });
+  return NextResponse.json({ caseId, kycToken, ...result });
 }

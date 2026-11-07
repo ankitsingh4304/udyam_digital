@@ -132,7 +132,17 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
         </ul>
 
         <div className="px-5 py-4">
-          <Link href="/kyc" className="block w-full rounded-xl bg-ink py-3 text-center font-medium text-white">
+          <Link
+            href="/kyc"
+            onClick={() => {
+              try {
+                sessionStorage.setItem("udyam.quote", JSON.stringify({ profile: result?.profile, cart: bundle.lines.map((l) => ({ productId: l.productId, quantity: l.quantity })) }));
+              } catch {
+                /* private mode: the order step falls back to a starter bundle */
+              }
+            }}
+            className="block w-full rounded-xl bg-ink py-3 text-center font-medium text-white"
+          >
             {t.next}
           </Link>
         </div>

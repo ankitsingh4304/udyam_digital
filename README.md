@@ -74,6 +74,14 @@ npx tsx scripts/kyc-check-all.ts        # all 12 applicants through the real pip
 npx tsx scripts/kyc-check-all.ts --ocr  # offline reader only
 ```
 
+## Tracker, judges, partners (steps 5–7)
+
+- `/track/[token]` — order status from catalogue install days; signed, stateless order links; demo speed (1 day = 1 minute).
+- `/judge` — any business profile → bundle, refusals with rule codes, rule trace; 15 one-click scenario checks.
+- `/partner` — rescue queue of 4,632 dropped leads with the action per drop reason, likelihood to buy
+  (logistic regression, AUC 0.71, `scripts/train-propensity.py` → `src/domain/leads/propensity-model.json`).
+- Production: rate limits, CSP/HSTS headers, `/api/health`, Vercel config (Mumbai region). See `DEPLOY.md`.
+
 ## Next
 
 3. ~~Advisor chat (LLM extracts `BusinessProfile`, explains the computed bundle) → quote UI~~ done

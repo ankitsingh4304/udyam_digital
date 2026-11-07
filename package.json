@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "warm": "tsx scripts/kyc-check-all.ts"
   },
   "dependencies": {
     "@fontsource/mukta": "^5.3.0",
@@ -33,5 +34,8 @@
     "tsx": "^4.19.2",
     "typescript": "^5",
     "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
