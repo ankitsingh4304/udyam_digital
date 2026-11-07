@@ -1,6 +1,6 @@
 "use client";
 
-import { AppShell } from "@/components/AppShell";
+import { BackOfficeShell, type BackOfficeUser } from "@/components/BackOfficeShell";
 import { useCallback, useEffect, useState } from "react";
 import type { RescueLead, rescueSummary } from "@/server/leads-service";
 
@@ -9,7 +9,7 @@ const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 const BAND_CLS: Record<string, string> = { High: "bg-ok text-white", Medium: "bg-hold/15 text-hold", Low: "bg-rule text-ink-soft" };
 const CHANNEL: Record<string, string> = { digital: "Fix by link, no visit", call: "Needs a call", visit: "Needs a visit", later: "Follow up later" };
 
-export function PartnerApp() {
+export function PartnerApp({ user }: { user: BackOfficeUser }) {
   const [filters, setFilters] = useState({ city: "", band: "", channel: "", segment: "" });
   const [data, setData] = useState<{ summary: Summary; cities: string[]; leads: RescueLead[] }>();
   const [done, setDone] = useState<Record<string, string>>({});
@@ -33,9 +33,9 @@ export function PartnerApp() {
   const s = data?.summary;
 
   return (
-    <AppShell wide back={{ href: "/", label: "Home" }}>
+    <BackOfficeShell user={user} title={user.role === "admin" ? "Operations" : "Partner portal"}>
     <main className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
-      <h1 className="mt-2 text-3xl font-bold">Rescue queue</h1>
+      <h1 className="mt-2 text-3xl font-bold">{user.city ? `Rescue queue · ${user.city}` : "Rescue queue · all cities"}</h1>
       <p className="mt-1 max-w-prose text-ink-soft">
         Leads that dropped out but can still be won, ranked by likely monthly value. You keep the commission whether the customer finishes online or with your help.
       </p>
@@ -67,12 +67,14 @@ export function PartnerApp() {
       )}
 
       <div className="mt-6 flex flex-wrap gap-3" role="group" aria-label="Filters">
+        {user.role === "admin" && (
         <select className={select} aria-label="City" value={filters.city} onChange={(e) => setFilters({ ...filters, city: e.target.value })}>
           <option value="">All cities</option>
           {data?.cities.map((c) => (
             <option key={c}>{c}</option>
           ))}
         </select>
+        )}
         <select className={select} aria-label="Likelihood" value={filters.band} onChange={(e) => setFilters({ ...filters, band: e.target.value })}>
           <option value="">Any likelihood</option>
           <option>High</option>
@@ -150,6 +152,6 @@ export function PartnerApp() {
         ))}
       </ol>
     </main>
-    </AppShell>
+    </BackOfficeShell>
   );
 }

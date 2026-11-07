@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, CheckCircle2 } from "lucide-react";
+import { Camera, CheckCircle2, PenLine } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useLang } from "@/components/LangContext";
 import { preparePhoto } from "./photo";
@@ -26,6 +26,7 @@ const SAMPLE_GSTIN: Record<string, string> = {
 
 const T: Record<Lang, Record<string, string>> = {
   en: {
+    esignTitle: "E-sign the application form", esignBody: "Sign with a one-time code sent to the mobile linked to the signatory's Aadhaar. No paper, no visit.", esignSend: "Send code", esignSentTo: "Code sent to", esignDemo: "Demo code", esignCode: "6-digit code", esignVerify: "Sign", esignDone: "Application signed", esignResend: "Send a new code",
     photoUnreadable: "This photo format can't be opened. Please take the photo again with the camera.", gstinLabel: "Your GSTIN", gstinHint: "We look it up first; the photo then only has to confirm it.", lookup: "Look up", backupNote: "Some documents were read by our backup reader; a verification agent double-checks before activation.", back: "Back to your bundle", step1: "Your consent", step2: "Upload documents", step3: "Result",
     gst: "GST certificate", udyam: "Udyam certificate", signatory: "Authorised signatory's ID", addressProof: "Electricity bill (last 90 days)",
     optional: "optional", choose: "Tap to add photo", replace: "Replace", sample: "Try a sample applicant", sampleHint: "Loads the hackathon specimen documents",
@@ -35,6 +36,7 @@ const T: Record<Lang, Record<string, string>> = {
     vision: "AI reader", ocr: "offline OCR", cache: "AI reader (saved)", preflight: "stopped before reading",
   },
   hi: {
+    esignTitle: "आवेदन फ़ॉर्म पर ई-साइन करें", esignBody: "हस्ताक्षरकर्ता के आधार से जुड़े मोबाइल पर आए कोड से साइन करें। न कागज़, न विज़िट।", esignSend: "कोड भेजें", esignSentTo: "कोड भेजा गया", esignDemo: "डेमो कोड", esignCode: "6 अंकों का कोड", esignVerify: "साइन करें", esignDone: "आवेदन साइन हो गया", esignResend: "नया कोड भेजें",
     photoUnreadable: "यह फ़ोटो नहीं खुल पाई। कृपया कैमरे से दोबारा फ़ोटो लें।", gstinLabel: "आपका GSTIN", gstinHint: "हम पहले इसे रजिस्ट्री में देखते हैं; फ़ोटो सिर्फ़ पुष्टि करती है।", lookup: "देखें", backupNote: "कुछ डॉक्यूमेंट बैकअप रीडर से पढ़े गए; चालू करने से पहले एजेंट दोबारा जाँचेगा।", back: "बंडल पर वापस", step1: "आपकी सहमति", step2: "डॉक्यूमेंट अपलोड करें", step3: "नतीजा",
     gst: "GST सर्टिफ़िकेट", udyam: "Udyam सर्टिफ़िकेट", signatory: "अधिकृत हस्ताक्षरकर्ता की ID", addressProof: "बिजली बिल (पिछले 90 दिन)",
     optional: "वैकल्पिक", choose: "फ़ोटो जोड़ने के लिए दबाएँ", replace: "बदलें", sample: "सैंपल आवेदक आज़माएँ", sampleHint: "हैकाथॉन के नमूना डॉक्यूमेंट लोड करता है",
@@ -44,6 +46,7 @@ const T: Record<Lang, Record<string, string>> = {
     vision: "AI रीडर", ocr: "ऑफ़लाइन OCR", cache: "AI रीडर (सेव)", preflight: "पढ़ने से पहले रोका गया",
   },
   hinglish: {
+    esignTitle: "Application form par e-sign karein", esignBody: "Signatory ke Aadhaar se jude mobile par aaye code se sign karein. Na kaagaz, na visit.", esignSend: "Code bhejein", esignSentTo: "Code bheja gaya", esignDemo: "Demo code", esignCode: "6 digit code", esignVerify: "Sign karein", esignDone: "Application sign ho gaya", esignResend: "Naya code bhejein",
     photoUnreadable: "Yeh photo nahi khul payi. Please camera se dobara photo lein.", gstinLabel: "Aapka GSTIN", gstinHint: "Hum pehle registry mein dekhte hain; photo sirf confirm karti hai.", lookup: "Dekhein", backupNote: "Kuch documents backup reader se padhe gaye; activation se pehle agent dobara check karega.", back: "Bundle par wapas", step1: "Aapki sahmati", step2: "Documents upload karein", step3: "Result",
     gst: "GST certificate", udyam: "Udyam certificate", signatory: "Authorised signatory ki ID", addressProof: "Bijli bill (pichhle 90 din)",
     optional: "optional", choose: "Photo jodne ke liye dabayein", replace: "Badlein", sample: "Sample applicant try karein", sampleHint: "Hackathon ke specimen documents load karta hai",
@@ -99,6 +102,10 @@ export function KycApp() {
   const [result, setResult] = useState<KycCaseResult>();
   const [withdrawn, setWithdrawn] = useState(false);
   const [placing, setPlacing] = useState(false);
+  const [esign, setEsign] = useState<{ challenge: string; demoOtp: string; mobile: string } | undefined>();
+  const [otp, setOtp] = useState("");
+  const [esignToken, setEsignToken] = useState<string>();
+  const [signing, setSigning] = useState(false);
   const router = useRouter();
   const t = T[lang];
   const n = NOTICE[lang];
@@ -151,6 +158,38 @@ export function KycApp() {
     }
   };
 
+  const kycTokenOf = (r: KycCaseResult) => (r as KycCaseResult & { kycToken: string }).kycToken;
+
+  const startEsign = async () => {
+    if (!result) return;
+    setSigning(true);
+    setError(undefined);
+    setOtp("");
+    const res = await fetch("/api/esign/start", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kycToken: kycTokenOf(result) }) });
+    const data = await res.json();
+    setSigning(false);
+    if (!res.ok) return setError(data.error ?? "Couldn't start signing. Try again.");
+    setEsign(data);
+  };
+
+  const verifyEsign = async () => {
+    if (!esign) return;
+    setSigning(true);
+    setError(undefined);
+    const res = await fetch("/api/esign/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ challenge: esign.challenge, otp }) });
+    const data = await res.json();
+    setSigning(false);
+    if (!res.ok) return setError(data.error ?? "Couldn't sign. Try again.");
+    setEsignToken(data.esignToken);
+  };
+
+  // A new document check means a new case: any earlier signature no longer applies.
+  useEffect(() => {
+    setEsign(undefined);
+    setEsignToken(undefined);
+    setOtp("");
+  }, [result]);
+
   const placeOrder = async () => {
     if (!result) return;
     setPlacing(true);
@@ -165,7 +204,7 @@ export function KycApp() {
     const res = await fetch("/api/orders", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ kycToken: (result as KycCaseResult & { kycToken: string }).kycToken, quote, demo: true }),
+      body: JSON.stringify({ kycToken: kycTokenOf(result), esignToken, quote, demo: true }),
     });
     const data = await res.json();
     setPlacing(false);
@@ -407,13 +446,52 @@ export function KycApp() {
                 </article>
               )}
 
+              {(result.verdict === "PASS" || result.verdict === "PASS_WITH_WARNINGS") && (
+                <article id="esign" className={`rounded-2xl border-2 bg-white p-5 shadow-card ${esignToken ? "border-ok" : "border-brand/40"}`}>
+                  <h2 className="flex items-center gap-2 text-lg font-bold">
+                    {esignToken ? <CheckCircle2 className="h-6 w-6 text-ok" aria-hidden /> : <PenLine className="h-6 w-6 text-brand" aria-hidden />}
+                    {esignToken ? t.esignDone : t.esignTitle}
+                  </h2>
+                  {!esignToken && <p className="mt-1 text-[15px] text-ink-soft">{t.esignBody}</p>}
+                  {!esignToken && !esign && (
+                    <button onClick={startEsign} disabled={signing} className="mt-4 flex h-14 w-full items-center justify-center rounded-full bg-brand px-8 text-lg font-semibold text-white hover:bg-brand-dark disabled:opacity-50 sm:w-auto">
+                      {t.esignSend}
+                    </button>
+                  )}
+                  {!esignToken && esign && (
+                    <div className="mt-4 space-y-3">
+                      <p className="text-[15px]">
+                        {t.esignSentTo} {esign.mobile}. <span className="rounded-lg bg-page px-2 py-1 font-mono font-semibold" data-testid="demo-otp">{t.esignDemo}: {esign.demoOtp}</span>
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        <input
+                          value={otp}
+                          onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          aria-label={t.esignCode}
+                          placeholder={t.esignCode}
+                          className="h-14 w-44 rounded-2xl border-2 border-rule px-4 text-center font-mono text-xl tracking-[0.3em] focus:border-brand focus:outline-none"
+                        />
+                        <button onClick={verifyEsign} disabled={signing || otp.length !== 6} className="flex h-14 items-center justify-center rounded-full bg-brand px-8 text-lg font-semibold text-white hover:bg-brand-dark disabled:opacity-50">
+                          {t.esignVerify}
+                        </button>
+                      </div>
+                      <button onClick={startEsign} disabled={signing} className="text-sm font-semibold text-brand underline">
+                        {t.esignResend}
+                      </button>
+                    </div>
+                  )}
+                </article>
+              )}
+
               {error && <p className="text-khata">{error}</p>}
               <div className="flex flex-wrap gap-3">
                 <button onClick={() => setResult(undefined)} className="flex h-14 items-center justify-center rounded-full border-2 border-rule bg-white px-6 font-semibold">
                   {t.again}
                 </button>
                 {(result.verdict === "PASS" || result.verdict === "PASS_WITH_WARNINGS") && (
-                  <button onClick={placeOrder} disabled={placing} className="flex h-14 items-center justify-center rounded-full bg-brand px-8 text-lg font-semibold text-white hover:bg-brand-dark disabled:opacity-50">
+                  <button onClick={placeOrder} disabled={placing || !esignToken} className="flex h-14 items-center justify-center rounded-full bg-brand px-8 text-lg font-semibold text-white hover:bg-brand-dark disabled:opacity-50">
                     {t.next}
                   </button>
                 )}

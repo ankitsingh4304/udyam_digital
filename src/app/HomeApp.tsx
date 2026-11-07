@@ -10,7 +10,7 @@ import type { Lang } from "@/domain/advisor/state";
 const T: Record<Lang, { title: string; sub: string; start: string; voice: string; how: string; steps: [string, string][]; why: string; perks: [string, string][] }> = {
   en: {
     title: "Internet, phones and digital tools for your business",
-    sub: "Answer 5 easy questions. See one clear monthly price. Upload documents from your phone. No sales visit needed.",
+    sub: "Answer a few easy questions. See one clear monthly price. Upload documents from your phone. No sales visit needed.",
     start: "Start now",
     voice: "You can speak in Hindi or English",
     how: "How it works",
@@ -29,7 +29,7 @@ const T: Record<Lang, { title: string; sub: string; start: string; voice: string
   },
   hi: {
     title: "आपके बिज़नेस के लिए इंटरनेट, फ़ोन और डिजिटल टूल",
-    sub: "5 आसान सवालों के जवाब दें। एक साफ़ मासिक कीमत देखें। फ़ोन से डॉक्यूमेंट अपलोड करें। किसी विज़िट की ज़रूरत नहीं।",
+    sub: "कुछ आसान सवालों के जवाब दें। एक साफ़ मासिक कीमत देखें। फ़ोन से डॉक्यूमेंट अपलोड करें। किसी विज़िट की ज़रूरत नहीं।",
     start: "अभी शुरू करें",
     voice: "आप हिंदी या अंग्रेज़ी में बोल सकते हैं",
     how: "यह कैसे काम करता है",
@@ -48,7 +48,7 @@ const T: Record<Lang, { title: string; sub: string; start: string; voice: string
   },
   hinglish: {
     title: "Aapke business ke liye internet, phone aur digital tools",
-    sub: "5 aasaan sawaalon ke jawab dein. Ek clear monthly price dekhein. Phone se documents upload karein. Koi visit nahi chahiye.",
+    sub: "Kuch aasaan sawaalon ke jawab dein. Ek clear monthly price dekhein. Phone se documents upload karein. Koi visit nahi chahiye.",
     start: "Abhi shuru karein",
     voice: "Aap Hindi ya English mein bol sakte hain",
     how: "Yeh kaise kaam karta hai",
@@ -168,10 +168,16 @@ export function HomeApp() {
                 <span className="block text-sm text-ink-soft">Load sample applicants K01–K12 in one tap.</span>
               </li>
               <li>
-                <Link className="font-semibold text-brand underline underline-offset-4" href="/partner">
-                  Partner rescue queue
+                <Link className="font-semibold text-brand underline underline-offset-4" href="/login?role=partner">
+                  Partner panel
                 </Link>
-                <span className="block text-sm text-ink-soft">Lost leads ranked by likelihood to buy.</span>
+                <span className="block text-sm text-ink-soft">Lost leads in the partner&apos;s city, ranked by likelihood to buy. Demo PIN 1234.</span>
+              </li>
+              <li>
+                <Link className="font-semibold text-brand underline underline-offset-4" href="/login?role=admin">
+                  Operations dashboard
+                </Link>
+                <span className="block text-sm text-ink-soft">The 5 metrics vs targets, live activity, audit log. ID ADMIN, PIN 9999.</span>
               </li>
               <li>
                 <a className="font-semibold text-brand underline underline-offset-4" href="/api/health">

@@ -8,11 +8,14 @@ import { BusinessProfileSchema, type BusinessProfileInput } from "@/domain/catal
 import type { OrderPayload } from "@/domain/orders/tracker";
 import { getCatalogue } from "@/server/data";
 import { signToken, verifyToken } from "@/server/signed-token";
+import { appendAudit } from "@/server/audit-log";
+import { esignFor } from "@/server/esign";
 
 export const runtime = "nodejs";
 
 const OrderRequest = z.object({
   kycToken: z.string().max(2000),
+  esignToken: z.string().max(2000).optional(),
   quote: z.object({ profile: BusinessProfileSchema, cart: z.array(CartChangeSchema).max(30) }).optional(),
   demo: z.boolean().default(true),
 });
@@ -33,6 +36,8 @@ export async function POST(req: Request) {
   if (!kyc) return NextResponse.json({ error: "Document check could not be confirmed. Check the documents again." }, { status: 403 });
   if (kyc.verdict !== "PASS" && kyc.verdict !== "PASS_WITH_WARNINGS")
     return NextResponse.json({ error: "Documents must pass the check before an order can be placed." }, { status: 409 });
+  const esign = esignFor(parsed.data.esignToken, kyc.caseId);
+  if (!esign) return NextResponse.json({ error: "Please e-sign the application form before placing the order." }, { status: 428 });
 
   const quote = parsed.data.quote ?? STARTER;
   const catalogue = getCatalogue();
@@ -52,5 +57,6 @@ export async function POST(req: Request) {
     caseId: kyc.caseId,
     speed: parsed.data.demo ? 1440 : 1,
   };
+  appendAudit("ORDER_PLACED", kyc.caseId, { orderId: order.id, monthly: order.monthly, lines: order.lines.length, installDays: order.installDays, esign: esign.requestId });
   return NextResponse.json({ orderId: order.id, token: signToken(order) });
 }

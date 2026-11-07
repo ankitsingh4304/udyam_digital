@@ -16,6 +16,8 @@ type Copy = {
   segment: Record<"micro" | "prof" | "multi" | "mfg", string>;
   gstin: Record<"active" | "inactive" | "none", string>;
   staffSites: (staff: number, sites: number) => string;
+  todayLabel: string;
+  current: Record<"hotspot" | "home_broadband" | "business_broadband" | "leased_line" | "none", string>;
   needsLabel: string;
   blockedHeader: string;
   perMonth: string;
@@ -25,12 +27,13 @@ type Copy = {
 
 export const COPY: Record<Lang, Copy> = {
   en: {
-    greet: "Hi! I'll suggest the right internet, phone and digital tools for your business in 5 quick questions. No salesperson, one clear monthly price.",
+    greet: "Hi! I'll suggest the right internet, phone and digital tools for your business in a few quick questions. No salesperson, one clear monthly price.",
     questions: {
       businessType: "What kind of business do you run? (e.g. kirana store, clinic, CA office, restaurant chain, factory)",
       size: "How many people work there, and how many shops or branches do you have?",
       city: "Which city is the business in?",
       gstin: "Do you have a GSTIN? Type it here, or say \"no\". We check it instantly with the GST registry.",
+      tools: "What do you use for internet today? And do you have a billing machine?",
       needs: "What else would help? For example UPI/card billing, CCTV, WhatsApp for customers, business email, backup internet. Or say \"that's all\".",
     },
     quick: {
@@ -38,6 +41,7 @@ export const COPY: Record<Lang, Copy> = {
       size: ["2 staff, 1 shop", "8 staff, 1 office", "40 staff, 5 outlets", "60 staff, 1 factory"],
       city: ["Mumbai", "Delhi", "Bengaluru", "Nagpur", "Jaipur"],
       gstin: ["No GSTIN"],
+      tools: ["Mobile hotspot", "Home broadband", "Business broadband", "Leased line", "No internet yet"],
       needs: ["UPI billing", "CCTV", "WhatsApp", "Business email", "Backup internet", "That's all"],
     },
     ack: "Got it.",
@@ -52,6 +56,8 @@ export const COPY: Record<Lang, Copy> = {
     segment: { micro: "shop or small service business", prof: "professional office", multi: "multi-site business", mfg: "small manufacturer" },
     gstin: { active: "GSTIN active", inactive: "GSTIN cancelled or suspended", none: "no GSTIN" },
     staffSites: (a, b) => `${a} staff, ${b} site${b > 1 ? "s" : ""}`,
+    todayLabel: "uses today",
+    current: { hotspot: "mobile hotspot", home_broadband: "home broadband", business_broadband: "business broadband", leased_line: "leased line", none: "no internet" },
     needsLabel: "needs",
     blockedHeader: "Not offered, and why:",
     perMonth: "/month",
@@ -59,12 +65,13 @@ export const COPY: Record<Lang, Copy> = {
     contract: (m) => `${m}-month contract`,
   },
   hi: {
-    greet: "नमस्ते! 5 आसान सवालों में मैं आपके बिज़नेस के लिए सही इंटरनेट, फ़ोन और डिजिटल टूल सुझाऊँगा। कोई सेल्समैन नहीं, एक साफ़ मासिक कीमत।",
+    greet: "नमस्ते! कुछ आसान सवालों में मैं आपके बिज़नेस के लिए सही इंटरनेट, फ़ोन और डिजिटल टूल सुझाऊँगा। कोई सेल्समैन नहीं, एक साफ़ मासिक कीमत।",
     questions: {
       businessType: "आपका बिज़नेस किस तरह का है? (जैसे किराना दुकान, क्लिनिक, CA ऑफिस, रेस्टोरेंट चेन, फैक्ट्री)",
       size: "वहाँ कितने लोग काम करते हैं, और आपकी कितनी दुकानें या ब्रांच हैं?",
       city: "बिज़नेस किस शहर में है?",
       gstin: "क्या आपके पास GSTIN है? यहाँ लिखें, या \"नहीं\" कहें। हम इसे तुरंत GST रजिस्ट्री से जाँचते हैं।",
+      tools: "अभी इंटरनेट के लिए क्या इस्तेमाल करते हैं? और क्या बिलिंग मशीन है?",
       needs: "और क्या चाहिए? जैसे UPI/कार्ड बिलिंग, CCTV, ग्राहकों के लिए WhatsApp, बिज़नेस ईमेल, बैकअप इंटरनेट। या \"बस\" कहें।",
     },
     quick: {
@@ -72,6 +79,7 @@ export const COPY: Record<Lang, Copy> = {
       size: ["2 स्टाफ, 1 दुकान", "8 स्टाफ, 1 ऑफिस", "40 स्टाफ, 5 ब्रांच", "60 स्टाफ, 1 फैक्ट्री"],
       city: ["मुंबई", "दिल्ली", "बेंगलुरु", "नागपुर", "जयपुर"],
       gstin: ["नहीं"],
+      tools: ["मोबाइल हॉटस्पॉट", "घर का ब्रॉडबैंड", "बिज़नेस ब्रॉडबैंड", "लीज़्ड लाइन", "अभी इंटरनेट नहीं"],
       needs: ["UPI बिलिंग", "CCTV", "WhatsApp", "बिज़नेस ईमेल", "बैकअप इंटरनेट", "बस"],
     },
     ack: "ठीक है।",
@@ -86,6 +94,8 @@ export const COPY: Record<Lang, Copy> = {
     segment: { micro: "दुकान या छोटा सर्विस बिज़नेस", prof: "प्रोफ़ेशनल ऑफिस", multi: "कई ब्रांच वाला बिज़नेस", mfg: "छोटी फैक्ट्री" },
     gstin: { active: "GSTIN एक्टिव", inactive: "GSTIN रद्द या निलंबित", none: "GSTIN नहीं" },
     staffSites: (a, b) => `${a} स्टाफ, ${b} जगह`,
+    todayLabel: "अभी",
+    current: { hotspot: "मोबाइल हॉटस्पॉट", home_broadband: "घर का ब्रॉडबैंड", business_broadband: "बिज़नेस ब्रॉडबैंड", leased_line: "लीज़्ड लाइन", none: "इंटरनेट नहीं" },
     needsLabel: "ज़रूरतें",
     blockedHeader: "ये नहीं दिए जा सकते, और क्यों:",
     perMonth: "/महीना",
@@ -93,12 +103,13 @@ export const COPY: Record<Lang, Copy> = {
     contract: (m) => `${m} महीने का कॉन्ट्रैक्ट`,
   },
   hinglish: {
-    greet: "Namaste! 5 simple sawaalon mein main aapke business ke liye sahi internet, phone aur digital tools suggest karunga. Koi salesman nahi, ek clear monthly price.",
+    greet: "Namaste! kuch simple sawaalon mein main aapke business ke liye sahi internet, phone aur digital tools suggest karunga. Koi salesman nahi, ek clear monthly price.",
     questions: {
       businessType: "Aapka business kis type ka hai? (jaise kirana store, clinic, CA office, restaurant chain, factory)",
       size: "Kitne log kaam karte hain, aur kitni shops ya branches hain?",
       city: "Business kis city mein hai?",
       gstin: "Kya aapke paas GSTIN hai? Yahan type karein, ya \"nahi\" bolein. Hum turant GST registry se check karte hain.",
+      tools: "Abhi internet ke liye kya use karte hain? Aur kya billing machine hai?",
       needs: "Aur kya chahiye? Jaise UPI/card billing, CCTV, customers ke liye WhatsApp, business email, backup internet. Ya \"bas\" bolein.",
     },
     quick: {
@@ -106,6 +117,7 @@ export const COPY: Record<Lang, Copy> = {
       size: ["2 staff, 1 shop", "8 staff, 1 office", "40 staff, 5 outlets", "60 staff, 1 factory"],
       city: ["Mumbai", "Delhi", "Bengaluru", "Nagpur", "Jaipur"],
       gstin: ["GSTIN nahi hai"],
+      tools: ["Mobile hotspot", "Ghar ka broadband", "Business broadband", "Leased line", "Abhi internet nahi"],
       needs: ["UPI billing", "CCTV", "WhatsApp", "Business email", "Backup internet", "Bas"],
     },
     ack: "Theek hai.",
@@ -120,6 +132,8 @@ export const COPY: Record<Lang, Copy> = {
     segment: { micro: "shop ya chhota service business", prof: "professional office", multi: "multi-site business", mfg: "chhoti factory" },
     gstin: { active: "GSTIN active", inactive: "GSTIN cancelled ya suspended", none: "GSTIN nahi" },
     staffSites: (a, b) => `${a} staff, ${b} jagah`,
+    todayLabel: "abhi",
+    current: { hotspot: "mobile hotspot", home_broadband: "ghar ka broadband", business_broadband: "business broadband", leased_line: "leased line", none: "internet nahi" },
     needsLabel: "zaroorat",
     blockedHeader: "Yeh nahi mil sakte, aur kyun:",
     perMonth: "/month",
