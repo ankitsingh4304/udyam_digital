@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 /** Record consent for the itemised purposes. Required purposes must be accepted to continue. */
 export async function POST(req: Request) {
-  const limited = rateLimit(req, "consent", 20);
+  const limited = rateLimit(req, "consent", 200);
   if (limited) return limited;
   const parsed = ConsentRequestSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid consent", issues: parsed.error.issues }, { status: 400 });

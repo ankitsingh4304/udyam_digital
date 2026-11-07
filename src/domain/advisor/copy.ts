@@ -12,6 +12,11 @@ type Copy = {
   gstinActive: (name: string) => string;
   noGstin: string;
   ready: string;
+  understood: (summary: string) => string;
+  segment: Record<"micro" | "prof" | "multi" | "mfg", string>;
+  gstin: Record<"active" | "inactive" | "none", string>;
+  staffSites: (staff: number, sites: number) => string;
+  needsLabel: string;
   blockedHeader: string;
   perMonth: string;
   setup: string;
@@ -43,6 +48,11 @@ export const COPY: Record<Lang, Copy> = {
     gstinActive: (n) => `GSTIN verified: ${n}, active.`,
     noGstin: "No problem. I'll only suggest products that don't need a GSTIN.",
     ready: "Here's the bundle I recommend:",
+    understood: (x) => `Here's what I understood: ${x}. If anything is wrong, change it on the quote.`,
+    segment: { micro: "shop or small service business", prof: "professional office", multi: "multi-site business", mfg: "small manufacturer" },
+    gstin: { active: "GSTIN active", inactive: "GSTIN cancelled or suspended", none: "no GSTIN" },
+    staffSites: (a, b) => `${a} staff, ${b} site${b > 1 ? "s" : ""}`,
+    needsLabel: "needs",
     blockedHeader: "Not offered, and why:",
     perMonth: "/month",
     setup: "one-time setup",
@@ -72,6 +82,11 @@ export const COPY: Record<Lang, Copy> = {
     gstinActive: (n) => `GSTIN सत्यापित: ${n}, एक्टिव।`,
     noGstin: "कोई बात नहीं। मैं सिर्फ़ वही प्रोडक्ट सुझाऊँगा जिनके लिए GSTIN ज़रूरी नहीं।",
     ready: "मेरा सुझाया हुआ बंडल:",
+    understood: (x) => `मैंने यह समझा: ${x}। कुछ गलत हो तो कोटेशन पर बदल दें।`,
+    segment: { micro: "दुकान या छोटा सर्विस बिज़नेस", prof: "प्रोफ़ेशनल ऑफिस", multi: "कई ब्रांच वाला बिज़नेस", mfg: "छोटी फैक्ट्री" },
+    gstin: { active: "GSTIN एक्टिव", inactive: "GSTIN रद्द या निलंबित", none: "GSTIN नहीं" },
+    staffSites: (a, b) => `${a} स्टाफ, ${b} जगह`,
+    needsLabel: "ज़रूरतें",
     blockedHeader: "ये नहीं दिए जा सकते, और क्यों:",
     perMonth: "/महीना",
     setup: "एक बार का सेटअप",
@@ -101,6 +116,11 @@ export const COPY: Record<Lang, Copy> = {
     gstinActive: (n) => `GSTIN verified: ${n}, active.`,
     noGstin: "Koi baat nahi. Main sirf wahi products suggest karunga jinke liye GSTIN zaroori nahi.",
     ready: "Mera suggested bundle:",
+    understood: (x) => `Maine yeh samjha: ${x}. Kuch galat ho to quote par badal dein.`,
+    segment: { micro: "shop ya chhota service business", prof: "professional office", multi: "multi-site business", mfg: "chhoti factory" },
+    gstin: { active: "GSTIN active", inactive: "GSTIN cancelled ya suspended", none: "GSTIN nahi" },
+    staffSites: (a, b) => `${a} staff, ${b} jagah`,
+    needsLabel: "zaroorat",
     blockedHeader: "Yeh nahi mil sakte, aur kyun:",
     perMonth: "/month",
     setup: "one-time setup",

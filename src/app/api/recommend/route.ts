@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 /** POST a BusinessProfile; returns the rule-checked bundle, blocked items and trace. */
 export async function POST(req: Request) {
-  const limited = rateLimit(req, "recommend", 120);
+  const limited = rateLimit(req, "recommend", 1200);
   if (limited) return limited;
   const parsed = BusinessProfileSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid profile", issues: parsed.error.issues }, { status: 400 });

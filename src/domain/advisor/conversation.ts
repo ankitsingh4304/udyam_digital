@@ -1,6 +1,7 @@
 import type { BusinessProfileInput, Need } from "../catalogue/types";
 import { findCity } from "./lexicon";
-import type { AdvisorState, ProfileDelta, ProfileDraft, Slot } from "./state";
+import { COPY } from "./copy";
+import type { AdvisorState, Lang, ProfileDelta, ProfileDraft, Slot } from "./state";
 
 /** Merge a delta into the draft. Later answers override earlier ones; needs accumulate. */
 export function mergeDelta(draft: ProfileDraft, d: ProfileDelta): ProfileDraft {
@@ -71,4 +72,19 @@ export function toProfile(d: ProfileDraft): BusinessProfileInput {
     fleetSize: d.fleetSize,
     requestedProducts: d.requestedProducts,
   };
+}
+
+/** One-line readback of the profile, so the owner can spot a misunderstanding before trusting the price. */
+export function summarizeProfile(p: BusinessProfileInput, city: string | undefined, lang: Lang): string {
+  const c = COPY[lang];
+  const parts = [
+    `${p.businessType ? `${p.businessType} (${c.segment[p.segment]})` : c.segment[p.segment]}`,
+    c.staffSites(p.employees, p.sites),
+    city ? `${city} (tier ${p.cityTier})` : `tier ${p.cityTier}`,
+    c.gstin[p.gstinStatus],
+  ];
+  if (p.needs?.length) parts.push(`${c.needsLabel}: ${p.needs.join(", ")}`);
+  if (p.wantsSpeed) parts.push(p.wantsSpeed === "1g" ? "1 Gbps" : `${p.wantsSpeed} Mbps`);
+  if (p.fibreAvailable === false) parts.push("no fibre");
+  return parts.join("; ");
 }

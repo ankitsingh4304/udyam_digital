@@ -2,7 +2,7 @@ import sharp from "sharp";
 import type { LlmChain } from "@/adapters/llm/chain";
 import { analyseImage, deskew, type ImageAnalysis } from "@/adapters/vision/image-quality";
 import { extractDocument, type Reader } from "@/adapters/vision/extract";
-import { runKycChecks } from "@/domain/kyc/checks";
+import { decide, runKycChecks } from "@/domain/kyc/checks";
 import { maskGstin, validateGstin } from "@/domain/kyc/gstin";
 import { lookalikeVariants, mergeGstinReads, type DocFields } from "@/domain/kyc/parse-ocr";
 import type { DocKind, ExtractedDocsInput, IRegistryService, KycCheck, KycResult } from "@/domain/kyc/types";
@@ -27,11 +27,13 @@ export interface KycCaseResult extends KycResult {
 }
 
 const MIN_BLUR = 100;
+/** Scans of the sample certificates score 900+; compressed phone photos ~250–400. */
+const SOFT_PHOTO = 500;
 
 function maskFields(f: DocFields): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(f)) {
-    if (!v || k === "docType") continue;
+    if (!v || k === "docType" || k === "gstinConfidence") continue;
     out[k] = k === "gstin" ? maskGstin(String(v)) : k === "udyamNumber" ? String(v).replace(/\d{4}$/, "••••") : String(v);
   }
   return out;
@@ -43,7 +45,7 @@ function maskFields(f: DocFields): Record<string, string> {
  */
 export async function processKycDocuments(
   docs: UploadedDoc[],
-  deps: { registry: IRegistryService; llm?: LlmChain; forceReader?: "vision" | "ocr" },
+  deps: { registry: IRegistryService; llm?: LlmChain; forceReader?: "vision" | "ocr"; declaredGstin?: string },
 ): Promise<KycCaseResult> {
   const reports: DocReport[] = [];
   const extracted: ExtractedDocsInput = {};
@@ -98,6 +100,13 @@ export async function processKycDocuments(
         }
       }
 
+      // Backup OCR on a soft photo: a failed GSTIN check is more likely a misread than tampering.
+      // Ask for a sharper photo instead of rejecting the customer.
+      if (reader === "ocr" && target === "gst" && fields.gstin && !validateGstin(fields.gstin).ok && quality.blurScore < SOFT_PHOTO) {
+        extra.push({ code: "OCR_UNSURE", doc: "gst", status: "info", impact: "none", message: "This photo is too soft for the backup reader to read the GSTIN reliably." });
+        fields.gstin = undefined;
+      }
+
       const base = { quality: q };
       if (target === "gst") extracted.gst = { ...base, gstin: fields.gstin, legalName: fields.legalName, tradeName: fields.tradeName, constitution: fields.constitution, address: fields.address, dateOfLiability: fields.dateOfLiability };
       if (target === "udyam") extracted.udyam = { ...base, udyamNumber: fields.udyamNumber, enterpriseName: fields.enterpriseName, majorActivity: fields.majorActivity, city: fields.city, state: fields.state, dateOfRegistration: fields.dateOfRegistration };
@@ -107,10 +116,31 @@ export async function processKycDocuments(
   );
 
   const result = runKycChecks(extracted, deps.registry);
+
+  // GSTIN-first: compare what the certificate shows with the GSTIN the owner entered.
+  const declared = deps.declaredGstin?.trim().toUpperCase();
+  if (declared && validateGstin(declared).ok) {
+    const onDoc = extracted.gst?.gstin;
+    const rec = deps.registry.getGstin(declared);
+    if (onDoc && onDoc === declared) extra.push({ code: "GSTIN_DECLARED", doc: "gst", status: "pass", impact: "none", message: "Certificate shows the GSTIN you entered." });
+    else if (onDoc) {
+      const docValid = validateGstin(onDoc).ok;
+      extra.push({
+        code: "GSTIN_DECLARED",
+        doc: "gst",
+        status: "fail",
+        impact: docValid ? "review" : "reject",
+        message: `Certificate shows ${maskGstin(onDoc)}, not the GSTIN you entered (${maskGstin(declared)}).`,
+      });
+    } else if (rec)
+      extra.push({ code: "GSTIN_DECLARED", doc: "gst", status: "info", impact: "none", message: `Registry has ${rec.tradeName} (${rec.status}) for the GSTIN you entered; a clear photo of the certificate will confirm it.` });
+  }
+  const checks = [...extra, ...result.checks];
   reports.sort((a, b) => DOC_SLOTS.indexOf(a.slot) - DOC_SLOTS.indexOf(b.slot));
   return {
     ...result,
-    checks: [...extra, ...result.checks],
+    verdict: decide(checks),
+    checks,
     verified: { ...result.verified, gstin: result.verified.gstin && maskGstin(result.verified.gstin) },
     documents: reports,
   };

@@ -54,7 +54,7 @@ function saveCache() {
 export const sha256 = (buf: Buffer) => createHash("sha256").update(buf).digest("hex");
 
 let worker: Promise<import("tesseract.js").Worker> | undefined;
-async function ocrText(buf: Buffer): Promise<string> {
+async function ocrText(buf: Buffer): Promise<{ text: string; gstinConfidence?: number }> {
   worker ??= (async () => {
     const { createWorker } = await import("tesseract.js");
     const langPath = path.join(process.cwd(), "node_modules", "@tesseract.js-data", "eng", "4.0.0_best_int");
@@ -62,7 +62,9 @@ async function ocrText(buf: Buffer): Promise<string> {
   })();
   const w = await worker;
   const { data } = await w.recognize(buf);
-  return data.text;
+  // Tesseract's own confidence (0–100) for the word that looks like a GSTIN.
+  const word = data.words?.find((x) => /^[0-9O][0-9O][A-Z0-9]{11,13}$/.test(x.text.replace(/\s/g, "").toUpperCase()));
+  return { text: data.text, gstinConfidence: word ? Math.round(word.confidence) : undefined };
 }
 
 export interface ExtractResult {
@@ -98,7 +100,8 @@ export async function extractDocument(
   }
   const ocrKey = `ocr:${key}`;
   if (opts.useCache !== false && loadCache()[ocrKey]) return { fields: loadCache()[ocrKey], reader: "ocr" };
-  const fields = parseOcrText(await ocrText(image));
+  const ocr = await ocrText(image);
+  const fields: DocFields = { ...parseOcrText(ocr.text), gstinConfidence: ocr.gstinConfidence };
   loadCache()[ocrKey] = fields;
   saveCache();
   return { fields, reader: "ocr" };

@@ -3,7 +3,7 @@ import type { LlmChain } from "@/adapters/llm/chain";
 import { buildBundle } from "@/domain/catalogue/bundle-builder";
 import type { Bundle, BusinessProfileInput, Catalogue } from "@/domain/catalogue/types";
 import { COPY } from "@/domain/advisor/copy";
-import { mergeDelta, nextSlot, toProfile } from "@/domain/advisor/conversation";
+import { mergeDelta, nextSlot, summarizeProfile, toProfile } from "@/domain/advisor/conversation";
 import { explanationIsGrounded, priceSummary, templateExplanation } from "@/domain/advisor/explain";
 import { extractOffline } from "@/domain/advisor/offline-extractor";
 import {
@@ -100,10 +100,10 @@ export async function handleAdvisorTurn(input: AdvisorTurnInput, deps: Deps): Pr
         draft = { ...draft, gstinStatus: "none" };
         reply.push(c.gstinNotFound);
       } else if (rec.status !== "Active") {
-        draft = { ...draft, gstinStatus: "inactive", gstinMasked: maskGstin(rec.gstin) };
+        draft = { ...draft, gstinStatus: "inactive", gstinMasked: maskGstin(rec.gstin), gstin: rec.gstin };
         reply.push(c.gstinInactive(rec.status));
       } else {
-        draft = { ...draft, gstinStatus: "active", gstinMasked: maskGstin(rec.gstin) };
+        draft = { ...draft, gstinStatus: "active", gstinMasked: maskGstin(rec.gstin), gstin: rec.gstin };
         reply.push(c.gstinActive(rec.tradeName));
       }
     }
@@ -155,7 +155,7 @@ export async function handleAdvisorTurn(input: AdvisorTurnInput, deps: Deps): Pr
   state = { ...state, done: true, lastAsked: undefined };
   return {
     state,
-    reply: [...reply, c.ready],
+    reply: [...reply, c.understood(summarizeProfile(profile, draft.city, state.lang)), c.ready],
     quickReplies: [],
     provider,
     bundle,

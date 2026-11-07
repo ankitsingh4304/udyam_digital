@@ -15,11 +15,16 @@ const SLOTS: { slot: DocKind; file: string; optional?: boolean }[] = [
   { slot: "addressProof", file: "address_proof" },
 ];
 const SAMPLES = Array.from({ length: 12 }, (_, i) => `K${String(i + 1).padStart(2, "0")}`);
+/** The GSTIN each sample business is registered under (what the owner would type). */
+const SAMPLE_GSTIN: Record<string, string> = {
+  K01: "37IHKXV5167L1ZS", K02: "19EOGXH4115Y1ZL", K03: "27XUIXG0767D1ZP", K04: "27PZSXS1936O1ZH", K05: "32TZAXB5481U1Z1", K06: "08YKZXS5189L1ZO",
+  K07: "07CPCXN0398P1ZT", K08: "24XORXG9365M1Z3", K09: "37LDYXK0296F1ZB", K10: "27QHJXK0658U1ZL", K11: "03KGZXT1320R1ZZ", K12: "37NBLXS1145E1ZU",
+};
 const LANG_LABEL: Record<Lang, string> = { en: "English", hi: "हिंदी", hinglish: "Hinglish" };
 
 const T: Record<Lang, Record<string, string>> = {
   en: {
-    back: "Back to your bundle", step1: "Your consent", step2: "Upload documents", step3: "Result",
+    gstinLabel: "Your GSTIN", gstinHint: "We look it up first; the photo then only has to confirm it.", lookup: "Look up", backupNote: "Some documents were read by our backup reader; a verification agent double-checks before activation.", back: "Back to your bundle", step1: "Your consent", step2: "Upload documents", step3: "Result",
     gst: "GST certificate", udyam: "Udyam certificate", signatory: "Authorised signatory's ID", addressProof: "Electricity bill (last 90 days)",
     optional: "optional", choose: "Take photo or choose file", replace: "Replace", sample: "Try a sample applicant", sampleHint: "Loads the hackathon specimen documents",
     check: "Check documents", checking: "Checking… usually under 20 seconds", collect: "What we ask for", keep: "How long we keep it",
@@ -28,7 +33,7 @@ const T: Record<Lang, Record<string, string>> = {
     vision: "AI reader", ocr: "offline OCR", cache: "AI reader (saved)", preflight: "stopped before reading",
   },
   hi: {
-    back: "बंडल पर वापस", step1: "आपकी सहमति", step2: "डॉक्यूमेंट अपलोड करें", step3: "नतीजा",
+    gstinLabel: "आपका GSTIN", gstinHint: "हम पहले इसे रजिस्ट्री में देखते हैं; फ़ोटो सिर्फ़ पुष्टि करती है।", lookup: "देखें", backupNote: "कुछ डॉक्यूमेंट बैकअप रीडर से पढ़े गए; चालू करने से पहले एजेंट दोबारा जाँचेगा।", back: "बंडल पर वापस", step1: "आपकी सहमति", step2: "डॉक्यूमेंट अपलोड करें", step3: "नतीजा",
     gst: "GST सर्टिफ़िकेट", udyam: "Udyam सर्टिफ़िकेट", signatory: "अधिकृत हस्ताक्षरकर्ता की ID", addressProof: "बिजली बिल (पिछले 90 दिन)",
     optional: "वैकल्पिक", choose: "फ़ोटो लें या फ़ाइल चुनें", replace: "बदलें", sample: "सैंपल आवेदक आज़माएँ", sampleHint: "हैकाथॉन के नमूना डॉक्यूमेंट लोड करता है",
     check: "डॉक्यूमेंट जाँचें", checking: "जाँच हो रही है… आमतौर पर 20 सेकंड से कम", collect: "हम क्या माँगते हैं", keep: "कब तक रखते हैं",
@@ -37,7 +42,7 @@ const T: Record<Lang, Record<string, string>> = {
     vision: "AI रीडर", ocr: "ऑफ़लाइन OCR", cache: "AI रीडर (सेव)", preflight: "पढ़ने से पहले रोका गया",
   },
   hinglish: {
-    back: "Bundle par wapas", step1: "Aapki sahmati", step2: "Documents upload karein", step3: "Result",
+    gstinLabel: "Aapka GSTIN", gstinHint: "Hum pehle registry mein dekhte hain; photo sirf confirm karti hai.", lookup: "Dekhein", backupNote: "Kuch documents backup reader se padhe gaye; activation se pehle agent dobara check karega.", back: "Bundle par wapas", step1: "Aapki sahmati", step2: "Documents upload karein", step3: "Result",
     gst: "GST certificate", udyam: "Udyam certificate", signatory: "Authorised signatory ki ID", addressProof: "Bijli bill (pichhle 90 din)",
     optional: "optional", choose: "Photo lein ya file chunein", replace: "Badlein", sample: "Sample applicant try karein", sampleHint: "Hackathon ke specimen documents load karta hai",
     check: "Documents check karein", checking: "Check ho raha hai… aam taur par 20 second se kam", collect: "Hum kya maangte hain", keep: "Kab tak rakhte hain",
@@ -66,6 +71,27 @@ export function KycApp() {
   const [purposes, setPurposes] = useState<Record<Purpose, boolean>>({ kyc: false, installation: false, offers: false });
   const [caseInfo, setCaseInfo] = useState<{ caseId: string; consentRef: string; consentToken: string } | undefined>();
   const [files, setFiles] = useState<Partial<Record<DocKind, File>>>({});
+  const [gstin, setGstin] = useState("");
+  const [lookup, setLookup] = useState<{ ok: boolean; text: string } | undefined>();
+
+  useEffect(() => {
+    try {
+      const q = JSON.parse(sessionStorage.getItem("udyam.quote") ?? "{}") as { gstin?: string };
+      if (q.gstin) setGstin(q.gstin);
+    } catch {
+      /* nothing saved */
+    }
+  }, []);
+
+  const lookUp = async (g = gstin) => {
+    const v = g.trim().toUpperCase();
+    if (!v) return setLookup(undefined);
+    const res = await fetch(`/api/registry/gstin/${encodeURIComponent(v)}`);
+    const d = await res.json();
+    if (res.status === 422) return setLookup({ ok: false, text: d.issues?.[0]?.message ?? "This GSTIN isn't valid." });
+    if (!d.found) return setLookup({ ok: false, text: "Not found in the GST registry." });
+    setLookup({ ok: d.status === "Active", text: `${d.tradeName} · ${d.constitution} · ${d.state} · ${d.status}` });
+  };
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [result, setResult] = useState<KycCaseResult>();
@@ -90,6 +116,8 @@ export function KycApp() {
 
   const loadSample = async (id: string) => {
     setResult(undefined);
+    setGstin(SAMPLE_GSTIN[id]);
+    void lookUp(SAMPLE_GSTIN[id]);
     const entries = await Promise.all(
       SLOTS.map(async ({ slot, file }) => {
         const res = await fetch(`/api/kyc/samples/${id}_${file}.png`);
@@ -108,6 +136,7 @@ export function KycApp() {
       const form = new FormData();
       form.set("caseId", caseInfo.caseId);
       form.set("consentToken", caseInfo.consentToken);
+      if (gstin.trim()) form.set("declaredGstin", gstin.trim().toUpperCase());
       for (const [slot, f] of Object.entries(files)) if (f) form.set(slot, f);
       const res = await fetch("/api/kyc/documents", { method: "POST", body: form });
       const data = await res.json();
@@ -247,6 +276,32 @@ export function KycApp() {
                   </select>
                 </label>
               </div>
+              <div className="mt-5 rounded-xl bg-page p-4">
+                <label className="block text-sm font-medium" htmlFor="gstin">
+                  {t.gstinLabel}
+                </label>
+                <p className="text-xs text-ink-soft">{t.gstinHint}</p>
+                <div className="mt-2 flex gap-2">
+                  <input
+                    id="gstin"
+                    value={gstin}
+                    onChange={(e) => {
+                      setGstin(e.target.value.toUpperCase());
+                      setLookup(undefined);
+                    }}
+                    onBlur={() => void lookUp()}
+                    maxLength={15}
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="min-w-0 flex-1 rounded-lg border border-rule bg-white px-3 py-2 font-medium tracking-wider"
+                    placeholder="e.g. 37LDYXK0296F1ZB"
+                  />
+                  <button type="button" onClick={() => void lookUp()} className="rounded-lg border border-ink px-4 text-sm">
+                    {t.lookup}
+                  </button>
+                </div>
+                {lookup && <p className={`mt-2 text-sm ${lookup.ok ? "text-ok" : "text-khata"}`}>{lookup.text}</p>}
+              </div>
               <ul className="mt-5 grid gap-4 sm:grid-cols-2">
                 {SLOTS.map(({ slot, optional }) => (
                   <li key={slot} className="rounded-xl border border-dashed border-rule p-3">
@@ -286,6 +341,7 @@ export function KycApp() {
             <section className="mt-4 space-y-4" aria-live="polite">
               <div className={`rounded-2xl border-l-4 bg-white p-5 ${VERDICT[result.verdict].tone}`}>
                 <h1 className="text-2xl font-bold">{VERDICT[result.verdict].title}</h1>
+                {result.documents.some((d) => d.reader === "ocr") && <p className="mt-1 text-sm text-ink-soft">{t.backupNote}</p>}
                 {result.actions.length > 0 && (
                   <ul className="mt-2 list-disc space-y-1 pl-5">
                     {result.actions.map((a) => (

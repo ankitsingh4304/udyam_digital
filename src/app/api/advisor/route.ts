@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 /** One advisor turn. The client keeps `state` and sends it back each time (no server session). */
 export async function POST(req: Request) {
-  const limited = rateLimit(req, "advisor", 40);
+  const limited = rateLimit(req, "advisor", 400);
   if (limited) return limited;
   const parsed = AdvisorTurnSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid request", issues: parsed.error.issues }, { status: 400 });

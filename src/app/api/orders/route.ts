@@ -25,7 +25,7 @@ const STARTER: { profile: BusinessProfileInput; cart: { productId: string; quant
 
 /** Place an order: needs a signed passing KYC result; prices are recomputed here, never taken from the client. */
 export async function POST(req: Request) {
-  const limited = rateLimit(req, "orders", 20);
+  const limited = rateLimit(req, "orders", 200);
   if (limited) return limited;
   const parsed = OrderRequest.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid order", issues: parsed.error.issues }, { status: 400 });
