@@ -11,6 +11,9 @@ const csp = [
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
+  "worker-src 'self'",
+  "manifest-src 'self'",
+  "media-src 'self' blob:",
 ].join("; ");
 
 const nextConfig = {
@@ -25,6 +28,7 @@ const nextConfig = {
   },
   async headers() {
     return [
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache" }, { key: "Service-Worker-Allowed", value: "/" }] },
       {
         source: "/:path*",
         headers: [

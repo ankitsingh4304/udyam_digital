@@ -114,7 +114,7 @@ export function JudgeApp() {
   const field = "mt-1 w-full rounded-lg border border-rule bg-white px-3 py-2";
 
   return (
-    <AppShell back={{ href: "/", label: "Home" }}>
+    <AppShell wide back={{ href: "/", label: "Home" }}>
     <main className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
       <h1 className="mt-2 text-3xl font-bold">Test the advisor&apos;s rules</h1>
       <p className="mt-1 max-w-prose text-ink-soft">

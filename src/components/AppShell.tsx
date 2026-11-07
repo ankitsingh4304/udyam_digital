@@ -49,7 +49,7 @@ export function LanguageSwitch() {
           role="radio"
           aria-checked={lang === l.id}
           onClick={() => setLang(l.id)}
-          className={`h-9 rounded-full px-3 text-sm font-semibold sm:px-4 ${lang === l.id ? "bg-white text-brand shadow-card" : "text-ink-soft"}`}
+          className={`h-10 rounded-full px-2.5 text-sm font-semibold ${lang === l.id ? "bg-white text-brand shadow-card" : "text-ink-soft"}`}
         >
           {l.label}
         </button>
@@ -59,27 +59,27 @@ export function LanguageSwitch() {
 }
 
 /** Journey progress: big numbered steps with icons, so it's clear where you are and what's next. */
-export function Stepper({ step }: { step: 1 | 2 | 3 | 4 }) {
+export function Stepper({ step, wide = false }: { step: 1 | 2 | 3 | 4; wide?: boolean }) {
   const { lang } = useLang();
   return (
     <nav aria-label="Progress" className="border-b border-rule bg-white">
-      <ol className="mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-3 py-2.5 sm:gap-2 sm:px-6">
+      <ol className={`mx-auto flex items-center gap-1 overflow-x-auto px-3 py-2.5 ${wide ? "max-w-6xl sm:gap-2 sm:px-6" : "max-w-lg"}`}>
         {STEPS[lang].map((label, i) => {
           const n = i + 1;
           const Icon = STEP_ICONS[i];
           const state = n < step ? "done" : n === step ? "now" : "next";
           const inner = (
-            <span className={`flex items-center gap-2 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold ${state === "now" ? "bg-brand text-white" : state === "done" ? "bg-ok-soft text-ok" : "text-ink-soft"}`}>
+            <span className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1.5 text-sm font-semibold ${state === "now" ? "bg-brand text-white" : state === "done" ? "bg-ok-soft text-ok" : "text-ink-soft"}`}>
               <Icon className="h-4 w-4" aria-hidden />
-              <span className={state === "now" ? "" : "hidden md:inline"}>
+              <span className={state === "now" ? "" : wide ? "hidden md:inline" : "hidden"}>
                 {n}. {label}
               </span>
-              {state !== "now" && <span className="md:hidden">{n}</span>}
+              {state !== "now" && <span className={wide ? "md:hidden" : ""}>{n}</span>}
             </span>
           );
           return (
             <li key={label} className="flex items-center gap-1 sm:gap-2" aria-current={state === "now" ? "step" : undefined}>
-              {i > 0 && <span className={`h-0.5 w-3 sm:w-6 ${n <= step ? "bg-ok" : "bg-rule"}`} aria-hidden />}
+              {i > 0 && <span className={`h-0.5 ${wide ? "w-3 sm:w-6" : "w-2"} ${n <= step ? "bg-ok" : "bg-rule"}`} aria-hidden />}
               {state === "done" && STEP_HREF[i] ? <Link href={STEP_HREF[i]!}>{inner}</Link> : inner}
             </li>
           );
@@ -89,11 +89,12 @@ export function Stepper({ step }: { step: 1 | 2 | 3 | 4 }) {
   );
 }
 
-export function AppShell({ step, back, children }: { step?: 1 | 2 | 3 | 4; back?: { href: string; label: string }; children: ReactNode }) {
+/** Phone-first: content is one app-width column on every screen; `wide` is for back-office pages. */
+export function AppShell({ step, back, wide = false, children }: { step?: 1 | 2 | 3 | 4; back?: { href: string; label: string }; wide?: boolean; children: ReactNode }) {
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-2.5 sm:px-6">
+      <header className="sticky top-0 z-30 bg-white/95 pt-[env(safe-area-inset-top)] backdrop-blur">
+        <div className={`mx-auto flex items-center justify-between gap-2 px-3 py-2 ${wide ? "max-w-6xl sm:px-6" : "max-w-lg"}`}>
           <div className="flex items-center gap-2">
             {back && (
               <Link href={back.href} className="grid h-11 w-11 place-items-center rounded-full hover:bg-page" aria-label={back.label}>
@@ -104,7 +105,7 @@ export function AppShell({ step, back, children }: { step?: 1 | 2 | 3 | 4; back?
           </div>
           <LanguageSwitch />
         </div>
-        {step && <Stepper step={step} />}
+        {step && <Stepper step={step} wide={wide} />}
       </header>
       {children}
     </div>
