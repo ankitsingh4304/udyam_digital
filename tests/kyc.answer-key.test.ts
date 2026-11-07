@@ -107,3 +107,24 @@ describe("two readers for the GSTIN", () => {
     expect(mergeGstinReads("27QHJXK0658U1ZL", "27QHIXK0658U1ZL").gstin).toBe("27QHJXK0658U1ZL");
   });
 });
+
+import { pinOf, similarity } from "@/domain/kyc/checks";
+import { runKycChecks as run2 } from "@/domain/kyc/checks";
+describe("reader quirks seen with Gemini (K05)", () => {
+  it("PIN survives wrapped lines and look-alike letters", () => {
+    expect(pinOf("Shop/Unit 38, Civil Lines, Kochi, Kerala - 75 2083")).toBe("752083");
+    expect(pinOf("Shop/Unit 38, Civil Lines, Kochi, Kerala - 75\n2083")).toBe("752083");
+    expect(pinOf("Shop/Unit 38, Civil Lines, Kochi, Kerala - 752O83")).toBe("752083");
+    expect(pinOf("Shop/Unit 38, Civil Lines, Kochi, Kerala - 752083.")).toBe("752083");
+  });
+  it("names match regardless of spacing", () => {
+    expect(similarity("AnitaShah", "Anita Shah")).toBe(1);
+  });
+  it("K05 with a bill address read without its PIN still passes on street + city; a wrong PIN still fails", () => {
+    const base = KYC_FIXTURES.K05;
+    const noPin = run2({ ...base, addressProof: { ...base.addressProof!, address: "Shop/Unit 38, Civil Lines, Kochi, Kerala" } }, registry);
+    expect(noPin.verdict).toBe("PASS_WITH_WARNINGS");
+    const wrongPin = run2({ ...base, addressProof: { ...base.addressProof!, address: "Shop/Unit 38, Civil Lines, Kochi, Kerala - 110001" } }, registry);
+    expect(wrongPin.verdict).toBe("MANUAL_REVIEW");
+  });
+});

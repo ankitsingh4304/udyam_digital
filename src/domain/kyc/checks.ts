@@ -35,12 +35,23 @@ const DOC_LABEL: Record<DocKind, string> = {
 };
 
 const norm = (s = "") => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const ratio = (x: string, y: string) => (!x && !y ? 1 : 1 - editDistance(x, y) / Math.max(x.length, y.length));
+/** Name similarity that ignores case, punctuation and spacing ("AnitaShah" = "Anita Shah"). */
 export const similarity = (a = "", b = "") => {
   const x = norm(a), y = norm(b);
-  if (!x && !y) return 1;
-  return 1 - editDistance(x, y) / Math.max(x.length, y.length);
+  return Math.max(ratio(x, y), ratio(x.replace(/ /g, ""), y.replace(/ /g, "")));
 };
-const pinOf = (addr = "") => addr.replace(/\s+/g, "").match(/(\d{6})$/)?.[1];
+/**
+ * PIN code from an address, tolerant of how readers return wrapped lines ("75 2083", "75\n2083")
+ * and look-alike letters inside the number ("752O83"). Takes the last 6-digit run.
+ */
+export const pinOf = (addr = "") => {
+  const compact = addr.replace(/\s+/g, "").replace(/(?<=\d)[Oo](?=\d)|(?<=\d)[Oo]$/g, "0").replace(/(?<=\d)[Il](?=\d)/g, "1");
+  const runs = compact.match(/\d{6}(?!\d)/g);
+  return runs?.at(-1);
+};
+/** Address without the PIN, for a fallback comparison when no PIN could be read. */
+const streetOf = (addr = "") => norm(addr.replace(/[-–]?\s*[\dOo\s]{5,}\.?\s*$/, ""));
 const cityOf = (addr = "") => {
   const parts = addr.split(",").map((s) => s.trim());
   return parts.length >= 2 ? parts[parts.length - 2] : undefined;
@@ -200,12 +211,17 @@ export function runKycChecks(
       else add({ code: "ADDRESS_PROOF_AGE", doc: "addressProof", status: "pass", impact: "none", message: `Bill is ${age} days old.` });
     }
     if (rec) {
-      const pinOk = !!pinOf(bill.address) && pinOf(bill.address) === pinOf(rec.address);
+      const billPin = pinOf(bill.address);
       const nameOk = similarity(bill.billedTo, rec.tradeName) >= o.nameSimilarity || similarity(bill.billedTo, rec.legalName) >= o.nameSimilarity;
-      if (pinOk && nameOk) add({ code: "ADDRESS_MATCH", doc: "addressProof", status: "pass", impact: "none", message: "Bill name and PIN match the registered place of business." });
+      // No PIN readable: fall back to the street and city. A different PIN is still a mismatch.
+      const streetOk = !billPin && ratio(streetOf(bill.address), streetOf(rec.address)) >= 0.85;
+      const pinOk = (!!billPin && billPin === pinOf(rec.address)) || streetOk;
+      if (streetOk && nameOk)
+        add({ code: "ADDRESS_MATCH", doc: "addressProof", status: "pass", impact: "none", message: "Bill name and street address match the registered place of business (PIN not readable on the bill)." });
+      else if (pinOk && nameOk) add({ code: "ADDRESS_MATCH", doc: "addressProof", status: "pass", impact: "none", message: "Bill name and PIN match the registered place of business." });
       else
         add(
-          { code: "ADDRESS_MATCH", doc: "addressProof", status: "fail", impact: "review", message: `Bill ${!pinOk ? `PIN ${pinOf(bill.address) ?? "?"} doesn't match registry PIN ${pinOf(rec.address)}` : `is billed to "${bill.billedTo}", not the registered business`}.` },
+          { code: "ADDRESS_MATCH", doc: "addressProof", status: "fail", impact: "review", message: `Bill ${!pinOk ? `PIN ${billPin ?? "(not readable)"} doesn't match registry PIN ${pinOf(rec.address)}` : `is billed to "${bill.billedTo}", not the registered business`}.` },
           "Confirm the installation address with the customer.",
         );
     }
