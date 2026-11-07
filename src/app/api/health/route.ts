@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getLlm } from "@/adapters/llm";
 import { getCatalogue, getRegistry } from "@/server/data";
+import { getStore } from "@/server/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,5 +20,6 @@ export async function GET() {
     llmProviders: llm.names,
     visionReader: llm.hasVision ? "gemini" : "offline OCR",
     orderSecretSet: !!process.env.ORDER_SECRET,
+    storage: getStore().mode,
   });
 }

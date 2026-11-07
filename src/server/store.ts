@@ -112,10 +112,25 @@ class UpstashStore implements Store {
 
 let store: Store | undefined;
 
+/**
+ * Finds the Upstash REST credentials. Vercel may add them with a custom prefix
+ * (e.g. MY_REDIS_PREFIX_KV_REST_API_URL), so any *_KV_REST_API_URL / *_KV_REST_API_TOKEN pair works.
+ * The read-only token is never used: the app needs to write.
+ */
+export function redisEnv(env: Record<string, string | undefined> = process.env): { url?: string; token?: string } {
+  if (env.KV_REST_API_URL && env.KV_REST_API_TOKEN) return { url: env.KV_REST_API_URL, token: env.KV_REST_API_TOKEN };
+  if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) return { url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN };
+  for (const key of Object.keys(env).sort()) {
+    const m = key.match(/^(.*)KV_REST_API_URL$/);
+    const token = m && env[`${m[1]}KV_REST_API_TOKEN`];
+    if (m && env[key] && token) return { url: env[key], token };
+  }
+  return {};
+}
+
 export function getStore(): Store {
   if (store) return store;
-  const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
+  const { url, token } = redisEnv();
   store = url && token ? new UpstashStore(url, token) : new LocalStore(process.env.UDYAM_STORE_FILE ?? path.join(WRITABLE_DIR, "store.json"));
   return store;
 }
