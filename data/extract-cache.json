@@ -1,0 +1,141 @@
+{
+ "5f12a98907119f5df7c33cac976ec506eb5cfb9e3d55267e8eb9b8989ed5e15f": {
+  "docType": "signatory",
+  "name": "Neha Kaur",
+  "designation": "Office admin",
+  "business": "Vindhya Tours & Travels",
+  "validTill": "2028-03-26"
+ },
+ "abe10634040d7d4b460b81efc415bbace9f374a5c281372df7645b59cec44816": {
+  "docType": "udyam",
+  "enterpriseName": "Vindhya Tours & Travels",
+  "majorActivity": "Services",
+  "city": "Visakhapatnam",
+  "state": "Andhra Pradesh",
+  "dateOfRegistration": "2024-03-24"
+ },
+ "f30b5b4eca3069dbf0f37214ac60d09cc2330c4eb4d690d8204c1a7708dc30ea": {
+  "docType": "gst",
+  "gstin": "37IHKXV5167L1ZS",
+  "legalName": "Neha Kaur (Prop. Vindhya Tours & Travels)",
+  "tradeName": "Vindhya Tours & Travels",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 1, Tech Park Road, Visakhapatnam, Andhra Pradesh - 118383",
+  "dateOfLiability": "2025-06-07"
+ },
+ "fc2e7e233d68ecb622cc1b9b1eb26ef8b725a1654e37d170812818fda9172658": {
+  "docType": "addressProof",
+  "address": "Shop/Unit 1, Tech Park Road, Visakhapatnam, Andhra Pradesh - 118383",
+  "billedTo": "Vindhya Tours & Travels",
+  "billDate": "2026-06-26"
+ },
+ "e6d1251036a5aec22bd50ab4edf9a4c04ca05f0ea449f458fd14df73ff8f31f0": {
+  "docType": "signatory",
+  "name": "Joseph Shah",
+  "designation": "Manager",
+  "business": "Harmony Dental Care",
+  "validTill": "2028-09-10"
+ },
+ "81f5406c274d8de572c74de282f26fc3b5663e47adac7b598217579ed3f508f0": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-WB-00-5053330",
+  "enterpriseName": "Harmony Dental Care",
+  "majorActivity": "Services",
+  "city": "Kolkata",
+  "state": "West Bengal",
+  "dateOfRegistration": "2023-01-11"
+ },
+ "1d8666668792798132058c458f619596e5483dd451d89e4451f3eb486c0c565b": {
+  "docType": "gst",
+  "gstin": "19E0GXH4115Y1ZL",
+  "legalName": "Joseph Shah (Prop. Harmony Dental Care)",
+  "tradeName": "Harmony Dental Care",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 199, Station Road, Kolkata, West Bengal - 347550",
+  "dateOfLiability": "2022-04-17"
+ },
+ "087d0626f76cea87163ca9a7a19b4eeb4254ef3f51c4b8f3df85716204364094": {
+  "docType": "addressProof",
+  "address": "Shop/Unit 199, Station Road, Kolkata, West Bengal - 347550",
+  "billedTo": "Harmony Dental Care",
+  "billDate": "2026-05-22"
+ },
+ "d5d8a2684764d5885691b727f8345cfe4fee856855f0f2f56d2ef76934a765f5": {
+  "docType": "signatory",
+  "name": "Joseph Singh",
+  "designation": "Owner",
+  "business": "Ganesh Woodcraft",
+  "validTill": "2028-07-04"
+ },
+ "88c0f3d6113240bdcb7aedc24cbf1b9cb64f2fd262a4c3de28f1d442ec19c5bd": {
+  "docType": "addressProof",
+  "address": "Shop/Unit 80, Civil Lines, Nagpur, Maharashtra - 411231",
+  "billedTo": "Ganesh Woodcraft",
+  "billDate": "2026-05-30"
+ },
+ "4e41f486c166d0fe808900adb49a8e4d35f1c6a715b4ccf88030013028173d4d": {
+  "docType": "gst",
+  "gstin": "27XUIXG0767D1ZP",
+  "legalName": "Joseph Singh (Prop. Ganesh Woodcraft)",
+  "tradeName": "Ganesh Woodcraft",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 80, Civil Lines, Nagpur, Maharashtr a - 411231",
+  "dateOfLiability": "2020-02-10"
+ },
+ "619440964425c58019fed96f987281e7da45c65c5c87ab82bce8d9ee9e08ac7a": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-MH-00-9516696",
+  "enterpriseName": "Ganesh Woodcraft",
+  "majorActivity": "Manufacturing",
+  "city": "Nagpur",
+  "state": "Maharashtra",
+  "dateOfRegistration": "2024-11-21"
+ },
+ "91e94e630050e47eb7920e0b1b9b3b09997d3122f5182d0be95a9b4bb943caf2": {
+  "docType": "signatory",
+  "name": "Fatima Pillai",
+  "designation": "Partner",
+  "business": "Saffron Dental Care LLP",
+  "validTill": "2028-08-03"
+ },
+ "02522751a7e096bc5770eb9921616e77ca9a6c6ddde2dddb81b30e1628ca8e33": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-MH-00-6131836",
+  "enterpriseName": "Saffron Dental Care LLP",
+  "majorActivity": "Services",
+  "city": "Nagpur",
+  "state": "Maharashtra",
+  "dateOfRegistration": "2025-05-17"
+ },
+ "47cd90e1c0f3842c6b695c180d880c6a0390fa73a53ad6c08b0f671d702de2b6": {
+  "docType": "addressProof",
+  "address": "Shop/Unit 238, Ring Road, Vadodara, Gujarat - 348176",
+  "billedTo": "Green Leaf Legal Associates",
+  "billDate": "2026-05-26"
+ },
+ "9040d41d65a9ba42b95f7d84d7d38eb55bc44d7c9eb535e797fe05721a2a7aa8": {
+  "docType": "signatory",
+  "name": "Joseph Rao",
+  "designation": "Office admin",
+  "business": "Green Leaf Legal Associates",
+  "validTill": "2027-09-18"
+ },
+ "ac959a6ab58749a306f11bebfb76634ba44fa607fb87fa068f3388ba526e6dd5": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-GJ-00-8477445",
+  "enterpriseName": "Green Leaf Legal Associates",
+  "majorActivity": "Services",
+  "city": "Vadodara",
+  "state": "Gujarat",
+  "dateOfRegistration": "2022-11-12"
+ },
+ "6b3d66c7f107b7580e821cd69ffafa79b55249bae73cb3965cd6bf932df42fc0": {
+  "docType": "gst",
+  "gstin": "24X0RXG9365M1Z3",
+  "legalName": "Joseph Rao (Prop. Green Leaf Legal Associates)",
+  "tradeName": "Green Leaf Legal Associates",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 238, Ring Road, Vadodara, Gujarat - 348176",
+  "dateOfLiability": "2018-12-01"
+ }
+}
