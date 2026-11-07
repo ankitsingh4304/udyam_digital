@@ -183,3 +183,8 @@ describe("safety properties", () => {
     expect(misSold).toHaveLength(48);
   });
 });
+
+import { SCENARIOS, evaluateScenario } from "@/domain/catalogue/scenarios";
+describe("judge-mode scenarios (shown on /judge)", () => {
+  for (const s of SCENARIOS) it(`${s.id}. ${s.title}`, () => expect(evaluateScenario(s, buildBundle(s.profile, cat)).problems).toEqual([]));
+});

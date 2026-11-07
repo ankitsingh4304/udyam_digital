@@ -1,0 +1,81 @@
+{
+ "trainedOn": "smb_leads.csv (5,000 leads, Apr-Jun 2026)",
+ "auc": 0.712,
+ "top30Capture": 0.571,
+ "intercept": -2.8209701116206207,
+ "categorical": {
+  "lead_source=Channel partner": 0.1290933054097333,
+  "lead_source=Field sales": 0.01619151469497302,
+  "lead_source=Inbound call": 0.3249510571403172,
+  "lead_source=Referral": 0.8454598960989553,
+  "lead_source=Website form": -0.5428878297121397,
+  "lead_source=WhatsApp campaign": -0.8332119954691476,
+  "segment=Micro retail & services": -0.6721922186561092,
+  "segment=Professional offices": 0.12771714412847354,
+  "segment=Small manufacturers": 0.23822028429876502,
+  "segment=Small multi-site businesses": 0.2458507383915652,
+  "city_tier=1": 0.18150872816313518,
+  "city_tier=2": -0.24191278000044789,
+  "preferred_language=Bengali": 0.1258109423376142,
+  "preferred_language=English": 0.22947704587470738,
+  "preferred_language=Gujarati": -0.015557363367620916,
+  "preferred_language=Hindi": 0.2652627983906794,
+  "preferred_language=Kannada": -0.32204747378133447,
+  "preferred_language=Malayalam": 0.2405355672031038,
+  "preferred_language=Marathi": -0.08287248749304237,
+  "preferred_language=Punjabi": -0.17183775343897503,
+  "preferred_language=Tamil": -0.3826456472047479,
+  "preferred_language=Telugu": 0.05347031964230442,
+  "annual_turnover_band=1.5 - 5 cr": -0.08737983936739588,
+  "annual_turnover_band=25 - 100 cr": 0.003756334108101531,
+  "annual_turnover_band=40 lakh - 1.5 cr": -0.020853503120750096,
+  "annual_turnover_band=5 - 25 cr": 0.22680715757586853,
+  "annual_turnover_band=< 40 lakh": -0.1827342010331329,
+  "has_gstin=N": -0.6670434228530467,
+  "has_gstin=Y": 0.6066393710157431,
+  "has_udyam=N": -0.12454385788583372,
+  "has_udyam=Y": 0.0641398060485199,
+  "current_internet=Business broadband": -0.1009529855741408,
+  "current_internet=Home broadband": 0.00836936209426628,
+  "current_internet=Leased line": 0.2946768484002108,
+  "current_internet=Mixed per site": 0.2267495509612098,
+  "current_internet=Mobile hotspot": -0.18247513429837725,
+  "current_provider=Accel": 0.26116295831281866,
+  "current_provider=Accel (mobile only)": 0.3021258373196134,
+  "current_provider=Competitor A": -0.10686715777746279,
+  "current_provider=Competitor B": 0.027126214380826394,
+  "current_provider=Local ISP": -0.2371802106526234,
+  "contact_role=Manager": 0.004038890558821496,
+  "contact_role=Office admin": -0.06835834528232825,
+  "contact_role=Owner": 0.010339111057302449,
+  "contact_role=Partner": -0.006423708171106622
+ },
+ "numeric": {
+  "log_spend": {
+   "weight": -0.10956369785238558,
+   "mean": 7.491323723963362
+  },
+  "log_staff": {
+   "weight": -0.09459706244264982,
+   "mean": 2.282041681563346
+  },
+  "sites": {
+   "weight": -0.02756329458065644,
+   "mean": 2.0392
+  },
+  "interests": {
+   "weight": -0.10514647286403452,
+   "mean": 1.9942
+  }
+ },
+ "bands": {
+  "high": 0.09034811352464246,
+  "medium": 0.043550550842440305
+ },
+ "medianBundleBySegment": {
+  "Micro retail & services": 2470.0,
+  "Professional offices": 6575.0,
+  "Small manufacturers": 15910.0,
+  "Small multi-site businesses": 28080.0
+ }
+}
