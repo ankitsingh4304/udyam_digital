@@ -26,7 +26,7 @@ export function ProfileCard({ profile, city, lang, busy, onApply }: { profile: B
   const field = "mt-1 w-full rounded-lg border border-rule bg-white px-2 py-1.5 text-sm";
 
   return (
-    <section className="mt-6 rounded-2xl border border-rule bg-white p-4" aria-label={t.title}>
+    <section className="mt-6 rounded-2xl bg-white p-4 shadow-card" aria-label={t.title}>
       <div className="flex items-center justify-between">
         <h3 className="font-bold">{t.title}</h3>
         {!editing && (
@@ -119,7 +119,7 @@ export function ProfileCard({ profile, city, lang, busy, onApply }: { profile: B
                   key={n}
                   aria-pressed={needs.includes(n)}
                   onClick={() => set({ needs: needs.includes(n) ? needs.filter((x) => x !== n) : [...needs, n] })}
-                  className={`rounded-full border px-2.5 py-0.5 text-xs ${needs.includes(n) ? "border-ink bg-ink text-white" : "border-rule"}`}
+                  className={`rounded-full border px-2.5 py-0.5 text-xs ${needs.includes(n) ? "border-brand bg-brand text-white" : "border-rule"}`}
                 >
                   {n.replace("_", " ")}
                 </button>
@@ -127,12 +127,12 @@ export function ProfileCard({ profile, city, lang, busy, onApply }: { profile: B
             </div>
           </fieldset>
           <div className="flex gap-2 pt-1">
-            <button className="flex-1 rounded-lg bg-ink py-2 text-sm font-medium text-white disabled:opacity-50" disabled={busy}>
+            <button className="h-12 flex-1 rounded-full bg-brand font-semibold text-white disabled:opacity-50" disabled={busy}>
               {t.apply}
             </button>
             <button
               type="button"
-              className="rounded-lg border border-rule px-3 text-sm"
+              className="h-12 rounded-full border-2 border-rule px-4 font-semibold"
               onClick={() => {
                 setDraft(profile);
                 setEditing(false);

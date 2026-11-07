@@ -1,6 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { Camera, CheckCircle2 } from "lucide-react";
+import { AppShell } from "@/components/AppShell";
+import { useLang } from "@/components/LangContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { NOTICE, NOTICE_VERSION, PURPOSES, REQUIRED_PURPOSES, type Purpose } from "@/domain/kyc/consent";
@@ -20,13 +22,12 @@ const SAMPLE_GSTIN: Record<string, string> = {
   K01: "37IHKXV5167L1ZS", K02: "19EOGXH4115Y1ZL", K03: "27XUIXG0767D1ZP", K04: "27PZSXS1936O1ZH", K05: "32TZAXB5481U1Z1", K06: "08YKZXS5189L1ZO",
   K07: "07CPCXN0398P1ZT", K08: "24XORXG9365M1Z3", K09: "37LDYXK0296F1ZB", K10: "27QHJXK0658U1ZL", K11: "03KGZXT1320R1ZZ", K12: "37NBLXS1145E1ZU",
 };
-const LANG_LABEL: Record<Lang, string> = { en: "English", hi: "हिंदी", hinglish: "Hinglish" };
 
 const T: Record<Lang, Record<string, string>> = {
   en: {
     gstinLabel: "Your GSTIN", gstinHint: "We look it up first; the photo then only has to confirm it.", lookup: "Look up", backupNote: "Some documents were read by our backup reader; a verification agent double-checks before activation.", back: "Back to your bundle", step1: "Your consent", step2: "Upload documents", step3: "Result",
     gst: "GST certificate", udyam: "Udyam certificate", signatory: "Authorised signatory's ID", addressProof: "Electricity bill (last 90 days)",
-    optional: "optional", choose: "Take photo or choose file", replace: "Replace", sample: "Try a sample applicant", sampleHint: "Loads the hackathon specimen documents",
+    optional: "optional", choose: "Tap to add photo", replace: "Replace", sample: "Try a sample applicant", sampleHint: "Loads the hackathon specimen documents",
     check: "Check documents", checking: "Checking… usually under 20 seconds", collect: "What we ask for", keep: "How long we keep it",
     consentRef: "Consent recorded", withdraw: "Withdraw consent", withdrawn: "Consent withdrawn. Nothing more will be processed for this case.",
     sharpness: "Sharpness", straightened: "Straightened by", readBy: "Read by", again: "Check different documents", next: "Place order and book installation",
@@ -35,7 +36,7 @@ const T: Record<Lang, Record<string, string>> = {
   hi: {
     gstinLabel: "आपका GSTIN", gstinHint: "हम पहले इसे रजिस्ट्री में देखते हैं; फ़ोटो सिर्फ़ पुष्टि करती है।", lookup: "देखें", backupNote: "कुछ डॉक्यूमेंट बैकअप रीडर से पढ़े गए; चालू करने से पहले एजेंट दोबारा जाँचेगा।", back: "बंडल पर वापस", step1: "आपकी सहमति", step2: "डॉक्यूमेंट अपलोड करें", step3: "नतीजा",
     gst: "GST सर्टिफ़िकेट", udyam: "Udyam सर्टिफ़िकेट", signatory: "अधिकृत हस्ताक्षरकर्ता की ID", addressProof: "बिजली बिल (पिछले 90 दिन)",
-    optional: "वैकल्पिक", choose: "फ़ोटो लें या फ़ाइल चुनें", replace: "बदलें", sample: "सैंपल आवेदक आज़माएँ", sampleHint: "हैकाथॉन के नमूना डॉक्यूमेंट लोड करता है",
+    optional: "वैकल्पिक", choose: "फ़ोटो जोड़ने के लिए दबाएँ", replace: "बदलें", sample: "सैंपल आवेदक आज़माएँ", sampleHint: "हैकाथॉन के नमूना डॉक्यूमेंट लोड करता है",
     check: "डॉक्यूमेंट जाँचें", checking: "जाँच हो रही है… आमतौर पर 20 सेकंड से कम", collect: "हम क्या माँगते हैं", keep: "कब तक रखते हैं",
     consentRef: "सहमति दर्ज", withdraw: "सहमति वापस लें", withdrawn: "सहमति वापस ली गई। इस केस में आगे कुछ प्रोसेस नहीं होगा।",
     sharpness: "शार्पनेस", straightened: "सीधा किया गया", readBy: "पढ़ा गया", again: "दूसरे डॉक्यूमेंट जाँचें", next: "इंस्टॉलेशन पर जाएँ",
@@ -44,7 +45,7 @@ const T: Record<Lang, Record<string, string>> = {
   hinglish: {
     gstinLabel: "Aapka GSTIN", gstinHint: "Hum pehle registry mein dekhte hain; photo sirf confirm karti hai.", lookup: "Dekhein", backupNote: "Kuch documents backup reader se padhe gaye; activation se pehle agent dobara check karega.", back: "Bundle par wapas", step1: "Aapki sahmati", step2: "Documents upload karein", step3: "Result",
     gst: "GST certificate", udyam: "Udyam certificate", signatory: "Authorised signatory ki ID", addressProof: "Bijli bill (pichhle 90 din)",
-    optional: "optional", choose: "Photo lein ya file chunein", replace: "Badlein", sample: "Sample applicant try karein", sampleHint: "Hackathon ke specimen documents load karta hai",
+    optional: "optional", choose: "Photo jodne ke liye dabayein", replace: "Badlein", sample: "Sample applicant try karein", sampleHint: "Hackathon ke specimen documents load karta hai",
     check: "Documents check karein", checking: "Check ho raha hai… aam taur par 20 second se kam", collect: "Hum kya maangte hain", keep: "Kab tak rakhte hain",
     consentRef: "Consent recorded", withdraw: "Consent wapas lein", withdrawn: "Consent wapas liya gaya. Is case mein aage kuch process nahi hoga.",
     sharpness: "Sharpness", straightened: "Seedha kiya", readBy: "Padha gaya", again: "Doosre documents check karein", next: "Installation par jaayein",
@@ -67,7 +68,7 @@ const MARK: Record<KycCheck["status"], { sign: string; cls: string; label: strin
 };
 
 export function KycApp() {
-  const [lang, setLang] = useState<Lang>("en");
+  const { lang } = useLang();
   const [purposes, setPurposes] = useState<Record<Purpose, boolean>>({ kyc: false, installation: false, offers: false });
   const [caseInfo, setCaseInfo] = useState<{ caseId: string; consentRef: string; consentToken: string } | undefined>();
   const [files, setFiles] = useState<Partial<Record<DocKind, File>>>({});
@@ -168,7 +169,7 @@ export function KycApp() {
     const data = await res.json();
     setPlacing(false);
     if (!res.ok) return setError(data.error ?? "The order couldn't be placed. Try again.");
-    router.push(`/track/${encodeURIComponent(data.token)}?lang=${lang}`);
+    router.push(`/track/${encodeURIComponent(data.token)}`);
   };
 
   const withdraw = async () => {
@@ -181,33 +182,26 @@ export function KycApp() {
     }
   };
 
-  const stepClass = (active: boolean) => `text-sm ${active ? "font-bold text-ink" : "text-ink-soft"}`;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-6 lg:py-10">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/advisor" className="text-sm text-ink-soft underline-offset-4 hover:underline">
-          ← {t.back}
-        </Link>
-        <div role="radiogroup" aria-label="Language" className="flex rounded-full border border-rule bg-white p-0.5 text-sm">
-          {(Object.keys(LANG_LABEL) as Lang[]).map((l) => (
-            <button key={l} role="radio" aria-checked={lang === l} onClick={() => setLang(l)} className={`rounded-full px-3 py-1 ${lang === l ? "bg-ink text-white" : "text-ink-soft hover:text-ink"}`}>
-              {LANG_LABEL[l]}
-            </button>
-          ))}
-        </div>
-      </header>
-
-      <ol className="mt-6 flex gap-5" aria-label="Progress">
-        <li className={stepClass(!caseInfo)}>1. {t.step1}</li>
-        <li className={stepClass(!!caseInfo && !result)}>2. {t.step2}</li>
-        <li className={stepClass(!!result)}>3. {t.step3}</li>
+    <AppShell step={3} back={{ href: "/advisor", label: t.back }}>
+    <main className="mx-auto max-w-3xl px-4 pb-16 pt-5">
+      <ol className="flex flex-wrap gap-2" aria-label="Document check progress">
+        {[t.step1, t.step2, t.step3].map((label, i) => {
+          const active = i === (result ? 2 : caseInfo ? 1 : 0);
+          const passed = i < (result ? 2 : caseInfo ? 1 : 0);
+          return (
+            <li key={label} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold ${active ? "bg-ink text-white" : passed ? "bg-ok-soft text-ok" : "bg-white text-ink-soft"}`}>
+              {passed ? <CheckCircle2 className="h-4 w-4" aria-hidden /> : <span>{i + 1}.</span>} {label}
+            </li>
+          );
+        })}
       </ol>
 
-      {withdrawn && <p className="mt-6 rounded-xl border border-rule bg-white p-4">{t.withdrawn}</p>}
+      {withdrawn && <p className="mt-6 rounded-2xl bg-white p-5 shadow-card">{t.withdrawn}</p>}
 
       {!caseInfo && !withdrawn && (
-        <section className="mt-6 rounded-2xl border border-rule bg-white p-5 sm:p-7" aria-labelledby="notice-title">
+        <section className="mt-5 rounded-2xl bg-white p-5 shadow-card sm:p-7" aria-labelledby="notice-title">
           <h1 id="notice-title" className="text-2xl font-bold">
             {n.title}
           </h1>
@@ -215,8 +209,8 @@ export function KycApp() {
           <fieldset className="mt-5 space-y-3">
             <legend className="sr-only">Purposes</legend>
             {PURPOSES.map((p) => (
-              <label key={p} className="flex cursor-pointer gap-3 rounded-xl border border-rule p-4 has-[:checked]:border-ink">
-                <input type="checkbox" className="mt-1 h-5 w-5 accent-[#1B2A4A]" checked={purposes[p]} onChange={(e) => setPurposes({ ...purposes, [p]: e.target.checked })} />
+              <label key={p} className="flex min-h-16 cursor-pointer gap-3 rounded-2xl border-2 border-rule p-4 has-[:checked]:border-brand has-[:checked]:bg-brand-soft">
+                <input type="checkbox" className="mt-1 h-6 w-6 shrink-0 accent-[#E40000]" checked={purposes[p]} onChange={(e) => setPurposes({ ...purposes, [p]: e.target.checked })} />
                 <span>
                   <span className="font-medium">{n.purposes[p].label}</span>{" "}
                   <span className={`text-sm ${REQUIRED_PURPOSES.includes(p) ? "text-khata" : "text-ink-soft"}`}>({REQUIRED_PURPOSES.includes(p) ? n.required : n.optional})</span>
@@ -245,7 +239,7 @@ export function KycApp() {
             </div>
           </div>
           <p className="mt-4 text-sm">{n.rights}</p>
-          <button onClick={giveConsent} disabled={!canAgree} className="mt-5 w-full rounded-xl bg-ink py-3 font-medium text-white disabled:opacity-40 sm:w-auto sm:px-8">
+          <button onClick={giveConsent} disabled={!canAgree} className="mt-6 flex h-14 w-full items-center justify-center rounded-full bg-brand px-8 text-lg font-semibold text-white hover:bg-brand-dark disabled:opacity-40 sm:w-auto">
             {n.agree}
           </button>
         </section>
@@ -261,12 +255,12 @@ export function KycApp() {
           </p>
 
           {!result && (
-            <section className="mt-4 rounded-2xl border border-rule bg-white p-5 sm:p-7">
+            <section className="mt-4 rounded-2xl bg-white p-5 shadow-card sm:p-7">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <h1 className="text-2xl font-bold">{t.step2}</h1>
                 <label className="text-sm">
                   <span className="block text-ink-soft">{t.sample}</span>
-                  <select className="mt-1 rounded-lg border border-rule px-3 py-2" defaultValue="" onChange={(e) => e.target.value && loadSample(e.target.value)} title={t.sampleHint}>
+                  <select className="mt-1 h-12 rounded-full border-2 border-rule bg-white px-4 font-semibold" defaultValue="" onChange={(e) => e.target.value && loadSample(e.target.value)} title={t.sampleHint}>
                     <option value="" disabled>
                       K01–K12
                     </option>
@@ -281,7 +275,7 @@ export function KycApp() {
                   {t.gstinLabel}
                 </label>
                 <p className="text-xs text-ink-soft">{t.gstinHint}</p>
-                <div className="mt-2 flex gap-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   <input
                     id="gstin"
                     value={gstin}
@@ -293,10 +287,10 @@ export function KycApp() {
                     maxLength={15}
                     autoComplete="off"
                     spellCheck={false}
-                    className="min-w-0 flex-1 rounded-lg border border-rule bg-white px-3 py-2 font-medium tracking-wider"
+                    className="h-14 w-full min-w-0 flex-1 basis-60 rounded-full border-2 border-rule bg-white px-5 text-lg font-semibold tracking-wide focus:border-brand focus:outline-none"
                     placeholder="e.g. 37LDYXK0296F1ZB"
                   />
-                  <button type="button" onClick={() => void lookUp()} className="rounded-lg border border-ink px-4 text-sm">
+                  <button type="button" onClick={() => void lookUp()} className="h-14 rounded-full border-2 border-brand px-5 font-semibold text-brand">
                     {t.lookup}
                   </button>
                 </div>
@@ -304,22 +298,27 @@ export function KycApp() {
               </div>
               <ul className="mt-5 grid gap-4 sm:grid-cols-2">
                 {SLOTS.map(({ slot, optional }) => (
-                  <li key={slot} className="rounded-xl border border-dashed border-rule p-3">
-                    <p className="font-medium">
-                      {t[slot]} {optional && <span className="text-sm font-normal text-ink-soft">({t.optional})</span>}
-                    </p>
-                    {previews[slot] ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={previews[slot]} alt={t[slot]} className="mt-2 h-40 w-full rounded-lg border border-rule object-contain" />
-                    ) : (
-                      <div className="mt-2 grid h-40 place-items-center rounded-lg bg-page text-sm text-ink-soft">—</div>
-                    )}
-                    <label className="mt-2 inline-block cursor-pointer text-sm underline underline-offset-4">
-                      {files[slot] ? t.replace : t.choose}
+                  <li key={slot}>
+                    <label className={`group flex h-full cursor-pointer flex-col rounded-2xl border-2 p-3 transition-colors ${files[slot] ? "border-ok bg-ok-soft" : "border-dashed border-ink-soft/40 bg-white hover:border-brand hover:bg-brand-soft"}`}>
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="text-lg font-bold leading-tight">
+                          {t[slot]} {optional && <span className="text-sm font-normal text-ink-soft">({t.optional})</span>}
+                        </span>
+                        {files[slot] && <CheckCircle2 className="h-6 w-6 shrink-0 text-ok" aria-label="Added" />}
+                      </span>
+                      {previews[slot] ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={previews[slot]} alt={t[slot]} className="mt-2 h-40 w-full rounded-xl bg-white object-contain" />
+                      ) : (
+                        <span className="mt-2 flex h-40 flex-col items-center justify-center gap-2 rounded-xl bg-page text-ink-soft">
+                          <Camera className="h-10 w-10 text-brand" aria-hidden />
+                          <span className="font-semibold text-ink">{t.choose}</span>
+                        </span>
+                      )}
+                      {files[slot] && <span className="mt-2 text-center text-sm font-semibold text-brand underline underline-offset-4">{t.replace}</span>}
                       <input
                         type="file"
                         accept="image/png,image/jpeg,image/webp"
-                        capture="environment"
                         className="sr-only"
                         onChange={(e) => {
                           const f = e.target.files?.[0];
@@ -331,7 +330,7 @@ export function KycApp() {
                 ))}
               </ul>
               {error && <p className="mt-4 text-khata">{error}</p>}
-              <button onClick={submit} disabled={busy || !files.gst} className="mt-5 w-full rounded-xl bg-ink py-3 font-medium text-white disabled:opacity-40 sm:w-auto sm:px-8">
+              <button onClick={submit} disabled={busy || !files.gst} className="mt-6 flex h-14 w-full items-center justify-center rounded-full bg-brand px-8 text-lg font-semibold text-white hover:bg-brand-dark disabled:opacity-40 sm:w-auto">
                 {busy ? t.checking : t.check}
               </button>
             </section>
@@ -355,7 +354,7 @@ export function KycApp() {
               {result.documents.map((d) => {
                 const checks = result.checks.filter((c) => c.doc === d.slot);
                 return (
-                  <article key={d.slot} className="rounded-2xl border border-rule bg-white p-5">
+                  <article key={d.slot} className="rounded-2xl bg-white p-5 shadow-card">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <h2 className="text-lg font-bold">{t[d.slot]}</h2>
                       <p className="text-sm text-ink-soft">
@@ -390,7 +389,7 @@ export function KycApp() {
                 );
               })}
               {result.checks.some((c) => c.doc === "udyam") && !result.documents.some((d) => d.slot === "udyam") && (
-                <article className="rounded-2xl border border-rule bg-white p-5">
+                <article className="rounded-2xl bg-white p-5 shadow-card">
                   <h2 className="text-lg font-bold">{t.udyam}</h2>
                   <ul className="mt-2 space-y-1.5">
                     {result.checks.filter((c) => c.doc === "udyam").map((c, i) => (
@@ -405,11 +404,11 @@ export function KycApp() {
 
               {error && <p className="text-khata">{error}</p>}
               <div className="flex flex-wrap gap-3">
-                <button onClick={() => setResult(undefined)} className="rounded-xl border border-ink px-5 py-3 font-medium">
+                <button onClick={() => setResult(undefined)} className="flex h-14 items-center justify-center rounded-full border-2 border-rule bg-white px-6 font-semibold">
                   {t.again}
                 </button>
                 {(result.verdict === "PASS" || result.verdict === "PASS_WITH_WARNINGS") && (
-                  <button onClick={placeOrder} disabled={placing} className="rounded-xl bg-ink px-5 py-3 font-medium text-white disabled:opacity-50">
+                  <button onClick={placeOrder} disabled={placing} className="flex h-14 items-center justify-center rounded-full bg-brand px-8 text-lg font-semibold text-white hover:bg-brand-dark disabled:opacity-50">
                     {t.next}
                   </button>
                 )}
@@ -419,5 +418,6 @@ export function KycApp() {
         </>
       )}
     </main>
+    </AppShell>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AppShell } from "@/components/AppShell";
 import { useCallback, useEffect, useState } from "react";
 import type { RescueLead, rescueSummary } from "@/server/leads-service";
 
@@ -33,17 +33,15 @@ export function PartnerApp() {
   const s = data?.summary;
 
   return (
+    <AppShell back={{ href: "/", label: "Home" }}>
     <main className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
-      <Link href="/" className="text-sm text-ink-soft underline-offset-4 hover:underline">
-        ← Overview
-      </Link>
       <h1 className="mt-2 text-3xl font-bold">Rescue queue</h1>
       <p className="mt-1 max-w-prose text-ink-soft">
         Leads that dropped out but can still be won, ranked by likely monthly value. You keep the commission whether the customer finishes online or with your help.
       </p>
 
       {s && (
-        <dl className="mt-6 grid gap-px overflow-hidden rounded-2xl border border-rule bg-rule sm:grid-cols-4">
+        <dl className="mt-6 grid gap-px overflow-hidden rounded-2xl bg-rule shadow-card sm:grid-cols-4">
           <div className="bg-white p-4">
             <dt className="text-sm text-ink-soft">Recoverable leads</dt>
             <dd className="text-2xl font-bold">{s.total.toLocaleString("en-IN")}</dd>
@@ -100,7 +98,7 @@ export function PartnerApp() {
 
       <ol className="mt-4 space-y-3">
         {data?.leads.map((l) => (
-          <li key={l.id} className={`rounded-2xl border border-rule bg-white p-5 ${done[l.id] ? "opacity-60" : ""}`}>
+          <li key={l.id} className={`rounded-2xl bg-white shadow-card p-5 ${done[l.id] ? "opacity-60" : ""}`}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-lg font-bold">{l.business}</p>
@@ -131,7 +129,7 @@ export function PartnerApp() {
             <div className="mt-3 flex flex-wrap gap-2">
               {l.channel === "digital" && (
                 <button
-                  className="rounded-lg border border-ink px-3 py-1.5 text-sm"
+                  className="h-11 rounded-full border-2 border-brand px-5 font-semibold text-brand"
                   onClick={async () => {
                     try {
                       await navigator.clipboard.writeText(message(l));
@@ -144,7 +142,7 @@ export function PartnerApp() {
                   {copied === l.id ? "Message copied" : "Copy WhatsApp message"}
                 </button>
               )}
-              <button className="rounded-lg bg-ink px-3 py-1.5 text-sm text-white disabled:opacity-50" disabled={!!done[l.id]} onClick={() => setDone({ ...done, [l.id]: "assist" })}>
+              <button className="h-11 rounded-full bg-brand px-5 font-semibold text-white disabled:opacity-50" disabled={!!done[l.id]} onClick={() => setDone({ ...done, [l.id]: "assist" })}>
                 {done[l.id] ? "Assigned to you" : "Take this lead"}
               </button>
             </div>
@@ -152,5 +150,6 @@ export function PartnerApp() {
         ))}
       </ol>
     </main>
+    </AppShell>
   );
 }

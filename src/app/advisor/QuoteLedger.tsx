@@ -15,23 +15,23 @@ const T: Record<Lang, Record<string, string>> = {
     title: "Your bundle", empty: "Answer a few questions and your bundle, with one monthly price, appears here.",
     month: "a month", setup: "One-time setup", contract: "Contract", months: "months", live: "Ready to use in about", days: "days after documents",
     why: "Why this fits", blocked: "Not offered, and why", addons: "Add or remove", unavailable: "Not available for your business",
-    next: "Continue to document check", qty: "Quantity", none: "No setup fee", remove: "Remove", add: "Add",
+    next: "Next: upload documents  →", qty: "Quantity", none: "No setup fee", remove: "Remove", add: "Add",
   },
   hi: {
     title: "आपका बंडल", empty: "कुछ सवालों के जवाब दें, आपका बंडल और एक मासिक कीमत यहाँ दिखेगी।",
     month: "हर महीने", setup: "एक बार का सेटअप", contract: "कॉन्ट्रैक्ट", months: "महीने", live: "डॉक्यूमेंट के बाद लगभग", days: "दिन में चालू",
     why: "यह क्यों सही है", blocked: "ये नहीं मिल सकते, और क्यों", addons: "जोड़ें या हटाएँ", unavailable: "आपके बिज़नेस के लिए उपलब्ध नहीं",
-    next: "डॉक्यूमेंट जाँच पर जाएँ", qty: "संख्या", none: "कोई सेटअप फ़ीस नहीं", remove: "हटाएँ", add: "जोड़ें",
+    next: "आगे: डॉक्यूमेंट अपलोड करें  →", qty: "संख्या", none: "कोई सेटअप फ़ीस नहीं", remove: "हटाएँ", add: "जोड़ें",
   },
   hinglish: {
     title: "Aapka bundle", empty: "Kuch sawaalon ke jawab dein, aapka bundle aur ek monthly price yahan dikhega.",
     month: "har mahine", setup: "One-time setup", contract: "Contract", months: "mahine", live: "Documents ke baad lagbhag", days: "din mein chalu",
     why: "Yeh kyun sahi hai", blocked: "Yeh nahi mil sakte, aur kyun", addons: "Jodein ya hatayein", unavailable: "Aapke business ke liye available nahi",
-    next: "Document check par jaayein", qty: "Quantity", none: "Koi setup fee nahi", remove: "Hatayein", add: "Jodein",
+    next: "Aage: documents upload karein  →", qty: "Quantity", none: "Koi setup fee nahi", remove: "Hatayein", add: "Jodein",
   },
 };
 
-export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang: Lang }) {
+export function QuoteLedger({ result, lang, onTotal }: { result?: AdvisorTurnResult; lang: Lang; onTotal?: (monthly: number) => void }) {
   const t = T[lang];
   const [bundle, setBundle] = useState<Bundle | undefined>();
   const [addons, setAddons] = useState<AddonOption[]>([]);
@@ -53,6 +53,7 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
         const data = (await res.json()) as { bundle: Bundle; addons: AddonOption[] };
         // Keep the advisor's plain-language reasons and blocked list from the recommendation.
         setBundle({ ...data.bundle, blocked: keepBlocked });
+        onTotal?.(data.bundle.monthlyTotal);
         setAddons(data.addons);
       }
     } finally {
@@ -98,7 +99,7 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
 
   if (!bundle) {
     return (
-      <aside className="border-t border-rule bg-page px-4 py-8 lg:w-[26rem] lg:border-0 lg:px-0">
+      <aside className="px-4 py-8 lg:w-[26rem] lg:px-0 lg:py-0" id="quote">
         <h2 className="text-xl font-bold">{t.title}</h2>
         <p className="mt-2 max-w-sm text-ink-soft">{t.empty}</p>
       </aside>
@@ -109,22 +110,22 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
   const unavailable = addons.filter((a) => !a.available && !a.inCart);
 
   return (
-    <aside className="bg-page px-4 py-8 lg:sticky lg:top-8 lg:w-[26rem] lg:self-start lg:px-0 lg:py-0" aria-label={t.title} aria-busy={busy}>
-      <div className="rounded-2xl border border-rule bg-white">
-        <div className="border-b-2 border-khata px-5 pb-4 pt-5">
+    <aside className="scroll-mt-32 px-4 py-6 lg:sticky lg:top-36 lg:w-[26rem] lg:self-start lg:px-0 lg:py-0" id="quote" aria-label={t.title} aria-busy={busy}>
+      <div className="overflow-hidden rounded-2xl bg-white shadow-card">
+        <div className="bg-brand px-5 pb-5 pt-5 text-white">
           <h2 className="text-xl font-bold">{t.title}</h2>
           <p className="mt-3 flex items-baseline gap-2">
-            <span className="price-tick text-5xl font-bold tracking-tight text-khata">{inr(bundle.monthlyTotal)}</span>
-            <span className="text-ink-soft">{t.month}</span>
+            <span className="price-tick text-5xl font-bold tracking-tight">{inr(bundle.monthlyTotal)}</span>
+            <span className="text-white/85">{t.month}</span>
           </p>
-          <dl className="mt-3 grid grid-cols-2 gap-y-1 text-sm">
-            <dt className="text-ink-soft">{t.setup}</dt>
+          <dl className="mt-3 grid grid-cols-2 gap-y-1 text-sm text-white/90">
+            <dt className="text-white/75">{t.setup}</dt>
             <dd className="text-right">{bundle.setupTotal ? inr(bundle.setupTotal) : t.none}</dd>
-            <dt className="text-ink-soft">{t.contract}</dt>
+            <dt className="text-white/75">{t.contract}</dt>
             <dd className="text-right">
               {bundle.contractMonths} {t.months}
             </dd>
-            <dt className="text-ink-soft">{t.live}</dt>
+            <dt className="text-white/75">{t.live}</dt>
             <dd className="text-right">
               {bundle.maxInstallDays} {t.days}
             </dd>
@@ -141,11 +142,11 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
               <div className="shrink-0 text-right">
                 <p className="font-medium">{inr(l.monthly)}</p>
                 <div className="mt-1 flex items-center justify-end gap-1 text-sm" aria-label={`${t.qty} ${l.name}`}>
-                  <button className="h-7 w-7 rounded-md border border-rule" aria-label={`− ${l.name}`} onClick={() => reprice(bundle, { productId: l.productId, quantity: l.quantity - 1 })} disabled={busy}>
+                  <button className="grid h-10 w-10 place-items-center rounded-full border-2 border-rule text-lg font-bold hover:border-brand" aria-label={`− ${l.name}`} onClick={() => reprice(bundle, { productId: l.productId, quantity: l.quantity - 1 })} disabled={busy}>
                     −
                   </button>
-                  <span className="w-6 text-center">{l.quantity}</span>
-                  <button className="h-7 w-7 rounded-md border border-rule" aria-label={`+ ${l.name}`} onClick={() => reprice(bundle, { productId: l.productId, quantity: l.quantity + 1 })} disabled={busy}>
+                  <span className="w-7 text-center text-lg font-semibold">{l.quantity}</span>
+                  <button className="grid h-10 w-10 place-items-center rounded-full border-2 border-rule text-lg font-bold hover:border-brand" aria-label={`+ ${l.name}`} onClick={() => reprice(bundle, { productId: l.productId, quantity: l.quantity + 1 })} disabled={busy}>
                     +
                   </button>
                 </div>
@@ -156,6 +157,7 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
 
         <div className="px-5 py-4">
           <Link
+            id="quote-cta"
             href="/kyc"
             onClick={() => {
               try {
@@ -164,7 +166,7 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
                 /* private mode: the order step falls back to a starter bundle */
               }
             }}
-            className="block w-full rounded-xl bg-ink py-3 text-center font-medium text-white"
+            className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-brand text-lg font-semibold text-white hover:bg-brand-dark"
           >
             {t.next}
           </Link>
@@ -204,9 +206,9 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
       {available.length > 0 && (
         <section className="mt-6">
           <h3 className="font-bold">{t.addons}</h3>
-          <ul className="mt-2 divide-y divide-rule rounded-xl border border-rule bg-white">
+          <ul className="mt-2 divide-y divide-rule overflow-hidden rounded-2xl bg-white shadow-card">
             {available.map((a) => (
-              <li key={a.productId} className="flex items-center justify-between gap-3 px-4 py-2.5">
+              <li key={a.productId} className="flex min-h-16 items-center justify-between gap-3 px-4 py-2.5">
                 <div className="min-w-0">
                   <p className="text-[15px] leading-snug">{a.name}</p>
                   <p className="text-xs text-ink-soft">
@@ -220,9 +222,9 @@ export function QuoteLedger({ result, lang }: { result?: AdvisorTurnResult; lang
                   aria-label={`${a.inCart ? t.remove : t.add} ${a.name}`}
                   disabled={busy}
                   onClick={() => reprice(bundle, { productId: a.productId, quantity: a.inCart ? 0 : defaultQty(a) })}
-                  className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${a.inCart ? "bg-ok" : "bg-rule"}`}
+                  className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${a.inCart ? "bg-ok" : "bg-rule"}`}
                 >
-                  <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${a.inCart ? "left-[1.4rem]" : "left-0.5"}`} />
+                  <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-all ${a.inCart ? "left-7" : "left-1"}`} />
                 </button>
               </li>
             ))}

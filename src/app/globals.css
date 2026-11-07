@@ -2,16 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-html { background: #F5F7FA; color: #1B2A4A; }
-body { font-feature-settings: "tnum" 1; }
+html { background: #F6F6F7; color: #1F1F1F; }
+body { font-feature-settings: "tnum" 1; font-size: 17px; }
 
-/* Ledger ruling for the quote: one faint line every 2rem, like a khata page. */
-.ledger {
-  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(2rem - 1px), #E4E8EF calc(2rem - 1px), #E4E8EF 2rem);
-}
+/* Ledger ruling for the quote list. */
+.ledger { background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(2rem - 1px), #EFEFF1 calc(2rem - 1px), #EFEFF1 2rem); }
 
-:focus-visible { outline: 2px solid #1B2A4A; outline-offset: 2px; }
+:focus-visible { outline: 3px solid #E40000; outline-offset: 2px; }
 
 @media (prefers-reduced-motion: no-preference) {
   .price-tick { transition: color 300ms ease; }
+  .pulse-ring { animation: pulse-ring 1.4s ease-out infinite; }
+  @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(228,0,0,.45); } 100% { box-shadow: 0 0 0 16px rgba(228,0,0,0); } }
 }
