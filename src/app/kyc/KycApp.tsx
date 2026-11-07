@@ -3,6 +3,7 @@
 import { Camera, CheckCircle2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useLang } from "@/components/LangContext";
+import { preparePhoto } from "./photo";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { NOTICE, NOTICE_VERSION, PURPOSES, REQUIRED_PURPOSES, type Purpose } from "@/domain/kyc/consent";
@@ -25,7 +26,7 @@ const SAMPLE_GSTIN: Record<string, string> = {
 
 const T: Record<Lang, Record<string, string>> = {
   en: {
-    gstinLabel: "Your GSTIN", gstinHint: "We look it up first; the photo then only has to confirm it.", lookup: "Look up", backupNote: "Some documents were read by our backup reader; a verification agent double-checks before activation.", back: "Back to your bundle", step1: "Your consent", step2: "Upload documents", step3: "Result",
+    photoUnreadable: "This photo format can't be opened. Please take the photo again with the camera.", gstinLabel: "Your GSTIN", gstinHint: "We look it up first; the photo then only has to confirm it.", lookup: "Look up", backupNote: "Some documents were read by our backup reader; a verification agent double-checks before activation.", back: "Back to your bundle", step1: "Your consent", step2: "Upload documents", step3: "Result",
     gst: "GST certificate", udyam: "Udyam certificate", signatory: "Authorised signatory's ID", addressProof: "Electricity bill (last 90 days)",
     optional: "optional", choose: "Tap to add photo", replace: "Replace", sample: "Try a sample applicant", sampleHint: "Loads the hackathon specimen documents",
     check: "Check documents", checking: "Checking… usually under 20 seconds", collect: "What we ask for", keep: "How long we keep it",
@@ -34,7 +35,7 @@ const T: Record<Lang, Record<string, string>> = {
     vision: "AI reader", ocr: "offline OCR", cache: "AI reader (saved)", preflight: "stopped before reading",
   },
   hi: {
-    gstinLabel: "आपका GSTIN", gstinHint: "हम पहले इसे रजिस्ट्री में देखते हैं; फ़ोटो सिर्फ़ पुष्टि करती है।", lookup: "देखें", backupNote: "कुछ डॉक्यूमेंट बैकअप रीडर से पढ़े गए; चालू करने से पहले एजेंट दोबारा जाँचेगा।", back: "बंडल पर वापस", step1: "आपकी सहमति", step2: "डॉक्यूमेंट अपलोड करें", step3: "नतीजा",
+    photoUnreadable: "यह फ़ोटो नहीं खुल पाई। कृपया कैमरे से दोबारा फ़ोटो लें।", gstinLabel: "आपका GSTIN", gstinHint: "हम पहले इसे रजिस्ट्री में देखते हैं; फ़ोटो सिर्फ़ पुष्टि करती है।", lookup: "देखें", backupNote: "कुछ डॉक्यूमेंट बैकअप रीडर से पढ़े गए; चालू करने से पहले एजेंट दोबारा जाँचेगा।", back: "बंडल पर वापस", step1: "आपकी सहमति", step2: "डॉक्यूमेंट अपलोड करें", step3: "नतीजा",
     gst: "GST सर्टिफ़िकेट", udyam: "Udyam सर्टिफ़िकेट", signatory: "अधिकृत हस्ताक्षरकर्ता की ID", addressProof: "बिजली बिल (पिछले 90 दिन)",
     optional: "वैकल्पिक", choose: "फ़ोटो जोड़ने के लिए दबाएँ", replace: "बदलें", sample: "सैंपल आवेदक आज़माएँ", sampleHint: "हैकाथॉन के नमूना डॉक्यूमेंट लोड करता है",
     check: "डॉक्यूमेंट जाँचें", checking: "जाँच हो रही है… आमतौर पर 20 सेकंड से कम", collect: "हम क्या माँगते हैं", keep: "कब तक रखते हैं",
@@ -43,7 +44,7 @@ const T: Record<Lang, Record<string, string>> = {
     vision: "AI रीडर", ocr: "ऑफ़लाइन OCR", cache: "AI रीडर (सेव)", preflight: "पढ़ने से पहले रोका गया",
   },
   hinglish: {
-    gstinLabel: "Aapka GSTIN", gstinHint: "Hum pehle registry mein dekhte hain; photo sirf confirm karti hai.", lookup: "Dekhein", backupNote: "Kuch documents backup reader se padhe gaye; activation se pehle agent dobara check karega.", back: "Bundle par wapas", step1: "Aapki sahmati", step2: "Documents upload karein", step3: "Result",
+    photoUnreadable: "Yeh photo nahi khul payi. Please camera se dobara photo lein.", gstinLabel: "Aapka GSTIN", gstinHint: "Hum pehle registry mein dekhte hain; photo sirf confirm karti hai.", lookup: "Dekhein", backupNote: "Kuch documents backup reader se padhe gaye; activation se pehle agent dobara check karega.", back: "Bundle par wapas", step1: "Aapki sahmati", step2: "Documents upload karein", step3: "Result",
     gst: "GST certificate", udyam: "Udyam certificate", signatory: "Authorised signatory ki ID", addressProof: "Bijli bill (pichhle 90 din)",
     optional: "optional", choose: "Photo jodne ke liye dabayein", replace: "Badlein", sample: "Sample applicant try karein", sampleHint: "Hackathon ke specimen documents load karta hai",
     check: "Documents check karein", checking: "Check ho raha hai… aam taur par 20 second se kam", collect: "Hum kya maangte hain", keep: "Kab tak rakhte hain",
@@ -185,7 +186,7 @@ export function KycApp() {
 
   return (
     <AppShell step={3} back={{ href: "/advisor", label: t.back }}>
-    <main className="mx-auto max-w-3xl px-4 pb-16 pt-5">
+    <main className="mx-auto max-w-lg px-4 pb-[calc(4rem+env(safe-area-inset-bottom))] pt-4">
       <ol className="flex flex-wrap gap-2" aria-label="Document check progress">
         {[t.step1, t.step2, t.step3].map((label, i) => {
           const active = i === (result ? 2 : caseInfo ? 1 : 0);
@@ -219,7 +220,7 @@ export function KycApp() {
               </label>
             ))}
           </fieldset>
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+          <div className="mt-5 grid gap-5">
             <div>
               <h2 className="font-bold">{t.collect}</h2>
               <ul className="mt-1 list-disc pl-5 text-sm">
@@ -260,7 +261,7 @@ export function KycApp() {
                 <h1 className="text-2xl font-bold">{t.step2}</h1>
                 <label className="text-sm">
                   <span className="block text-ink-soft">{t.sample}</span>
-                  <select className="mt-1 h-12 rounded-full border-2 border-rule bg-white px-4 font-semibold" defaultValue="" onChange={(e) => e.target.value && loadSample(e.target.value)} title={t.sampleHint}>
+                  <select className="mt-1 h-12 rounded-full border-2 border-rule bg-white px-4 text-base font-semibold" defaultValue="" onChange={(e) => e.target.value && loadSample(e.target.value)} title={t.sampleHint}>
                     <option value="" disabled>
                       K01–K12
                     </option>
@@ -285,6 +286,7 @@ export function KycApp() {
                     }}
                     onBlur={() => void lookUp()}
                     maxLength={15}
+                    autoCapitalize="characters"
                     autoComplete="off"
                     spellCheck={false}
                     className="h-14 w-full min-w-0 flex-1 basis-60 rounded-full border-2 border-rule bg-white px-5 text-lg font-semibold tracking-wide focus:border-brand focus:outline-none"
@@ -296,7 +298,7 @@ export function KycApp() {
                 </div>
                 {lookup && <p className={`mt-2 text-sm ${lookup.ok ? "text-ok" : "text-khata"}`}>{lookup.text}</p>}
               </div>
-              <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+              <ul className="mt-5 grid gap-3">
                 {SLOTS.map(({ slot, optional }) => (
                   <li key={slot}>
                     <label className={`group flex h-full cursor-pointer flex-col rounded-2xl border-2 p-3 transition-colors ${files[slot] ? "border-ok bg-ok-soft" : "border-dashed border-ink-soft/40 bg-white hover:border-brand hover:bg-brand-soft"}`}>
@@ -318,11 +320,14 @@ export function KycApp() {
                       {files[slot] && <span className="mt-2 text-center text-sm font-semibold text-brand underline underline-offset-4">{t.replace}</span>}
                       <input
                         type="file"
-                        accept="image/png,image/jpeg,image/webp"
+                        accept="image/*"
                         className="sr-only"
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const f = e.target.files?.[0];
-                          if (f) setFiles({ ...files, [slot]: f });
+                          if (!f) return;
+                          const ready = await preparePhoto(f);
+                          if (ready) setFiles((cur) => ({ ...cur, [slot]: ready }));
+                          else setError(t.photoUnreadable);
                         }}
                       />
                     </label>

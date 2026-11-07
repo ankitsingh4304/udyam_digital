@@ -33,7 +33,7 @@ export function PartnerApp() {
   const s = data?.summary;
 
   return (
-    <AppShell back={{ href: "/", label: "Home" }}>
+    <AppShell wide back={{ href: "/", label: "Home" }}>
     <main className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
       <h1 className="mt-2 text-3xl font-bold">Rescue queue</h1>
       <p className="mt-1 max-w-prose text-ink-soft">

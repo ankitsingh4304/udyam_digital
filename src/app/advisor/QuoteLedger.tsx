@@ -97,20 +97,13 @@ export function QuoteLedger({ result, lang, onTotal }: { result?: AdvisorTurnRes
     return 1;
   };
 
-  if (!bundle) {
-    return (
-      <aside className="px-4 py-8 lg:w-[26rem] lg:px-0 lg:py-0" id="quote">
-        <h2 className="text-xl font-bold">{t.title}</h2>
-        <p className="mt-2 max-w-sm text-ink-soft">{t.empty}</p>
-      </aside>
-    );
-  }
+  if (!bundle) return null;
 
   const available = addons.filter((a) => a.available || a.inCart);
   const unavailable = addons.filter((a) => !a.available && !a.inCart);
 
   return (
-    <aside className="scroll-mt-32 px-4 py-6 lg:sticky lg:top-36 lg:w-[26rem] lg:self-start lg:px-0 lg:py-0" id="quote" aria-label={t.title} aria-busy={busy}>
+    <aside className="scroll-mt-28 px-4 py-6" id="quote" aria-label={t.title} aria-busy={busy}>
       <div className="overflow-hidden rounded-2xl bg-white shadow-card">
         <div className="bg-brand px-5 pb-5 pt-5 text-white">
           <h2 className="text-xl font-bold">{t.title}</h2>

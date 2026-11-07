@@ -37,7 +37,7 @@ export function TrackView({ order }: { order: OrderPayload }) {
 
   return (
     <AppShell step={4}>
-      <main className="mx-auto max-w-2xl px-4 pb-16 pt-5">
+      <main className="mx-auto max-w-lg px-4 pb-[calc(4rem+env(safe-area-inset-bottom))] pt-4">
         <section className={`rounded-3xl p-6 text-white ${live ? "bg-ok" : "bg-brand"}`}>
           <p className="text-sm text-white/85">
             {t.order} {order.id} · {order.business}
@@ -66,7 +66,7 @@ export function TrackView({ order }: { order: OrderPayload }) {
           })}
         </ol>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid gap-3">
           <button onClick={share} className="flex h-14 items-center justify-center gap-2 rounded-full border-2 border-brand bg-white font-semibold text-brand">
             <Share2 className="h-5 w-5" aria-hidden /> {t.share}
           </button>

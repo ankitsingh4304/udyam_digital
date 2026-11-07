@@ -81,12 +81,12 @@ export function HomeApp() {
   const t = T[lang];
   return (
     <AppShell>
-      <main className="mx-auto max-w-6xl px-4 pb-16 pt-4 sm:px-6 sm:pt-8">
-        <section className="overflow-hidden rounded-3xl bg-brand px-6 py-10 text-white sm:px-12 sm:py-14">
-          <h1 className="max-w-3xl text-4xl font-bold leading-tight sm:text-5xl">{t.title}</h1>
-          <p className="mt-4 max-w-2xl text-lg text-white/90 sm:text-xl">{t.sub}</p>
+      <main className="mx-auto max-w-lg px-4 pb-16 pt-4">
+        <section className="overflow-hidden rounded-3xl bg-brand px-6 py-9 text-white">
+          <h1 className="text-[2rem] font-bold leading-tight">{t.title}</h1>
+          <p className="mt-3 text-lg text-white/90">{t.sub}</p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link href="/advisor" className="inline-flex h-16 items-center justify-center rounded-full bg-white px-10 text-xl font-bold text-brand hover:bg-brand-soft">
+            <Link href="/advisor" className="inline-flex h-16 w-full items-center justify-center rounded-full bg-white px-10 text-xl font-bold text-brand active:bg-brand-soft">
               {t.start} →
             </Link>
             <span className="flex items-center gap-2 text-white/90">
@@ -100,11 +100,11 @@ export function HomeApp() {
 
         <section className="mt-10">
           <h2 className="text-2xl font-bold">{t.how}</h2>
-          <ol className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className="mt-4 grid gap-3">
             {t.steps.map(([title, body], i) => {
               const Icon = STEP_ICONS[i];
               return (
-                <li key={title} className="flex gap-4 rounded-2xl bg-white p-5 shadow-card lg:flex-col">
+                <li key={title} className="flex gap-4 rounded-2xl bg-white p-5 shadow-card">
                   <span className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
                     <Icon className="h-7 w-7" aria-hidden />
                     <span className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-brand text-sm font-bold text-white">{i + 1}</span>
@@ -118,13 +118,13 @@ export function HomeApp() {
             })}
           </ol>
           <div className="mt-6">
-            <ButtonLink href="/advisor">{t.start} →</ButtonLink>
+            <ButtonLink href="/advisor" className="w-full">{t.start} →</ButtonLink>
           </div>
         </section>
 
         <section className="mt-12">
           <h2 className="text-2xl font-bold">{t.why}</h2>
-          <ul className="mt-4 grid gap-3 sm:grid-cols-3">
+          <ul className="mt-4 grid gap-3">
             {t.perks.map(([title, body], i) => {
               const Icon = PERK_ICONS[i];
               return (
@@ -138,7 +138,7 @@ export function HomeApp() {
           </ul>
         </section>
 
-        <section className="mt-16 grid gap-6 border-t border-rule pt-10 lg:grid-cols-[1fr_22rem]">
+        <section className="mt-14 grid gap-6 border-t border-rule pt-10">
           <div>
             <h2 className="text-xl font-bold">What last quarter&apos;s leads told us</h2>
             <dl className="mt-4 space-y-4">

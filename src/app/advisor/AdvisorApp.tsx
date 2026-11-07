@@ -167,8 +167,8 @@ export function AdvisorApp() {
 
   return (
     <AppShell step={result ? 2 : 1}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-0 pb-28 sm:px-6 sm:py-6 lg:flex-row lg:items-start lg:pb-6">
-        <section className="flex min-h-[calc(100dvh-8.5rem)] flex-1 flex-col bg-white sm:rounded-2xl sm:shadow-card lg:min-h-[calc(100dvh-10rem)] lg:max-w-xl" aria-label="Advisor chat">
+      <div className="mx-auto flex max-w-lg flex-col pb-28">
+        <section className="flex min-h-[calc(100dvh-7.5rem)] flex-col bg-white" aria-label="Advisor chat">
           <ol className="flex-1 space-y-3 overflow-y-auto px-4 py-5" aria-live="polite">
             {bubbles.map((b, i) => (
               <li key={i} className={`flex items-end gap-2 ${b.from === "owner" ? "justify-end" : "justify-start"}`}>
@@ -249,7 +249,7 @@ export function AdvisorApp() {
             </div>
           )}
 
-          <footer className="sticky bottom-0 border-t border-rule bg-white px-4 py-3 sm:rounded-b-2xl">
+          <footer className="sticky bottom-0 border-t border-rule bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3">
             {(notice || transcribing) && (
               <p role="status" className={`mb-2 rounded-2xl px-4 py-2 text-sm font-semibold ${transcribing ? "bg-page text-ink-soft" : "bg-hold-soft text-hold"}`}>
                 {transcribing ? ui.transcribing : notice}
@@ -321,7 +321,8 @@ export function AdvisorApp() {
 
       {/* Phone: once there is a price, keep it and the next step in reach */}
       {result?.bundle && !ctaVisible && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-rule bg-white px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,.06)] lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-rule bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_16px_rgba(0,0,0,.06)]">
+          <div className="mx-auto max-w-lg">
           <a href="#quote" className="flex h-14 w-full items-center justify-between rounded-full bg-brand px-6 text-white">
             <span className="text-lg font-bold">
               ₹{(total ?? result.bundle.monthlyTotal).toLocaleString("en-IN")}
@@ -329,6 +330,7 @@ export function AdvisorApp() {
             </span>
             <span className="font-semibold">{ui.seeBundle} ↓</span>
           </a>
+          </div>
         </div>
       )}
     </AppShell>
