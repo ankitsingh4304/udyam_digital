@@ -26,24 +26,23 @@ import { useLang } from "@/components/LangContext";
 import type { AdvisorState, Lang } from "@/domain/advisor/state";
 import type { AdvisorTurnResult } from "@/server/advisor-service";
 import { QuoteLedger } from "./QuoteLedger";
+import { speakTexts, stopSpeaking, useVoiceInput } from "./voice";
 
 interface Bubble {
   from: "advisor" | "owner";
   text: string;
 }
 
-const SPEECH_LANG: Record<Lang, string> = { en: "en-IN", hi: "hi-IN", hinglish: "en-IN" };
 const PROVIDER_LABEL: Record<string, string> = { gemini: "Gemini", groq: "Groq", offline: "built-in rules" };
 const BUSINESS_ICONS: LucideIcon[] = [Store, Stethoscope, Briefcase, UtensilsCrossed, Factory];
 const NEED_ICONS: LucideIcon[] = [CreditCard, Video, MessageCircle, Mail, RadioTower];
 
 const UI: Record<Lang, Record<string, string>> = {
-  en: { placeholder: "Type here, or tap the mic", send: "Send", listen: "Tap and speak", listening: "Listening… tap to stop", readAloud: "Read replies aloud", restart: "Start again", source: "Understood by", pickMany: "Tap all that you need, then continue", next: "Continue", none: "Nothing else", seeBundle: "See my bundle", perMonth: "/month", thinking: "Thinking…", noVoice: "Voice input needs Chrome or Edge. You can type instead.", failed: "The advisor didn't answer. Check your internet and send again." },
-  hi: { placeholder: "यहाँ लिखें, या माइक दबाएँ", send: "भेजें", listen: "दबाएँ और बोलें", listening: "सुन रहे हैं… रोकने के लिए दबाएँ", readAloud: "जवाब सुनाएँ", restart: "फिर से शुरू करें", source: "समझा गया:", pickMany: "जो चाहिए सब चुनें, फिर आगे बढ़ें", next: "आगे बढ़ें", none: "और कुछ नहीं", seeBundle: "मेरा बंडल देखें", perMonth: "/महीना", thinking: "सोच रहे हैं…", noVoice: "आवाज़ के लिए Chrome या Edge चाहिए। आप लिख भी सकते हैं।", failed: "जवाब नहीं आया। इंटरनेट जाँचें और फिर भेजें।" },
-  hinglish: { placeholder: "Yahan likhein, ya mic dabayein", send: "Bhejein", listen: "Dabayein aur bolein", listening: "Sun rahe hain… rokne ke liye dabayein", readAloud: "Jawab sunayein", restart: "Phir se shuru karein", source: "Samjha gaya:", pickMany: "Jo chahiye sab chunein, phir aage badhein", next: "Aage badhein", none: "Aur kuch nahi", seeBundle: "Mera bundle dekhein", perMonth: "/month", thinking: "Soch rahe hain…", noVoice: "Voice ke liye Chrome ya Edge chahiye. Aap likh bhi sakte hain.", failed: "Jawab nahi aaya. Internet check karke phir bhejein." },
+  en: { placeholder: "Type here, or tap the mic", send: "Send", listen: "Tap and speak", listening: "Listening… tap to stop", readAloud: "Read replies aloud", restart: "Start again", source: "Understood by", pickMany: "Tap all that you need, then continue", next: "Continue", none: "Nothing else", seeBundle: "See my bundle", perMonth: "/month", thinking: "Thinking…", noVoice: "Voice input isn't available in this browser. Please type, or use Chrome.", failed: "The advisor didn't answer. Check your internet and send again.", micBlocked: "Microphone is blocked. Tap the lock icon in the address bar and allow the microphone.", noSpeech: "I didn't hear anything. Tap the mic and speak a little louder.", sttFailed: "Couldn't understand the recording. Please try again or type.", transcribing: "Writing down what you said…", ttsNoVoice: "This phone has no Hindi voice installed. Add Hindi in your phone's text-to-speech settings, or switch to Hinglish.", ttsUnsupported: "Read aloud isn't supported in this browser.", replay: "Listen" },
+  hi: { placeholder: "यहाँ लिखें, या माइक दबाएँ", send: "भेजें", listen: "दबाएँ और बोलें", listening: "सुन रहे हैं… रोकने के लिए दबाएँ", readAloud: "जवाब सुनाएँ", restart: "फिर से शुरू करें", source: "समझा गया:", pickMany: "जो चाहिए सब चुनें, फिर आगे बढ़ें", next: "आगे बढ़ें", none: "और कुछ नहीं", seeBundle: "मेरा बंडल देखें", perMonth: "/महीना", thinking: "सोच रहे हैं…", noVoice: "इस ब्राउज़र में आवाज़ नहीं चलती। कृपया लिखें या Chrome इस्तेमाल करें।", failed: "जवाब नहीं आया। इंटरनेट जाँचें और फिर भेजें।", micBlocked: "माइक बंद है। एड्रेस बार में ताले के निशान को दबाकर माइक की अनुमति दें।", noSpeech: "कुछ सुनाई नहीं दिया। माइक दबाकर थोड़ा ज़ोर से बोलें।", sttFailed: "रिकॉर्डिंग समझ नहीं आई। फिर कोशिश करें या लिखें।", transcribing: "आपकी बात लिख रहे हैं…", ttsNoVoice: "इस फ़ोन में हिंदी आवाज़ नहीं है। फ़ोन की टेक्स्ट-टू-स्पीच सेटिंग में हिंदी जोड़ें, या Hinglish चुनें।", ttsUnsupported: "इस ब्राउज़र में सुनने की सुविधा नहीं है।", replay: "सुनें" },
+  hinglish: { placeholder: "Yahan likhein, ya mic dabayein", send: "Bhejein", listen: "Dabayein aur bolein", listening: "Sun rahe hain… rokne ke liye dabayein", readAloud: "Jawab sunayein", restart: "Phir se shuru karein", source: "Samjha gaya:", pickMany: "Jo chahiye sab chunein, phir aage badhein", next: "Aage badhein", none: "Aur kuch nahi", seeBundle: "Mera bundle dekhein", perMonth: "/month", thinking: "Soch rahe hain…", noVoice: "Is browser mein voice nahi chalti. Please likhein ya Chrome use karein.", failed: "Jawab nahi aaya. Internet check karke phir bhejein.", micBlocked: "Mic blocked hai. Address bar mein lock icon dabakar mic allow karein.", noSpeech: "Kuch sunai nahi diya. Mic dabakar thoda zor se bolein.", sttFailed: "Recording samajh nahi aayi. Phir try karein ya likhein.", transcribing: "Aapki baat likh rahe hain…", ttsNoVoice: "Is phone mein Hindi voice nahi hai. Phone ki text-to-speech setting mein Hindi add karein.", ttsUnsupported: "Is browser mein sunne ki suvidha nahi hai.", replay: "Sunein" },
 };
 
-type SpeechRec = { lang: string; interimResults: boolean; onresult: (e: { results: { 0: { transcript: string } }[] }) => void; onend: () => void; onerror: () => void; start: () => void; stop: () => void };
 
 export function AdvisorApp() {
   const { lang } = useLang();
@@ -55,7 +54,7 @@ export function AdvisorApp() {
   const [busy, setBusy] = useState(false);
   const [provider, setProvider] = useState<string>("offline");
   const [result, setResult] = useState<AdvisorTurnResult | undefined>();
-  const [listening, setListening] = useState(false);
+  const [notice, setNotice] = useState<string>();
   const [speakOn, setSpeakOn] = useState(false);
   const [total, setTotal] = useState<number>();
   const [ctaVisible, setCtaVisible] = useState(false);
@@ -69,17 +68,17 @@ export function AdvisorApp() {
     io.observe(el);
     return () => io.disconnect();
   }, [result, total]);
-  const recRef = useRef<SpeechRec | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const ui = UI[lang];
 
+  const lastSpoken = useRef<string[]>([]);
   const speak = useCallback(
-    (texts: string[]) => {
-      if (!speakOn || typeof window === "undefined" || !window.speechSynthesis) return;
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(texts.join(" "));
-      u.lang = SPEECH_LANG[lang];
-      window.speechSynthesis.speak(u);
+    async (texts: string[], force = false) => {
+      if (!force && !speakOn) return;
+      lastSpoken.current = texts;
+      const r = await speakTexts(texts, lang);
+      if (r === "noVoice") setNotice(UI[lang].ttsNoVoice);
+      if (r === "unsupported") setNotice(UI[lang].ttsUnsupported);
     },
     [speakOn, lang],
   );
@@ -101,7 +100,7 @@ export function AdvisorApp() {
         setProvider(r.provider);
         setBubbles((b) => [...b, ...r.reply.map((text) => ({ from: "advisor" as const, text }))]);
         if (r.bundle) setResult(r);
-        speak(r.reply);
+        void speak(r.reply);
       } catch {
         setBubbles((b) => [...b, { from: "advisor", text: UI[opts.lang ?? lang].failed }]);
       } finally {
@@ -134,6 +133,7 @@ export function AdvisorApp() {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [bubbles, busy]);
 
+  const sendRef = useRef<(t: string) => void>(() => {});
   const send = (text: string) => {
     const t = text.trim();
     if (!t || busy || state?.done) return;
@@ -142,27 +142,24 @@ export function AdvisorApp() {
     setQuick([]);
     void turn(t, { state });
   };
+  sendRef.current = send;
 
+  const voice = useVoiceInput({
+    lang,
+    onInterim: (t) => setInput(t),
+    onText: (t) => {
+      setInput("");
+      setNotice(undefined);
+      sendRef.current(t);
+    },
+    onError: (code) => setNotice(UI[lang][code] ?? UI[lang].sttFailed),
+  });
+  const listening = voice.state === "listening";
+  const transcribing = voice.state === "transcribing";
   const toggleListen = () => {
-    if (listening) {
-      recRef.current?.stop();
-      return;
-    }
-    const W = window as unknown as { SpeechRecognition?: new () => SpeechRec; webkitSpeechRecognition?: new () => SpeechRec };
-    const Ctor = W.SpeechRecognition ?? W.webkitSpeechRecognition;
-    if (!Ctor) {
-      setBubbles((b) => [...b, { from: "advisor", text: ui.noVoice }]);
-      return;
-    }
-    const rec = new Ctor();
-    rec.lang = SPEECH_LANG[lang];
-    rec.interimResults = false;
-    rec.onresult = (e) => setInput(e.results[0][0].transcript);
-    rec.onend = () => setListening(false);
-    rec.onerror = () => setListening(false);
-    recRef.current = rec;
-    setListening(true);
-    rec.start();
+    stopSpeaking();
+    setNotice(undefined);
+    voice.toggle();
   };
 
   const slot = state?.lastAsked;
@@ -181,6 +178,11 @@ export function AdvisorApp() {
                   </span>
                 )}
                 <p className={`max-w-[82%] whitespace-pre-line rounded-3xl px-4 py-3 text-[17px] leading-relaxed ${b.from === "owner" ? "rounded-br-md bg-brand text-white" : "rounded-bl-md bg-page text-ink"}`}>{b.text}</p>
+                {b.from === "advisor" && (
+                  <button onClick={() => void speak([b.text], true)} aria-label={`${ui.replay}: ${b.text.slice(0, 40)}`} title={ui.replay} className="mb-1 grid h-9 w-9 shrink-0 place-items-center rounded-full text-ink-soft hover:bg-page hover:text-brand">
+                    <Volume2 className="h-5 w-5" />
+                  </button>
+                )}
               </li>
             ))}
             {busy && (
@@ -248,6 +250,11 @@ export function AdvisorApp() {
           )}
 
           <footer className="sticky bottom-0 border-t border-rule bg-white px-4 py-3 sm:rounded-b-2xl">
+            {(notice || transcribing) && (
+              <p role="status" className={`mb-2 rounded-2xl px-4 py-2 text-sm font-semibold ${transcribing ? "bg-page text-ink-soft" : "bg-hold-soft text-hold"}`}>
+                {transcribing ? ui.transcribing : notice}
+              </p>
+            )}
             {done ? (
               <button onClick={() => start(lang)} className="flex h-12 w-full items-center justify-center gap-2 rounded-full border-2 border-rule font-semibold">
                 <RotateCcw className="h-5 w-5" aria-hidden />
@@ -265,6 +272,7 @@ export function AdvisorApp() {
                   type="button"
                   onClick={toggleListen}
                   aria-pressed={listening}
+                  disabled={transcribing || busy}
                   aria-label={listening ? ui.listening : ui.listen}
                   title={listening ? ui.listening : ui.listen}
                   className={`grid h-14 w-14 shrink-0 place-items-center rounded-full text-white ${listening ? "pulse-ring bg-brand-dark" : "bg-brand hover:bg-brand-dark"}`}
@@ -288,7 +296,16 @@ export function AdvisorApp() {
               </form>
             )}
             <div className="mt-2 flex items-center justify-between text-xs text-ink-soft">
-              <button onClick={() => setSpeakOn(!speakOn)} aria-pressed={speakOn} className={`flex h-9 items-center gap-1.5 rounded-full px-3 font-semibold ${speakOn ? "bg-brand-soft text-brand" : "bg-page"}`}>
+              <button
+                onClick={() => {
+                  const on = !speakOn;
+                  setSpeakOn(on);
+                  if (on) {
+                    const last = bubbles.filter((x) => x.from === "advisor").slice(-2).map((x) => x.text);
+                    void speak(last, true);
+                  } else stopSpeaking();
+                }}
+                aria-pressed={speakOn} className={`flex h-9 items-center gap-1.5 rounded-full px-3 font-semibold ${speakOn ? "bg-brand-soft text-brand" : "bg-page"}`}>
                 {speakOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
                 {ui.readAloud}
               </button>
