@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AppShell } from "@/components/AppShell";
 import { useState } from "react";
 import { CITIES } from "@/domain/advisor/lexicon";
 import { SCENARIOS, evaluateScenario } from "@/domain/catalogue/scenarios";
@@ -114,10 +114,8 @@ export function JudgeApp() {
   const field = "mt-1 w-full rounded-lg border border-rule bg-white px-3 py-2";
 
   return (
+    <AppShell back={{ href: "/", label: "Home" }}>
     <main className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
-      <Link href="/" className="text-sm text-ink-soft underline-offset-4 hover:underline">
-        ← Overview
-      </Link>
       <h1 className="mt-2 text-3xl font-bold">Test the advisor&apos;s rules</h1>
       <p className="mt-1 max-w-prose text-ink-soft">
         Describe any business and see exactly what the advisor would offer, what it refuses and why. The AI only writes the explanation; these choices come from the catalogue rules.
@@ -125,7 +123,7 @@ export function JudgeApp() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[22rem_1fr]">
         <form
-          className="space-y-3 rounded-2xl border border-rule bg-white p-5"
+          className="space-y-3 rounded-2xl bg-white shadow-card p-5"
           onSubmit={(e) => {
             e.preventDefault();
             void run();
@@ -216,10 +214,10 @@ export function JudgeApp() {
               onChange={(e) => set({ requestedProducts: e.target.value.toUpperCase().match(/P\d{2}/g) ?? [] })}
             />
           </label>
-          <button className="w-full rounded-xl bg-ink py-3 font-medium text-white">Recommend</button>
+          <button className="h-14 w-full rounded-full bg-brand text-lg font-semibold text-white hover:bg-brand-dark">Recommend</button>
         </form>
 
-        <section className="rounded-2xl border border-rule bg-white p-5" aria-live="polite">
+        <section className="rounded-2xl bg-white shadow-card p-5" aria-live="polite">
           {error && <p className="text-khata">{error}</p>}
           {bundle ? <BundleView b={bundle} /> : <p className="text-ink-soft">Set up a business on the left and press Recommend.</p>}
         </section>
@@ -228,11 +226,11 @@ export function JudgeApp() {
       <section className="mt-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-2xl font-bold">Rule checks we run on every build</h2>
-          <button onClick={runAll} disabled={running} className="rounded-xl border border-ink px-5 py-2.5 font-medium disabled:opacity-50">
+          <button onClick={runAll} disabled={running} className="h-12 rounded-full border-2 border-brand px-6 font-semibold text-brand disabled:opacity-50">
             {running ? `Running ${runs.length}/${SCENARIOS.length}…` : `Run all ${SCENARIOS.length}`}
           </button>
         </div>
-        <ol className="mt-4 divide-y divide-rule rounded-2xl border border-rule bg-white">
+        <ol className="mt-4 divide-y divide-rule rounded-2xl bg-white shadow-card">
           {SCENARIOS.map((s) => {
             const r = runs.find((x) => x.id === s.id);
             return (
@@ -268,5 +266,6 @@ export function JudgeApp() {
         </ol>
       </section>
     </main>
+    </AppShell>
   );
 }
