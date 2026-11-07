@@ -137,5 +137,291 @@
   "constitution": "Proprietorship",
   "address": "Shop/Unit 238, Ring Road, Vadodara, Gujarat - 348176",
   "dateOfLiability": "2018-12-01"
+ },
+ "ocr:b1278607483436110871c1f5bf1ad062e7879bcdd4fefc98ae57efca86319498": {
+  "docType": "gst",
+  "gstin": "37IHKXV5167L1ZS",
+  "legalName": "Neha Kaur (Prop. Vindhya Tours & Travels)",
+  "tradeName": "Vindhya Tours & Travels",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 1, Tech Park Road, Visakhapatnam, Andhra Pradesh - 118383",
+  "dateOfLiability": "2025-06-07"
+ },
+ "ocr:a0791cc25c968c9506319f44877ed66a6a4b08dc612d3ff13290541cdb690dcd": {
+  "docType": "gst",
+  "gstin": "19E0GXH4115Y1ZL",
+  "legalName": "Joseph Shah (Prop. Harmony Dental Care)",
+  "tradeName": "Harmony Dental Care",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 199, Station Road, Kolkata, West Bengal - 347550",
+  "dateOfLiability": "2022-04-17"
+ },
+ "ocr:4c4c54d4705e885038f3ab8b45cac899b36f43113a5ebbcce4c2bae0db6d582b": {
+  "docType": "gst",
+  "gstin": "27XUIXG0767D1ZP",
+  "legalName": "Joseph Singh (Prop. Ganesh Woodcraft)",
+  "tradeName": "Ganesh Woodcraft",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 80, Civil Lines, Nagpur, Maharashtra - 411231",
+  "dateOfLiability": "2020-02-10"
+ },
+ "38000bc5e1b78105049e4a4432c1dd85ec16cd752517492aa38ad6db47ce0646": {
+  "docType": "addressProof",
+  "address": "Shop/Unit 75, Lake View Colony, Nagpur, Maharashtra - 137452",
+  "billedTo": "Saffron Dental Care LLP",
+  "billDate": "2026-05-28"
+ },
+ "39551a5031ba4ae8e1c50591b221bb1a66347f246ca75bf4ea5b35f9a2fd3287": {
+  "docType": "gst",
+  "gstin": "32TZAXB5481U1Z1",
+  "legalName": "Balaji Realty LLP",
+  "tradeName": "Balaji Realty LLP",
+  "constitution": "Limited Liability Partnership",
+  "address": "Shop/Unit 38, Civil Lines, Kochi, Kerala - 75 2083",
+  "dateOfLiability": "2020-07-26"
+ },
+ "f02c19643334f34cb22bfab36ee5d7df0b21d81e2d5e2a0bd7fc8e68353f274b": {
+  "docType": "addressProof",
+  "address": "Shop/Unit 38, Civil Lines, Kochi, Kerala - 75",
+  "billedTo": "Balaji Realty LLP",
+  "billDate": "2026-06-11"
+ },
+ "ocr:eec8fa2ac4cb9c0e8e64d60343884c21740c174034444e015e0eae41202ed566": {
+  "docType": "gst",
+  "gstin": "32TZAXB5481U1Z1",
+  "legalName": "Balaji Realty LLP",
+  "tradeName": "Balaji Realty LLP",
+  "constitution": "Limited Liability Partnership",
+  "address": "Shop/Unit 38, Civil Lines, Kochi, Kerala - 752083",
+  "dateOfLiability": "2020-07-26"
+ },
+ "6c0020e20e7badccd864daeb05e8f5bcafe6fed3fd81414d05abcb31c5987a04": {
+  "docType": "signatory",
+  "name": "Anita Shah",
+  "designation": "Owner",
+  "business": "Balaji Realty LLP",
+  "validTill": "2029-09-11"
+ },
+ "3187c6c19d9a19fb5121f781db65495e9c8c3764ed7e450cfb810a1b56eea9f3": {
+  "docType": "signatory",
+  "name": "Pooja Shah",
+  "designation": "Owner",
+  "business": "Saffron Unisex Salon",
+  "validTill": "2028-09-15"
+ },
+ "1364d92a676f59c68fb937bf20a710bb44c0dfc8665b346a9ea34e95c43bff47": {
+  "docType": "gst",
+  "gstin": "08YKZXS8189L1Z0",
+  "legalName": "Pooja Shah (Prop. Saffron Unisex Salon)",
+  "tradeName": "Saffron Unisex Salon",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 71, Market Yard, Jaipur, Rajasthan - 194057",
+  "dateOfLiability": "2019-09-25"
+ },
+ "1063764bfeb9843cbe50abc64b0f0ffbbfaa1b1464dc50f885d535bc17366cd6": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-RJ-00-6577157",
+  "enterpriseName": "Saffron Unisex Salon",
+  "majorActivity": "Services",
+  "city": "Jaipur",
+  "state": "Rajasthan",
+  "dateOfRegistration": "2023-01-24"
+ },
+ "012f0ae7ae8751ad5525be185fc749305d01f60a390f0f4aec53ebb1d19359c1": {
+  "docType": "addressProof",
+  "address": "Shop/Unit 71, Market Yard, Jaipur, Rajasthan - 194057",
+  "billedTo": "Saffron Unisex Salon",
+  "billDate": "2026-06-11"
+ },
+ "ocr:9abf00d3d5b319a007e8bb2070b8511dd2fb03f63c2e1a85ad3ca54fde11ace8": {
+  "docType": "gst",
+  "gstin": "08YKZXS8189L1Z0",
+  "legalName": "Pooja Shah (Prop. Saffron Unisex Salon)",
+  "tradeName": "Saffron Unisex Salon",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 71, Market Yard, Jaipur, Rajasthan - 194057",
+  "dateOfLiability": "2019-09-25"
+ },
+ "d1b2add7452522b5c2f9fc49a5398570f3647233267ad45613c4625190da369e": {
+  "docType": "signatory",
+  "name": "Neha Banerjee",
+  "designation": "Manager",
+  "business": "Neelgiri Physio Clinic",
+  "validTill": "2030-05-05"
+ },
+ "7fe2c84aba606a2a600fc94c9232f64a99e415a1beadf40e580f8bf17f0a7564": {
+  "docType": "addressProof",
+  "address": "Shop/Unit 52, Transport Nagar, Delhi, Delhi - 334596",
+  "billedTo": "Neelgiri Physio Clinic",
+  "billDate": "2026-07-05"
+ },
+ "f3c289913441e8e941b650cf100c61dcd738a27d6b73d3db715e213cef4867ea": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-DL-00-9565547",
+  "enterpriseName": "Neelgiri Physio Clinic",
+  "majorActivity": "Services",
+  "city": "Delhi",
+  "state": "Delhi",
+  "dateOfRegistration": "2024-07-14"
+ },
+ "261f470ecf7ef2335b5627a766c0198342c577d232ba90b08ee3997b16319f68": {
+  "docType": "gst",
+  "gstin": "07CPCXN0398P1ZT",
+  "legalName": "Neha Banerjee (Prop. Shri Physio Clinic)",
+  "tradeName": "Neelgiri Physio Clinic",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 52, Transport Nagar, Delhi, Delhi - 334596",
+  "dateOfLiability": "2024-01-13"
+ },
+ "ocr:43652b1146e0337fc4edaa7d016bf695aa0080e4c5359a5d46a3b024cc695c05": {
+  "docType": "gst",
+  "gstin": "07CPCXN0398P1ZT",
+  "legalName": "Neha Banerjee (Prop. Shri Physio Clinic)",
+  "tradeName": "Neelgiri Physio Clinic",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 52, Transport Nagar, Delhi, Delhi - 334596",
+  "dateOfLiability": "2024-01-13"
+ },
+ "ocr:2c1ee05a187b8ad695b319d10cc5a30802a49bbaeba2cb65ae8dfaa2c5b0cbc6": {
+  "docType": "gst",
+  "gstin": "24X0RXG9365M1Z3",
+  "legalName": "Joseph Rao (Prop. Green Leaf Legal Associates)",
+  "tradeName": "Green Leaf Legal Associates",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 238, Ring Road, Vadodara, Gujarat - 348176",
+  "dateOfLiability": "2018-12-01"
+ },
+ "dfeb0f24fa74b950f20bc8cf24a6da0c55ba334520d77693e6d23fd114d98978": {
+  "docType": "signatory",
+  "name": "Anita Kulkarni",
+  "designation": "Office admin",
+  "business": "Kaveri Insurance Advisors",
+  "validTill": "2027-12-22"
+ },
+ "5ca04d6c3c5c9d3c5f87f09f4ff77bef10301add3fe0950d4c06885c36788a5c": {
+  "docType": "addressProof",
+  "address": "Shop/Unit 217, Civil Lines, Visakhapatnam, Andhra Pradesh - 405337",
+  "billedTo": "Kaveri Insurance Advisors",
+  "billDate": "2026-07-10"
+ },
+ "200ff261394fbce936c40a2a934eb99e0c1ecaf6f7a40b414379ee0d0eb69c08": {
+  "docType": "gst",
+  "gstin": "37LDYXK0296F1ZB",
+  "legalName": "Anita Kulkarni (Prop. Kaveri Insurance Advisors)",
+  "tradeName": "Kaveri Insurance Advisors",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 217, Civil Lines, Visakhapatnam, Andhra Pradesh - 405337",
+  "dateOfLiability": "2023-09-20"
+ },
+ "ocr:6544c5ef6beca7c5794f56694c3bb95efd85aadae3aa6e3893cdc67708ba3d04": {
+  "docType": "gst",
+  "gstin": "37LDYXK0296F1ZB",
+  "legalName": "Anita Kulkarni (Prop. Kaveri Insurance Advisors)",
+  "tradeName": "Kaveri Insurance Advisors",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 217, Civil Lines, Visakhapatnam, Andhra Pradesh - 405337",
+  "dateOfLiability": "2023-09-20"
+ },
+ "ocr:f0e1bb788506d27ce71a18a4a9054a09994d4c23d37a61ef849ec320ef44f7dc": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-AP-00-9751562",
+  "enterpriseName": "Kaveri Insurance Advisors",
+  "majorActivity": "Services",
+  "city": "Visakhapatnam",
+  "state": "Andhra Pradesh",
+  "dateOfRegistration": "2023-07-04"
+ },
+ "ocr:fa85f282f5e64a224c6a82a5850e9515e3ac16f3640b4431677bf7ea454e7975": {
+  "docType": "signatory",
+  "name": "Nisha Arora",
+  "designation": "Owner",
+  "business": "Kaveri Stays LLP",
+  "validTill": "2029-06-01"
+ },
+ "ocr:901d6ccf3e8d3b1d56b6854591d6755a0aa705ef65533067d8c7df1cd9ac6989": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-MH-00-7183141",
+  "enterpriseName": "Kaveri Stays LLP",
+  "majorActivity": "Services",
+  "city": "Mumbai",
+  "state": "Maharashtra",
+  "dateOfRegistration": "2024-01-09"
+ },
+ "ocr:2331a714627354cfe5c6ec8d36f3fa74ec25572c04f439f1a66bab1b0a4463c6": {
+  "docType": "gst",
+  "gstin": "27QHJXK0658U1ZL",
+  "legalName": "Kaveri Stays LLP",
+  "tradeName": "Kaveri Stays LLP",
+  "constitution": "Limited Liability Partnership",
+  "address": "Shop/Unit 21, Sector 14, Mumbai, Maharashtra - 570043",
+  "dateOfLiability": "2022-07-13"
+ },
+ "ocr:fa323e2bf8383e80dbd47404d93fd7d5a6e8e7f90694ff6ec6af163b33119283": {
+  "docType": "addressProof",
+  "billedTo": "Kaveri Stays LLP",
+  "address": "Shop/Unit 21, Sector 14, Mumbai, Maharashtra - 570043",
+  "billDate": "2026-06-18"
+ },
+ "ocr:41a0b9aef1fd58783a2abcc71cae32f8a4f23df674bcc489141fb4382a59510d": {
+  "docType": "signatory",
+  "name": "Vikram Pillai",
+  "designation": "Owner",
+  "business": "Trinity Bake House Pvt Ltd",
+  "validTill": "2028-12-23"
+ },
+ "ocr:f16aed63c80030d5d5bc48a9f72e1204b0bdeff60c2ea1ae3cbc7c87097ae3f6": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-PB-00-9719478",
+  "enterpriseName": "Trinity Bake House Pvt Ltd",
+  "majorActivity": "Services",
+  "city": "Ludhiana",
+  "state": "Punjab",
+  "dateOfRegistration": "2025-09-15"
+ },
+ "ocr:36b9aecc4ea59b8cee9b6f3f9b7c55d1b42cbdbcbfc83fa171efd686f45747e7": {
+  "docType": "gst",
+  "gstin": "03KGZXT1320R1ZZ",
+  "legalName": "Trinity Bake House Pvt Ltd",
+  "tradeName": "Trinity Bake House Pvt Ltd",
+  "constitution": "Private Limited Company",
+  "address": "Shop/Unit 188, Industrial Area Phase 2, Ludhiana, Punjab - 541498",
+  "dateOfLiability": "2019-08-19"
+ },
+ "ocr:303250a5472f8f6548fc3a1ddae8cc6c9e4d6a3f19a7dac1f37509670ba9040f": {
+  "docType": "addressProof",
+  "billedTo": "Trinity Bake House Pvt Ltd",
+  "address": "Shop/Unit 188, Industrial Area Phase 2, Ludhiana, Punjab - 541498",
+  "billDate": "2025-10-31"
+ },
+ "ocr:970754fe9d9573b52776dc5a427e2808c96d2d32e52f055d45cf0b4c79b9c189": {
+  "docType": "signatory",
+  "name": "Pooja Agarwal",
+  "designation": "Owner",
+  "business": "Star Electronics",
+  "validTill": "2029-03-03"
+ },
+ "ocr:380df624f93cc55666bf0790dc4acea3424ab7509ae598bf11ebb54ce645a946": {
+  "docType": "gst",
+  "gstin": "37NBLXS1145E1ZU",
+  "legalName": "Pooja Agarwal (Prop. Star Electronics)",
+  "tradeName": "Star Electronics",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 216, Nehru Nagar, Visakhapatnam, Andhra Pradesh - 762071",
+  "dateOfLiability": "2017-01-08"
+ },
+ "ocr:7d735237fc648f17be59721bc4edadbe4f00f5c58e810cb4221679c135fcfe4a": {
+  "docType": "addressProof",
+  "billedTo": "Star Electronics",
+  "address": "Shop/Unit 216, Nehru Nagar, Visakhapatnam, Andhra Pradesh - 762071",
+  "billDate": "2026-07-06"
+ },
+ "ocr:31917be127618bfe38547f2f20d21e8b5f47307519c460fd8f9c8e5b53318de6": {
+  "docType": "udyam",
+  "udyamNumber": "UDYAM-AP-00-5186772",
+  "enterpriseName": "Star Electronics",
+  "majorActivity": "Services",
+  "city": "Visakhapatnam",
+  "state": "Andhra Pradesh",
+  "dateOfRegistration": "2024-02-03"
  }
 }
