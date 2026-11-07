@@ -8,5 +8,6 @@ export const runtime = "nodejs";
 export async function GET(req: Request) {
   if (!requireRole("admin")) return NextResponse.json({ error: "Operations sign-in required." }, { status: 401 });
   const caseId = new URL(req.url).searchParams.get("caseId") ?? undefined;
-  return NextResponse.json({ chain: verifyAuditChain(), entries: auditEntries(caseId).slice(-100) });
+  const all = await auditEntries();
+  return NextResponse.json({ chain: verifyAuditChain(all), entries: all.filter((e) => !caseId || e.caseId === caseId).slice(-100) });
 }

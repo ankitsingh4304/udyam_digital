@@ -26,6 +26,8 @@ const SAMPLE_GSTIN: Record<string, string> = {
 
 const T: Record<Lang, Record<string, string>> = {
   en: {
+    esignAuth: "Your signature also signs the authorisation letter the registry needs for this signatory.",
+    reviewWait: "A verification agent is looking at your case now. Keep this page open; it updates by itself.", reviewRef: "Case reference", reviewApproved: "Approved by a verification agent. You can sign and order now.", reviewRejected: "The agent could not verify these documents.",
     esignTitle: "E-sign the application form", esignBody: "Sign with a one-time code sent to the mobile linked to the signatory's Aadhaar. No paper, no visit.", esignSend: "Send code", esignSentTo: "Code sent to", esignDemo: "Demo code", esignCode: "6-digit code", esignVerify: "Sign", esignDone: "Application signed", esignResend: "Send a new code",
     photoUnreadable: "This photo format can't be opened. Please take the photo again with the camera.", gstinLabel: "Your GSTIN", gstinHint: "We look it up first; the photo then only has to confirm it.", lookup: "Look up", backupNote: "Some documents were read by our backup reader; a verification agent double-checks before activation.", back: "Back to your bundle", step1: "Your consent", step2: "Upload documents", step3: "Result",
     gst: "GST certificate", udyam: "Udyam certificate", signatory: "Authorised signatory's ID", addressProof: "Electricity bill (last 90 days)",
@@ -36,6 +38,8 @@ const T: Record<Lang, Record<string, string>> = {
     vision: "AI reader", ocr: "offline OCR", cache: "AI reader (saved)", preflight: "stopped before reading",
   },
   hi: {
+    esignAuth: "आपका साइन इस हस्ताक्षरकर्ता के लिए ज़रूरी अधिकार-पत्र पर भी होगा।",
+    reviewWait: "एक वेरिफ़िकेशन एजेंट अभी आपका केस देख रहा है। यह पेज खुला रखें; यह खुद अपडेट होगा।", reviewRef: "केस नंबर", reviewApproved: "वेरिफ़िकेशन एजेंट ने मंज़ूरी दी। अब साइन करके ऑर्डर करें।", reviewRejected: "एजेंट इन डॉक्यूमेंट की पुष्टि नहीं कर सका।",
     esignTitle: "आवेदन फ़ॉर्म पर ई-साइन करें", esignBody: "हस्ताक्षरकर्ता के आधार से जुड़े मोबाइल पर आए कोड से साइन करें। न कागज़, न विज़िट।", esignSend: "कोड भेजें", esignSentTo: "कोड भेजा गया", esignDemo: "डेमो कोड", esignCode: "6 अंकों का कोड", esignVerify: "साइन करें", esignDone: "आवेदन साइन हो गया", esignResend: "नया कोड भेजें",
     photoUnreadable: "यह फ़ोटो नहीं खुल पाई। कृपया कैमरे से दोबारा फ़ोटो लें।", gstinLabel: "आपका GSTIN", gstinHint: "हम पहले इसे रजिस्ट्री में देखते हैं; फ़ोटो सिर्फ़ पुष्टि करती है।", lookup: "देखें", backupNote: "कुछ डॉक्यूमेंट बैकअप रीडर से पढ़े गए; चालू करने से पहले एजेंट दोबारा जाँचेगा।", back: "बंडल पर वापस", step1: "आपकी सहमति", step2: "डॉक्यूमेंट अपलोड करें", step3: "नतीजा",
     gst: "GST सर्टिफ़िकेट", udyam: "Udyam सर्टिफ़िकेट", signatory: "अधिकृत हस्ताक्षरकर्ता की ID", addressProof: "बिजली बिल (पिछले 90 दिन)",
@@ -46,6 +50,8 @@ const T: Record<Lang, Record<string, string>> = {
     vision: "AI रीडर", ocr: "ऑफ़लाइन OCR", cache: "AI रीडर (सेव)", preflight: "पढ़ने से पहले रोका गया",
   },
   hinglish: {
+    esignAuth: "Aapka sign is signatory ke liye zaroori authorisation letter par bhi hoga.",
+    reviewWait: "Ek verification agent abhi aapka case dekh raha hai. Yeh page khula rakhein; yeh khud update hoga.", reviewRef: "Case reference", reviewApproved: "Verification agent ne approve kiya. Ab sign karke order karein.", reviewRejected: "Agent in documents ko verify nahi kar saka.",
     esignTitle: "Application form par e-sign karein", esignBody: "Signatory ke Aadhaar se jude mobile par aaye code se sign karein. Na kaagaz, na visit.", esignSend: "Code bhejein", esignSentTo: "Code bheja gaya", esignDemo: "Demo code", esignCode: "6 digit code", esignVerify: "Sign karein", esignDone: "Application sign ho gaya", esignResend: "Naya code bhejein",
     photoUnreadable: "Yeh photo nahi khul payi. Please camera se dobara photo lein.", gstinLabel: "Aapka GSTIN", gstinHint: "Hum pehle registry mein dekhte hain; photo sirf confirm karti hai.", lookup: "Dekhein", backupNote: "Kuch documents backup reader se padhe gaye; activation se pehle agent dobara check karega.", back: "Bundle par wapas", step1: "Aapki sahmati", step2: "Documents upload karein", step3: "Result",
     gst: "GST certificate", udyam: "Udyam certificate", signatory: "Authorised signatory ki ID", addressProof: "Bijli bill (pichhle 90 din)",
@@ -151,6 +157,7 @@ export function KycApp() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setResult(data);
+      setReview(undefined);
     } catch (e) {
       setError(e instanceof Error && e.message ? e.message : "The check didn't finish. Send the documents again.");
     } finally {
@@ -183,6 +190,32 @@ export function KycApp() {
     setEsignToken(data.esignToken);
   };
 
+  // MANUAL_REVIEW: wait for the verification agent's decision (operations panel), then continue.
+  const [review, setReview] = useState<{ status: "approved" | "rejected"; note?: string }>();
+  useEffect(() => {
+    if (result?.verdict !== "MANUAL_REVIEW") return;
+    let stop = false;
+    const pull = async () => {
+      try {
+        const res = await fetch("/api/kyc/review", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kycToken: kycTokenOf(result) }) });
+        const data = await res.json();
+        if (stop || !res.ok) return;
+        if (data.status === "approved") {
+          setReview({ status: "approved", note: data.note });
+          setResult({ ...result, verdict: "PASS", kycToken: data.kycToken } as KycCaseResult);
+        } else if (data.status === "rejected") setReview({ status: "rejected", note: data.note });
+      } catch {
+        /* keep waiting */
+      }
+    };
+    void pull();
+    const id = setInterval(pull, 5000);
+    return () => {
+      stop = true;
+      clearInterval(id);
+    };
+  }, [result]);
+
   // A new document check means a new case: any earlier signature no longer applies.
   useEffect(() => {
     setEsign(undefined);
@@ -214,7 +247,7 @@ export function KycApp() {
 
   const withdraw = async () => {
     if (!caseInfo) return;
-    const res = await fetch("/api/consent/withdraw", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ caseId: caseInfo.caseId }) });
+    const res = await fetch("/api/consent/withdraw", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ caseId: caseInfo.caseId, consentToken: caseInfo.consentToken }) });
     if (res.ok) {
       setWithdrawn(true);
       setFiles({});
@@ -385,6 +418,16 @@ export function KycApp() {
               <div className={`rounded-2xl border-l-4 bg-white p-5 ${VERDICT[result.verdict].tone}`}>
                 <h1 className="text-2xl font-bold">{VERDICT[result.verdict].title}</h1>
                 {result.documents.some((d) => d.reader === "ocr") && <p className="mt-1 text-sm text-ink-soft">{t.backupNote}</p>}
+                {result.verdict === "MANUAL_REVIEW" && review?.status !== "rejected" && (
+                  <p role="status" className="mt-2 flex items-start gap-2 text-[15px]">
+                    <span className="mt-1.5 inline-block h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-hold" aria-hidden />
+                    <span>
+                      {t.reviewWait} {t.reviewRef}: <span className="font-mono font-semibold">{caseInfo?.caseId}</span>
+                    </span>
+                  </p>
+                )}
+                {review?.status === "approved" && <p role="status" className="mt-2 font-semibold text-ok">{t.reviewApproved}</p>}
+                {review?.status === "rejected" && <p role="status" className="mt-2 font-semibold text-khata">{t.reviewRejected} {review.note}</p>}
                 {result.actions.length > 0 && (
                   <ul className="mt-2 list-disc space-y-1 pl-5">
                     {result.actions.map((a) => (
@@ -453,6 +496,7 @@ export function KycApp() {
                     {esignToken ? t.esignDone : t.esignTitle}
                   </h2>
                   {!esignToken && <p className="mt-1 text-[15px] text-ink-soft">{t.esignBody}</p>}
+                  {!esignToken && result.checks.some((c) => c.code === "SIGNATORY_AUTH") && <p className="mt-1 text-[15px] font-semibold">{t.esignAuth}</p>}
                   {!esignToken && !esign && (
                     <button onClick={startEsign} disabled={signing} className="mt-4 flex h-14 w-full items-center justify-center rounded-full bg-brand px-8 text-lg font-semibold text-white hover:bg-brand-dark disabled:opacity-50 sm:w-auto">
                       {t.esignSend}

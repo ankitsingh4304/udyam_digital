@@ -10,8 +10,16 @@
 5. Check `https://<your-app>.vercel.app/api/health`:
    `catalogue: 25`, `gstinRecords: 3534`, `llmProviders: ["gemini","groq"]`, `orderSecretSet: true`.
 
+6. **Shared storage (2 minutes, free) — needed for the operations features on Vercel.**
+   Vercel project → **Storage** → **Create Database** → **Upstash for Redis** (Marketplace, free plan) →
+   region Mumbai if offered → **Connect** to this project (all environments). This adds
+   `KV_REST_API_URL` and `KV_REST_API_TOKEN`. Then **Deployments → ⋯ → Redeploy**.
+   The operations panel's yellow "Shared storage is not connected" note disappears when it works.
+
 Notes
 - Every push to `main` redeploys automatically.
-- Serverless instances share no memory: orders, consent and KYC results travel as signed tokens,
-  so any instance can verify them. The audit log is per instance (/tmp) on Vercel; production would use Postgres.
+- Orders, consent and KYC results travel as signed tokens, so any server instance can verify them.
+- What needs shared storage (Upstash): the audit log, consent withdrawals, the verification queue,
+  order status updates from operations, partner lead claims and data-deletion requests.
+  Without it each serverless instance keeps its own copy, so an update made on one may not show on another.
 - `data/extract-cache.json` (committed) holds AI reads of the sample documents, so the demo spends no API quota.
