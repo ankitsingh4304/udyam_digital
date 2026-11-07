@@ -76,6 +76,7 @@ npx tsx scripts/kyc-check-all.ts --ocr  # offline reader only
 
 ## Tracker, judges, partners (steps 5–7)
 
+- `/` — role chooser: customer (no sign-in) → `/business`, partner, operations, judges. One link to share.
 - `/track/[token]` — order status. Until operations touch the order it follows the catalogue install days at demo speed
   (1 day = 1 minute); once operations post an update (dispatched, technician, installed, live, or a delay with reason)
   it follows those updates only. Owner can download their data or ask for deletion here.

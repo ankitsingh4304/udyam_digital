@@ -2,7 +2,7 @@
   "name": "Accel Business",
   "short_name": "Accel Biz",
   "description": "Internet, phones and digital tools for your business, with one clear monthly price.",
-  "start_url": "/?source=homescreen",
+  "start_url": "/business?source=homescreen",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

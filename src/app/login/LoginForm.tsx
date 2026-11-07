@@ -1,6 +1,7 @@
 "use client";
 
-import { LockKeyhole, ShieldCheck, Store } from "lucide-react";
+import { ArrowRight, LockKeyhole, ShieldCheck, Store } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BrandMark } from "@/components/AppShell";
@@ -36,7 +37,13 @@ export function LoginForm({ next, initialRole }: { next?: string; initialRole: "
     <main className="mx-auto grid min-h-dvh max-w-md content-center px-4 py-10">
       <BrandMark />
       <h1 className="mt-6 text-3xl font-bold">Back-office sign in</h1>
-      <p className="mt-1 text-ink-soft">For channel partners and Accel Business operations. Business owners don&apos;t need an account.</p>
+      <p className="mt-1 text-ink-soft">For channel partners and Accel Business operations.</p>
+      <Link href="/business" className="mt-4 flex items-center justify-between gap-3 rounded-2xl border-2 border-brand/30 bg-white p-4 font-semibold hover:border-brand">
+        <span>
+          Running a business? <span className="block text-sm font-normal text-ink-soft">Customers don&apos;t need an account.</span>
+        </span>
+        <span className="flex shrink-0 items-center gap-1 text-brand">Start as a customer <ArrowRight className="h-4 w-4" aria-hidden /></span>
+      </Link>
 
       <div role="tablist" className="mt-6 grid grid-cols-2 gap-2 rounded-full bg-white p-1 shadow-card">
         {(["partner", "admin"] as const).map((r) => (
