@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { rateLimit } from "@/server/rate-limit";
 import { getLlm } from "@/adapters/llm";
 import type { DocKind } from "@/domain/kyc/types";
-import { activeConsent, appendAudit } from "@/server/audit-log";
+import { appendAudit } from "@/server/audit-log";
+import { getConsent, openReview } from "@/server/ops";
 import { getRegistry } from "@/server/data";
 import { DOC_SLOTS, processKycDocuments } from "@/server/kyc-service";
 import { signToken, verifyToken } from "@/server/signed-token";
@@ -21,7 +22,9 @@ export async function POST(req: Request) {
   if (!form) return NextResponse.json({ error: "Send the documents as multipart form data." }, { status: 400 });
   const caseId = String(form.get("caseId") ?? "");
   const signed = verifyToken<{ caseId: string; purposes: Record<string, boolean> }>(String(form.get("consentToken") ?? ""));
-  const consent = signed?.caseId === caseId ? signed.purposes : activeConsent(caseId);
+  const stored = await getConsent(caseId).catch(() => undefined);
+  if (stored?.status === "withdrawn") return NextResponse.json({ error: "Consent was withdrawn for this case. Start again to continue." }, { status: 403 });
+  const consent = signed?.caseId === caseId ? signed.purposes : stored?.purposes;
   if (!consent?.kyc) return NextResponse.json({ error: "Consent for verification is needed before documents can be checked." }, { status: 403 });
 
   const docs: { slot: DocKind; buffer: Buffer }[] = [];
@@ -37,14 +40,22 @@ export async function POST(req: Request) {
   const declaredGstin = String(form.get("declaredGstin") ?? "").slice(0, 20) || undefined;
   const result = await processKycDocuments(docs, { registry: getRegistry(), llm: getLlm(), declaredGstin });
   // Buffers go out of scope here: images are never written to disk.
-  appendAudit("KYC_PROCESSED", caseId, {
+  await appendAudit("KYC_PROCESSED", caseId, {
     verdict: result.verdict,
     failed: result.checks.filter((c) => c.status === "fail").map((c) => c.code),
     readers: result.documents.map((d) => `${d.slot}:${d.reader ?? "preflight"}`),
   });
-  appendAudit("DOCS_DISCARDED", caseId, { count: docs.length });
+  await appendAudit("DOCS_DISCARDED", caseId, { count: docs.length });
   // Signed proof of the verdict, so the order step can trust it without shared server memory.
   const business = result.documents.find((d) => d.slot === "gst")?.fields?.tradeName ?? "Your business";
-  const kycToken = signToken({ caseId, verdict: result.verdict, business, iat: Date.now() });
+  // Backup-reader reads are flagged so operations spot-check them before activation.
+  const backupRead = result.documents.some((d) => d.reader === "ocr");
+  const kycToken = signToken({ caseId, verdict: result.verdict, business, backupRead, iat: Date.now() });
+  if (result.verdict === "MANUAL_REVIEW") {
+    // A person decides: the case goes to the operations verification queue (no images, masked IDs).
+    const gst = result.documents.find((d) => d.slot === "gst")?.fields;
+    const issues = result.checks.filter((c) => c.status === "fail" || c.status === "warn").map((c) => c.message);
+    await openReview({ caseId, business, gstinMasked: gst?.gstin, reason: issues[0] ?? "Needs a second look", issues }).catch((e) => console.warn(`review not queued: ${e.message}`));
+  }
   return NextResponse.json({ caseId, kycToken, ...result });
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { rescueLeads, rescueSummary } from "@/server/leads-service";
 import { requireRole } from "@/server/session";
+import { claimsFor } from "@/server/ops";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,14 @@ export async function GET(req: Request) {
   return NextResponse.json({
     summary: rescueSummary(leads),
     cities: session.role === "partner" ? [session.city] : [...new Set(all.map((l) => l.city))].sort(),
-    leads: leads.slice(offset, offset + limit),
+    leads: await withClaims(leads.slice(offset, offset + limit), session.id),
+  });
+}
+
+async function withClaims<T extends { id: string }>(page: T[], me: string) {
+  const claims = await claimsFor(page.map((l) => l.id)).catch(() => ({}) as Awaited<ReturnType<typeof claimsFor>>);
+  return page.map((l) => {
+    const c = claims[l.id];
+    return { ...l, claim: c ? { mine: c.partnerId === me, by: c.partnerName, at: c.at } : null };
   });
 }

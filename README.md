@@ -76,11 +76,26 @@ npx tsx scripts/kyc-check-all.ts --ocr  # offline reader only
 
 ## Tracker, judges, partners (steps 5–7)
 
-- `/track/[token]` — order status from catalogue install days; signed, stateless order links; demo speed (1 day = 1 minute).
+- `/track/[token]` — order status. Until operations touch the order it follows the catalogue install days at demo speed
+  (1 day = 1 minute); once operations post an update (dispatched, technician, installed, live, or a delay with reason)
+  it follows those updates only. Owner can download their data or ask for deletion here.
+- `/admin` (ADMIN / 9999) — work queues: **verification queue** (KYC cases needing a person, e.g. K07; the owner's
+  screen continues as soon as the agent approves) and **orders to fulfil** (move to next step, report a delay);
+  then the 5 KPIs, guardrails, live funnel, hash-chained audit log, data-deletion requests.
+- `/partner` (PIN 1234) — city-scoped rescue queue; "Take this lead" is saved, so others see it is taken.
 - `/judge` — any business profile → bundle, refusals with rule codes, rule trace; 15 one-click scenario checks.
 - `/partner` — rescue queue of 4,632 dropped leads with the action per drop reason, likelihood to buy
   (logistic regression, AUC 0.71, `scripts/train-propensity.py` → `src/domain/leads/propensity-model.json`).
 - Production: rate limits, CSP/HSTS headers, `/api/health`, Vercel config (Mumbai region). See `DEPLOY.md`.
+
+## Who updates what
+
+| Event | Demo | Production |
+|---|---|---|
+| Documents verified | KYC rules (instant) or agent in `/admin` | same |
+| Dispatched / technician / installed / live | operations in `/admin` | warehouse, field-force app, network activation call the same API |
+| Delay | operations in `/admin`, with reason | field-force app |
+| Consent withdrawn | owner on `/kyc` → blocks KYC, e-sign and order | same |
 
 ## Next
 

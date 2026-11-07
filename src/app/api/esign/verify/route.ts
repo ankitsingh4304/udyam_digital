@@ -13,6 +13,6 @@ export async function POST(req: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   const r = verifyEsign(parsed.data.challenge, parsed.data.otp.trim());
   if ("error" in r) return NextResponse.json({ error: r.error }, { status: r.status });
-  appendAudit("ESIGN_COMPLETED", r.esign.caseId, { requestId: r.esign.requestId, method: r.esign.method });
+  await appendAudit("ESIGN_COMPLETED", r.esign.caseId, { requestId: r.esign.requestId, method: r.esign.method });
   return NextResponse.json({ esignToken: r.esignToken, signedAt: r.esign.signedAt });
 }

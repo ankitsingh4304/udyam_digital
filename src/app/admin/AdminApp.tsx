@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BackOfficeShell, type BackOfficeUser } from "@/components/BackOfficeShell";
 import type { adminMetrics } from "@/server/admin-metrics";
+import { OpsQueues } from "./OpsQueues";
 
-type Data = ReturnType<typeof adminMetrics>;
+type Data = Awaited<ReturnType<typeof adminMetrics>>;
 const inr = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
 const VERDICT_CLS: Record<string, string> = {
   PASS: "bg-ok-soft text-ok",
@@ -16,7 +17,7 @@ const VERDICT_CLS: Record<string, string> = {
   REJECT: "bg-brand-soft text-brand",
 };
 const VERDICT_LABEL: Record<string, string> = { PASS: "Pass", PASS_WITH_WARNINGS: "Pass (note)", NEEDS_REUPLOAD: "Re-upload", MANUAL_REVIEW: "Agent review", REJECT: "Reject" };
-const EVENT_LABEL: Record<string, string> = { CONSENT_GIVEN: "Consent given", CONSENT_WITHDRAWN: "Consent withdrawn", KYC_PROCESSED: "Documents checked", DOCS_DISCARDED: "Images discarded", ORDER_PLACED: "Order placed" };
+const EVENT_LABEL: Record<string, string> = { CONSENT_GIVEN: "Consent given", CONSENT_WITHDRAWN: "Consent withdrawn", KYC_PROCESSED: "Documents checked", DOCS_DISCARDED: "Images discarded", ORDER_PLACED: "Order placed", ESIGN_COMPLETED: "Form e-signed", REVIEW_DECIDED: "Agent decided", ORDER_UPDATED: "Order updated", LEAD_CLAIMED: "Partner took lead" };
 
 export function AdminApp({ user }: { user: BackOfficeUser }) {
   const [d, setD] = useState<Data>();
@@ -35,7 +36,8 @@ export function AdminApp({ user }: { user: BackOfficeUser }) {
     <BackOfficeShell user={user} title="Operations">
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         <h1 className="text-3xl font-bold">Operations dashboard</h1>
-        <p className="mt-1 text-ink-soft">Baseline from last quarter&apos;s 5,000 leads, the targets we commit to, and what the live system is doing.</p>
+        <p className="mt-1 text-ink-soft">Today&apos;s work queues, then the baseline from last quarter&apos;s 5,000 leads, the targets we commit to, and what the live system is doing.</p>
+        <OpsQueues />
 
         {!d ? (
           <p className="mt-8 text-ink-soft">Loading…</p>
@@ -115,7 +117,7 @@ export function AdminApp({ user }: { user: BackOfficeUser }) {
                 <div className={card}>
                   <p className="font-semibold">Audit log (latest events, no personal data)</p>
                   <ol className="mt-2 divide-y divide-rule text-sm">
-                    {d.live.recent.length === 0 && <li className="py-2 text-ink-soft">No activity yet on this server. Run a document check to see events appear.</li>}
+                    {d.live.recent.length === 0 && <li className="py-2 text-ink-soft">No activity yet. Run a document check to see events appear.</li>}
                     {d.live.recent.map((e) => (
                       <li key={e.seq} className="flex flex-wrap items-baseline justify-between gap-2 py-2">
                         <span>
@@ -134,7 +136,7 @@ export function AdminApp({ user }: { user: BackOfficeUser }) {
                     {d.live.chain.ok ? <ShieldCheck className="h-5 w-5 text-ok" /> : <XCircle className="h-5 w-5 text-brand" />} Audit chain {d.live.chain.ok ? "intact" : `broken at #${d.live.chain.brokenAt}`}
                   </p>
                   <p className="mt-2 text-sm text-ink-soft">Every entry carries the hash of the one before it, so editing or deleting any past event is detected here.</p>
-                  {d.live.perInstance && <p className="mt-2 text-xs text-ink-soft">Demo hosting keeps this log per server instance; production stores it in a database.</p>}
+                  {d.live.perInstance && <p className="mt-2 text-xs text-ink-soft">Shared storage is not connected, so this log is per server instance.</p>}
                 </div>
               </div>
             </section>

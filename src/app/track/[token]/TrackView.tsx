@@ -1,20 +1,20 @@
 "use client";
 
-import { CheckCircle2, CircleDot, Circle, Phone, Share2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, CircleDot, Circle, Phone, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { useLang } from "@/components/LangContext";
 import type { Lang } from "@/domain/advisor/state";
-import { milestones, promisedBy, type OrderPayload } from "@/domain/orders/tracker";
+import { milestones, promisedBy, type OrderEvent, type OrderPayload } from "@/domain/orders/tracker";
 
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 const T: Record<Lang, Record<string, string>> = {
-  en: { order: "Order", live: "Your business is live!", liveSub: "All services are active.", next: "Next:", by: "Everything active by", noCall: "No need to call. This page updates by itself.", bundle: "Your bundle", bill: "One monthly bill", setup: "one-time setup", contract: "-month contract", share: "Share this page", help: "Need help? Call 1800-000-0000", demo: "Demo: one day of progress passes every minute so you can watch the whole journey." },
-  hi: { order: "ऑर्डर", live: "आपका बिज़नेस चालू है!", liveSub: "सभी सेवाएँ चालू हैं।", next: "अगला:", by: "सब चालू होगा", noCall: "कॉल करने की ज़रूरत नहीं। यह पेज खुद अपडेट होता है।", bundle: "आपका बंडल", bill: "एक मासिक बिल", setup: "एक बार का सेटअप", contract: " महीने का कॉन्ट्रैक्ट", share: "यह पेज शेयर करें", help: "मदद चाहिए? 1800-000-0000 पर कॉल करें", demo: "डेमो: हर मिनट एक दिन की प्रगति होती है।" },
-  hinglish: { order: "Order", live: "Aapka business live hai!", liveSub: "Saari services chalu hain.", next: "Agla:", by: "Sab chalu hoga", noCall: "Call karne ki zaroorat nahi. Yeh page khud update hota hai.", bundle: "Aapka bundle", bill: "Ek monthly bill", setup: "one-time setup", contract: " mahine ka contract", share: "Yeh page share karein", help: "Madad chahiye? 1800-000-0000 par call karein", demo: "Demo: har minute ek din ki progress hoti hai." },
+  en: { order: "Order", live: "Your business is live!", liveSub: "All services are active.", next: "Next:", by: "Everything active by", noCall: "No need to call. This page updates by itself.", bundle: "Your bundle", bill: "One monthly bill", setup: "one-time setup", contract: "-month contract", share: "Share this page", help: "Need help? Call 1800-000-0000", demo: "Demo: one day of progress passes every minute so you can watch the whole journey.", delayed: "Delayed", newDate: "New date", ops: "Updated by Accel operations", sorry: "Sorry for the delay. We have moved your date; no need to call.", data: "Your data", dataSub: "Download everything we hold about this order, or ask us to delete it. Document photos are never kept.", download: "Download my data", erase: "Ask to delete my data", erased: "Deletion request recorded. We erase everything except what telecom rules require us to keep." },
+  hi: { order: "ऑर्डर", live: "आपका बिज़नेस चालू है!", liveSub: "सभी सेवाएँ चालू हैं।", next: "अगला:", by: "सब चालू होगा", noCall: "कॉल करने की ज़रूरत नहीं। यह पेज खुद अपडेट होता है।", bundle: "आपका बंडल", bill: "एक मासिक बिल", setup: "एक बार का सेटअप", contract: " महीने का कॉन्ट्रैक्ट", share: "यह पेज शेयर करें", help: "मदद चाहिए? 1800-000-0000 पर कॉल करें", demo: "डेमो: हर मिनट एक दिन की प्रगति होती है।", delayed: "देरी", newDate: "नई तारीख", ops: "Accel ऑपरेशंस द्वारा अपडेट", sorry: "देरी के लिए माफ़ी। आपकी तारीख बदल दी गई है; कॉल करने की ज़रूरत नहीं।", data: "आपका डेटा", dataSub: "इस ऑर्डर का पूरा डेटा डाउनलोड करें, या डिलीट करने को कहें। डॉक्यूमेंट फ़ोटो कभी नहीं रखी जातीं।", download: "मेरा डेटा डाउनलोड करें", erase: "मेरा डेटा डिलीट करें", erased: "डिलीट करने का अनुरोध दर्ज। टेलीकॉम नियमों के लिए ज़रूरी जानकारी के अलावा सब मिटा दिया जाएगा।" },
+  hinglish: { order: "Order", live: "Aapka business live hai!", liveSub: "Saari services chalu hain.", next: "Agla:", by: "Sab chalu hoga", noCall: "Call karne ki zaroorat nahi. Yeh page khud update hota hai.", bundle: "Aapka bundle", bill: "Ek monthly bill", setup: "one-time setup", contract: " mahine ka contract", share: "Yeh page share karein", help: "Madad chahiye? 1800-000-0000 par call karein", demo: "Demo: har minute ek din ki progress hoti hai.", delayed: "Delay", newDate: "Nayi date", ops: "Accel operations dwara update", sorry: "Delay ke liye maafi. Aapki date badal di gayi hai; call karne ki zaroorat nahi.", data: "Aapka data", dataSub: "Is order ka saara data download karein, ya delete karne ko kahein. Document photos kabhi nahi rakhi jaati.", download: "Mera data download karein", erase: "Mera data delete karein", erased: "Delete request record ho gayi. Telecom rules ke liye zaroori info ke alawa sab mita diya jayega." },
 };
 
-export function TrackView({ order }: { order: OrderPayload }) {
+export function TrackView({ order, token }: { order: OrderPayload; token: string }) {
   const { lang } = useLang();
   const t = T[lang];
   const [now, setNow] = useState(() => new Date());
@@ -22,9 +22,42 @@ export function TrackView({ order }: { order: OrderPayload }) {
     const id = setInterval(() => setNow(new Date()), 5000);
     return () => clearInterval(id);
   }, []);
-  const steps = milestones(order, now, lang);
+  // Status updates from operations (dispatch, technician, delays). Polled so the page updates by itself.
+  const [events, setEvents] = useState<OrderEvent[]>([]);
+  useEffect(() => {
+    let stop = false;
+    const pull = async () => {
+      try {
+        const res = await fetch("/api/track", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token }), cache: "no-store" });
+        if (res.ok && !stop) setEvents((await res.json()).events ?? []);
+      } catch {
+        /* offline: keep what we have */
+      }
+    };
+    void pull();
+    const id = setInterval(pull, 8000);
+    return () => {
+      stop = true;
+      clearInterval(id);
+    };
+  }, [token]);
+  const steps = milestones(order, now, lang, events);
+  const delayed = steps.find((s) => s.delay);
   const live = steps.every((s) => s.status === "done");
   const current = steps.find((s) => s.status === "current");
+
+  const [erased, setErased] = useState(false);
+  const myData = async (action: "download" | "delete") => {
+    const res = await fetch("/api/my-data", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token, action }) });
+    if (!res.ok) return;
+    if (action === "delete") return setErased(true);
+    const blob = new Blob([JSON.stringify(await res.json(), null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `accel-order-${order.id}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
 
   const share = async () => {
     try {
@@ -43,8 +76,20 @@ export function TrackView({ order }: { order: OrderPayload }) {
             {t.order} {order.id} · {order.business}
           </p>
           <h1 className="mt-1 text-3xl font-bold leading-tight">{live ? t.live : `${t.next} ${current?.title}`}</h1>
-          <p className="mt-2 text-white/90">{live ? t.liveSub : `${t.by} ${promisedBy(order)}. ${t.noCall}`}</p>
+          <p className="mt-2 text-white/90">{live ? t.liveSub : `${t.by} ${promisedBy(order, events)}. ${t.noCall}`}</p>
         </section>
+
+        {delayed?.delay && !live && (
+          <div role="status" className="mt-4 flex gap-3 rounded-2xl bg-hold-soft p-4 text-hold">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+            <p>
+              <span className="font-bold">
+                {t.delayed}: {delayed.title}.
+              </span>{" "}
+              {delayed.delay.reason}. {t.newDate}: <span className="font-semibold">{delayed.delay.newDate}</span>. {t.sorry}
+            </p>
+          </div>
+        )}
 
         <ol className="mt-6 rounded-2xl bg-white p-5 shadow-card">
           {steps.map((s, i) => {
@@ -58,7 +103,7 @@ export function TrackView({ order }: { order: OrderPayload }) {
                     {s.title}
                     <span className="sr-only"> ({s.status})</span>
                   </p>
-                  <p className="text-sm text-ink-soft">{s.at}</p>
+                  <p className={`text-sm ${s.delay ? "font-semibold text-hold" : "text-ink-soft"}`}>{s.delay ? `${t.delayed} · ${t.newDate}: ${s.at}` : s.at}</p>
                   <p className="mt-1">{s.detail}</p>
                 </div>
               </li>
@@ -95,7 +140,20 @@ export function TrackView({ order }: { order: OrderPayload }) {
             {t.contract}
           </p>
         </section>
-        {order.speed > 1 && <p className="mt-4 text-xs text-ink-soft">{t.demo}</p>}
+        <section className="mt-6 rounded-2xl bg-white p-5 shadow-card">
+          <h2 className="text-lg font-bold">{t.data}</h2>
+          <p className="mt-1 text-sm text-ink-soft">{t.dataSub}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button onClick={() => myData("download")} className="h-11 rounded-full border-2 border-rule px-5 font-semibold">
+              {t.download}
+            </button>
+            <button onClick={() => myData("delete")} disabled={erased} className="h-11 rounded-full border-2 border-rule px-5 font-semibold disabled:opacity-50">
+              {t.erase}
+            </button>
+          </div>
+          {erased && <p role="status" className="mt-2 text-sm font-semibold text-ok">{t.erased}</p>}
+        </section>
+        {events.length ? <p className="mt-4 text-xs text-ink-soft">{t.ops}</p> : order.speed > 1 && <p className="mt-4 text-xs text-ink-soft">{t.demo}</p>}
       </main>
     </AppShell>
   );

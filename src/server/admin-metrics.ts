@@ -3,6 +3,7 @@ import { validateBundle } from "@/domain/catalogue/eligibility";
 import { runKycChecks } from "@/domain/kyc/checks";
 import { KYC_FIXTURES } from "@/domain/kyc/sample-extractions";
 import { auditEntries, verifyAuditChain } from "./audit-log";
+import { getStore } from "./store";
 import { getCatalogue, getRegistry, readDataFile } from "./data";
 import { rescueLeads, rescueSummary } from "./leads-service";
 
@@ -45,7 +46,7 @@ function computeBaseline() {
   };
 }
 
-export function adminMetrics() {
+export async function adminMetrics() {
   const b = (baselineCache ??= computeBaseline());
   const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
   const metrics: Metric[] = [
@@ -62,8 +63,8 @@ export function adminMetrics() {
     return { id, verdict: r.verdict, reason: r.checks.find((c) => c.status === "fail")?.message ?? r.checks.find((c) => c.status === "warn")?.message ?? "All checks passed" };
   });
 
-  // Live activity on this server instance (audit log has no personal data).
-  const entries = auditEntries();
+  // Live activity (audit log has no personal data).
+  const entries = await auditEntries();
   const count = (t: string) => entries.filter((e) => e.type === t).length;
   const verdicts: Record<string, number> = {};
   for (const e of entries.filter((x) => x.type === "KYC_PROCESSED")) verdicts[String(e.data.verdict)] = (verdicts[String(e.data.verdict)] ?? 0) + 1;
@@ -92,8 +93,9 @@ export function adminMetrics() {
       monthlyRevenue: revenue,
       medianMinutesConsentToOrder: durations.length ? durations.sort((x, y) => x - y)[Math.floor(durations.length / 2)] : null,
       recent: entries.slice(-12).reverse().map((e) => ({ seq: e.seq, ts: e.ts, type: e.type, caseId: e.caseId, data: e.data, hash: e.hash.slice(0, 10) })),
-      chain: verifyAuditChain(),
-      perInstance: !!process.env.VERCEL,
+      chain: verifyAuditChain(entries),
+      storage: getStore().mode,
+      perInstance: getStore().mode === "local" && !!process.env.VERCEL,
     },
     rescue: rescueSummary(rescueLeads()),
   };

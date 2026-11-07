@@ -12,17 +12,36 @@ export interface OrderPayload {
   contractMonths: number;
   installDays: number;
   caseId: string;
+  /** Documents were read by the backup reader: operations spot-check before activation. */
+  spotCheck?: boolean;
   /** Demo speed: 1 = real time; 1440 = one day passes per minute. */
   speed: number;
 }
 
 export type MilestoneStatus = "done" | "current" | "upcoming";
+export type MilestoneKey = "kyc" | "dispatch" | "technician" | "install" | "live";
+export const MILESTONE_KEYS: MilestoneKey[] = ["kyc", "dispatch", "technician", "install", "live"];
 export interface Milestone {
-  key: "kyc" | "dispatch" | "technician" | "install" | "live";
+  key: MilestoneKey;
   title: string;
   detail: string;
   at: string;
   status: MilestoneStatus;
+  /** Set when operations reported a delay on this step. */
+  delay?: { reason: string; newDate: string };
+}
+
+/** A status update from operations (warehouse, field team, network). Once any exists, the tracker follows them, not the clock. */
+export interface OrderEvent {
+  ts: string;
+  kind: "done" | "delay";
+  step: MilestoneKey;
+  reason?: string;
+  /** For delays: how many days this pushes the remaining steps back. */
+  days?: number;
+  /** For delays: the new expected date of the delayed step (ISO), for display and exports. */
+  newDate?: string;
+  by: string;
 }
 
 const HOUR = 3_600_000;
@@ -61,12 +80,14 @@ const COPY: Record<Lang, Record<Milestone["key"], [string, (x: Record<string, st
  * Milestones derived from the order time and the catalogue's install days. Pure: same order +
  * same "now" → same answer, so the owner sees exactly what support would see.
  */
-export function milestones(o: OrderPayload, now: Date, lang: Lang = "en"): Milestone[] {
+export function milestones(o: OrderPayload, now: Date, lang: Lang = "en", events: OrderEvent[] = []): Milestone[] {
   const t0 = Date.parse(o.createdAt);
   const s = seed(o.id);
   // Real offsets, compressed by the demo speed factor.
   const at = (ms: number) => new Date(t0 + ms / Math.max(1, o.speed));
-  const simAt = (ms: number) => new Date(t0 + ms); // dates shown to the customer are real-world dates
+  // A reported delay pushes every remaining date back by its days (cumulative).
+  const shift = events.filter((e) => e.kind === "delay").reduce((n, e) => n + (e.days ?? 0), 0) * DAY;
+  const simAt = (ms: number) => new Date(t0 + ms + shift); // dates shown to the customer are real-world dates
   const install = Math.max(1, o.installDays);
   const slotStart = 10 + (s % 3) * 2;
   const x = {
@@ -87,6 +108,35 @@ export function milestones(o: OrderPayload, now: Date, lang: Lang = "en"): Miles
   ];
   const c = COPY[lang];
   let currentAssigned = false;
+
+  // Operations mode: real status events drive the tracker (a step is done when its event arrives;
+  // everything before a done step is done too). Delays carry a reason and a new date.
+  if (events.length) {
+    const doneAt = new Map<MilestoneKey, string>([["kyc", o.createdAt]]);
+    for (const e of events) if (e.kind === "done") doneAt.set(e.step, e.ts);
+    const lastDone = Math.max(...MILESTONE_KEYS.map((k, i) => (doneAt.has(k) ? i : -1)));
+    const delays = new Map<MilestoneKey, OrderEvent>();
+    for (const e of events) if (e.kind === "delay") delays.set(e.step, e);
+    return plan.map(([key, offset], i) => {
+      const done = i <= lastDone;
+      let status: MilestoneStatus = done ? "done" : "upcoming";
+      if (!done && !currentAssigned) {
+        status = "current";
+        currentAssigned = true;
+      }
+      const d = !done ? delays.get(key) : undefined;
+      const stamp = doneAt.get(key);
+      return {
+        key,
+        title: c[key][0],
+        detail: c[key][1](x),
+        at: done && stamp ? fmt(new Date(stamp)) : fmt(simAt(offset)),
+        status,
+        ...(d ? { delay: { reason: d.reason ?? "", newDate: fmtDay(simAt(offset)) } } : {}),
+      };
+    });
+  }
+
   return plan.map(([key, offset]) => {
     const when = at(offset);
     const done = now.getTime() >= when.getTime();
@@ -99,7 +149,22 @@ export function milestones(o: OrderPayload, now: Date, lang: Lang = "en"): Miles
   });
 }
 
+/** Planned real-world date of a step after delays (used to stamp a delay event's newDate). */
+export function plannedDate(o: OrderPayload, step: MilestoneKey, events: OrderEvent[]): Date {
+  const offsets: Record<MilestoneKey, number> = { kyc: 0, dispatch: 4 * HOUR, technician: DAY, install: Math.max(1, o.installDays) * DAY, live: Math.max(1, o.installDays) * DAY + 2 * HOUR };
+  const shift = events.filter((e) => e.kind === "delay").reduce((n, e) => n + (e.days ?? 0), 0) * DAY;
+  return new Date(Date.parse(o.createdAt) + offsets[step] + shift);
+}
+
+/** The next step operations can mark done, or undefined when the order is live. */
+export function nextStep(events: OrderEvent[]): MilestoneKey | undefined {
+  const done = new Set<MilestoneKey>(["kyc", ...events.filter((e) => e.kind === "done").map((e) => e.step)]);
+  const last = Math.max(...MILESTONE_KEYS.map((k, i) => (done.has(k) ? i : -1)));
+  return MILESTONE_KEYS[last + 1];
+}
+
 /** Promised activation, shown on the order page and used as the SLA. */
-export function promisedBy(o: OrderPayload): string {
-  return fmtDay(new Date(Date.parse(o.createdAt) + (Math.max(1, o.installDays) * DAY + 2 * HOUR)));
+export function promisedBy(o: OrderPayload, events: OrderEvent[] = []): string {
+  const shift = events.filter((e) => e.kind === "delay").reduce((n, e) => n + (e.days ?? 0), 0) * DAY;
+  return fmtDay(new Date(Date.parse(o.createdAt) + shift + (Math.max(1, o.installDays) * DAY + 2 * HOUR)));
 }

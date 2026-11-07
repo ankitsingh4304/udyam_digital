@@ -5,14 +5,16 @@ import { useCallback, useEffect, useState } from "react";
 import type { RescueLead, rescueSummary } from "@/server/leads-service";
 
 type Summary = ReturnType<typeof rescueSummary>;
+type Lead = RescueLead & { claim: { mine: boolean; by: string; at: string } | null };
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 const BAND_CLS: Record<string, string> = { High: "bg-ok text-white", Medium: "bg-hold/15 text-hold", Low: "bg-rule text-ink-soft" };
 const CHANNEL: Record<string, string> = { digital: "Fix by link, no visit", call: "Needs a call", visit: "Needs a visit", later: "Follow up later" };
 
 export function PartnerApp({ user }: { user: BackOfficeUser }) {
   const [filters, setFilters] = useState({ city: "", band: "", channel: "", segment: "" });
-  const [data, setData] = useState<{ summary: Summary; cities: string[]; leads: RescueLead[] }>();
-  const [done, setDone] = useState<Record<string, string>>({});
+  const [data, setData] = useState<{ summary: Summary; cities: string[]; leads: Lead[] }>();
+  const [busy, setBusy] = useState<string>();
+  const [claimError, setClaimError] = useState<string>();
   const [copied, setCopied] = useState<string>();
 
   const load = useCallback(async () => {
@@ -26,7 +28,18 @@ export function PartnerApp({ user }: { user: BackOfficeUser }) {
     void load();
   }, [load]);
 
-  const message = (l: RescueLead) =>
+  // Taking a lead is saved on the server, so another partner or field agent sees it is taken.
+  const take = async (id: string) => {
+    setBusy(id);
+    setClaimError(undefined);
+    const res = await fetch(`/api/partner/leads/${id}/claim`, { method: "POST" });
+    const body = await res.json().catch(() => ({}));
+    setBusy(undefined);
+    if (!res.ok) setClaimError(body.error ?? "Couldn't take this lead.");
+    await load();
+  };
+
+  const message = (l: Lead) =>
     `Namaste ${l.contact.split(",")[0]}! Accel Business here. You can now see your exact monthly price and finish sign-up on your phone in 5 minutes, no visit needed: ${typeof window !== "undefined" ? window.location.origin : ""}/advisor`;
 
   const select = "rounded-lg border border-rule bg-white px-3 py-2 text-sm";
@@ -98,9 +111,10 @@ export function PartnerApp({ user }: { user: BackOfficeUser }) {
         </select>
       </div>
 
+      {claimError && <p className="mt-4 rounded-2xl bg-brand-soft p-3 text-sm text-brand">{claimError}</p>}
       <ol className="mt-4 space-y-3">
         {data?.leads.map((l) => (
-          <li key={l.id} className={`rounded-2xl bg-white shadow-card p-5 ${done[l.id] ? "opacity-60" : ""}`}>
+          <li key={l.id} className={`rounded-2xl bg-white shadow-card p-5 ${l.claim && !l.claim.mine ? "opacity-60" : ""}`}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-lg font-bold">{l.business}</p>
@@ -144,9 +158,13 @@ export function PartnerApp({ user }: { user: BackOfficeUser }) {
                   {copied === l.id ? "Message copied" : "Copy WhatsApp message"}
                 </button>
               )}
-              <button className="h-11 rounded-full bg-brand px-5 font-semibold text-white disabled:opacity-50" disabled={!!done[l.id]} onClick={() => setDone({ ...done, [l.id]: "assist" })}>
-                {done[l.id] ? "Assigned to you" : "Take this lead"}
-              </button>
+              {user.role === "partner" ? (
+                <button className="h-11 rounded-full bg-brand px-5 font-semibold text-white disabled:opacity-50" disabled={!!l.claim || busy === l.id} onClick={() => take(l.id)}>
+                  {l.claim ? (l.claim.mine ? "Taken by you" : `Taken by ${l.claim.by}`) : "Take this lead"}
+                </button>
+              ) : (
+                l.claim && <span className="flex h-11 items-center rounded-full bg-page px-4 text-sm font-semibold">Taken by {l.claim.by}</span>
+              )}
             </div>
           </li>
         ))}
