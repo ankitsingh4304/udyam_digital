@@ -4,7 +4,7 @@ import path from "node:path";
 import { z } from "zod";
 import type { LlmChain } from "@/adapters/llm/chain";
 import { parseOcrText, type DocFields } from "@/domain/kyc/parse-ocr";
-import { WRITABLE_DIR } from "@/server/paths";
+import { IS_SERVERLESS, WRITABLE_DIR } from "@/server/paths";
 
 export type Reader = "vision" | "ocr" | "cache";
 
@@ -32,9 +32,15 @@ If a GSTIN prints the digit zero where a letter would be expected, output the di
  * on read-only hosts new entries go to a writable overlay instead.
  */
 const CACHE_FILE = process.env.UDYAM_EXTRACT_CACHE ?? path.join(process.cwd(), "data", "extract-cache.json");
-const OVERLAY_FILE = process.env.VERCEL ? path.join(WRITABLE_DIR, "extract-cache.json") : CACHE_FILE;
+const OVERLAY_FILE = IS_SERVERLESS ? path.join(WRITABLE_DIR, "extract-cache.json") : CACHE_FILE;
 let cache: Record<string, DocFields> | undefined;
-const readJson = (f: string) => (existsSync(f) ? (JSON.parse(readFileSync(f, "utf8")) as Record<string, DocFields>) : {});
+const readJson = (f: string): Record<string, DocFields> => {
+  try {
+    return existsSync(f) ? (JSON.parse(readFileSync(f, "utf8")) as Record<string, DocFields>) : {};
+  } catch {
+    return {};
+  }
+};
 const loadCache = () => (cache ??= { ...readJson(CACHE_FILE), ...(OVERLAY_FILE !== CACHE_FILE ? readJson(OVERLAY_FILE) : {}) });
 function saveCache() {
   try {

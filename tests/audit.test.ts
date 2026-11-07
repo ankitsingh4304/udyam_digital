@@ -27,3 +27,18 @@ describe("hash-chained audit log", () => {
     expect(audit.verifyAuditChain(list.slice(1)).ok).toBe(false);
   });
 });
+
+describe("audit log on a read-only filesystem", () => {
+  it("still records in memory and never throws", async () => {
+    const { writeFileSync } = await import("node:fs");
+    const blocker = path.join(mkdtempSync(path.join(tmpdir(), "ro-")), "file");
+    writeFileSync(blocker, "x"); // a file where a folder is expected → mkdir fails (ENOTDIR)
+    process.env.UDYAM_AUDIT_LOG = path.join(blocker, "sub", "audit.jsonl");
+    const { vi } = await import("vitest");
+    vi.resetModules();
+    const fresh = await import("@/server/audit-log");
+    const id = fresh.newCaseId();
+    expect(() => fresh.appendAudit("CONSENT_GIVEN", id, { purposes: { kyc: true } })).not.toThrow();
+    expect(fresh.activeConsent(id)?.kyc).toBe(true);
+  });
+});
