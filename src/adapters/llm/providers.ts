@@ -1,6 +1,13 @@
 import { ProviderError, RateLimitError, type JsonRequest, type LlmProvider } from "./types";
 
 const TIMEOUT_MS = 12_000;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** "a, b ,c" → ["a","b","c"] */
+export const modelList = (v: string | undefined, fallback: string[]) => {
+  const list = (v ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  return list.length ? list : fallback;
+};
 
 async function post(provider: string, url: string, headers: Record<string, string>, body: unknown, signal?: AbortSignal) {
   const ctrl = new AbortController();
@@ -25,12 +32,37 @@ async function post(provider: string, url: string, headers: Record<string, strin
   }
 }
 
+/** Errors worth trying the next model for: overloaded (503/500/502) or model missing (404). */
+const tryNextModel = (e: unknown) => e instanceof ProviderError && [404, 500, 502, 503].includes(e.status);
+
+/**
+ * Walk a model list: on overload, retry once after a short pause, then move to the next
+ * model; on "model not found", move on immediately. Auth errors and rate limits stop here
+ * so the chain can switch provider.
+ */
+async function withModels<T>(models: string[], call: (model: string) => Promise<T>): Promise<T> {
+  let last: unknown;
+  for (const model of models) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        return await call(model);
+      } catch (e) {
+        last = e;
+        if (!tryNextModel(e)) throw e;
+        if ((e as ProviderError).status === 404) break; // no point retrying a missing model
+        if (attempt === 0) await sleep(1200);
+      }
+    }
+  }
+  throw last;
+}
+
 /** Google Gemini via the Generative Language REST API (free tier works). */
 export class GeminiProvider implements LlmProvider {
   readonly name = "gemini";
   constructor(
     private apiKey: string,
-    private model: string,
+    private models: string[],
   ) {}
 
   async complete(req: JsonRequest, opts: { json: boolean; signal?: AbortSignal }) {
@@ -40,23 +72,25 @@ export class GeminiProvider implements LlmProvider {
     if (req.image && contents.length) {
       contents[contents.length - 1].parts.push({ inline_data: { mime_type: req.image.mimeType, data: req.image.base64 } });
     }
-    const data = (await post(
-      this.name,
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(this.model)}:generateContent`,
-      { "x-goog-api-key": this.apiKey },
-      {
-        systemInstruction: { parts: [{ text: req.system }] },
-        contents,
-        generationConfig: {
-          temperature: req.temperature ?? 0,
-          ...(opts.json ? { responseMimeType: "application/json" } : {}),
+    return withModels(this.models, async (model) => {
+      const data = (await post(
+        this.name,
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+        { "x-goog-api-key": this.apiKey },
+        {
+          systemInstruction: { parts: [{ text: req.system }] },
+          contents,
+          generationConfig: {
+            temperature: req.temperature ?? 0,
+            ...(opts.json ? { responseMimeType: "application/json" } : {}),
+          },
         },
-      },
-      opts.signal,
-    )) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
-    const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
-    if (!text) throw new ProviderError(this.name, 200, "empty response");
-    return text;
+        opts.signal,
+      )) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+      const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
+      if (!text) throw new ProviderError(this.name, 502, "empty response");
+      return text;
+    });
   }
 }
 
@@ -65,8 +99,8 @@ export class GroqProvider implements LlmProvider {
   readonly name = "groq";
   constructor(
     private apiKey: string,
-    private chatModel: string,
-    private visionModel: string,
+    private chatModels: string[],
+    private visionModels: string[],
   ) {}
 
   async complete(req: JsonRequest, opts: { json: boolean; vision?: boolean; signal?: AbortSignal }) {
@@ -83,20 +117,38 @@ export class GroqProvider implements LlmProvider {
         });
       } else messages.push({ role: m.role, content: m.content });
     });
-    const data = (await post(
-      this.name,
-      "https://api.groq.com/openai/v1/chat/completions",
-      { authorization: `Bearer ${this.apiKey}` },
-      {
-        model: req.image || opts.vision ? this.visionModel : this.chatModel,
-        messages,
-        temperature: req.temperature ?? 0,
-        ...(opts.json ? { response_format: { type: "json_object" } } : {}),
-      },
-      opts.signal,
-    )) as { choices?: { message?: { content?: string } }[] };
-    const text = data.choices?.[0]?.message?.content ?? "";
-    if (!text) throw new ProviderError(this.name, 200, "empty response");
-    return text;
+    const models = req.image || opts.vision ? this.visionModels : this.chatModels;
+    return withModels(models, async (model) => {
+      const data = (await post(
+        this.name,
+        "https://api.groq.com/openai/v1/chat/completions",
+        { authorization: `Bearer ${this.apiKey}` },
+        {
+          model,
+          messages,
+          temperature: req.temperature ?? 0,
+          ...(opts.json ? { response_format: { type: "json_object" } } : {}),
+        },
+        opts.signal,
+      )) as { choices?: { message?: { content?: string } }[] };
+      const text = data.choices?.[0]?.message?.content ?? "";
+      if (!text) throw new ProviderError(this.name, 502, "empty response");
+      return text;
+    });
   }
+}
+
+/** Model IDs the key can use, for the setup check. */
+export async function listGeminiModels(apiKey: string): Promise<string[]> {
+  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": apiKey } });
+  if (!res.ok) throw new ProviderError("gemini", res.status, (await res.text()).slice(0, 200));
+  const data = (await res.json()) as { models?: { name: string; supportedGenerationMethods?: string[] }[] };
+  return (data.models ?? []).filter((m) => m.supportedGenerationMethods?.includes("generateContent")).map((m) => m.name.replace(/^models\//, ""));
+}
+
+export async function listGroqModels(apiKey: string): Promise<string[]> {
+  const res = await fetch("https://api.groq.com/openai/v1/models", { headers: { authorization: `Bearer ${apiKey}` } });
+  if (!res.ok) throw new ProviderError("groq", res.status, (await res.text()).slice(0, 200));
+  const data = (await res.json()) as { data?: { id: string; active?: boolean }[] };
+  return (data.data ?? []).filter((m) => m.active !== false).map((m) => m.id);
 }

@@ -67,6 +67,9 @@ export class LlmChain {
   }
 }
 
+/** Remove code fences and reasoning blocks some models add around JSON. */
 export function stripFences(text: string) {
-  return text.trim().replace(/^```(?:json)?\s*/i, "").replace(/```$/, "").trim();
+  const t = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```$/, "").trim();
+  const start = t.indexOf("{"), end = t.lastIndexOf("}");
+  return start >= 0 && end > start ? t.slice(start, end + 1) : t;
 }
