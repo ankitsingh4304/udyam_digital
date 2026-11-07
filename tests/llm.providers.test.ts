@@ -30,6 +30,21 @@ describe("model fallback inside a provider", () => {
     expect(models).toEqual(["old", "new"]);
   });
 
+  it("a model that doesn't answer in time is skipped, not retried", async () => {
+    const seen: string[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      seen.push(url.includes("slow") ? "slow" : "fast");
+      if (url.includes("slow")) throw Object.assign(new Error("aborted"), { name: "AbortError" });
+      return reply(200, geminiOk);
+    }));
+    await new GeminiProvider("k", ["slow", "fast"]).complete(req, { json: true });
+    expect(seen).toEqual(["slow", "fast"]);
+  });
+
+  it("vision with no image model configured fails fast, so the caller uses Tesseract", async () => {
+    await expect(new GroqProvider("k", ["c"], []).complete({ ...req, image: { base64: "x", mimeType: "image/png" } }, { json: true })).rejects.toThrow("no model configured");
+  });
+
   it("bad key (400/401) is not retried, so the chain can switch provider", async () => {
     const f = vi.fn(async () => reply(400, { error: "API key not valid" }));
     vi.stubGlobal("fetch", f);

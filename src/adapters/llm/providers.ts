@@ -1,6 +1,6 @@
 import { ProviderError, RateLimitError, type JsonRequest, type LlmProvider } from "./types";
 
-const TIMEOUT_MS = 12_000;
+const TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS) || 10_000;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** "a, b ,c" → ["a","b","c"] */
@@ -27,20 +27,25 @@ async function post(provider: string, url: string, headers: Record<string, strin
     }
     if (!res.ok) throw new ProviderError(provider, res.status, (await res.text()).slice(0, 300));
     return (await res.json()) as unknown;
+  } catch (e) {
+    // Our own timeout: report it as a gateway timeout so the next model gets a turn.
+    if (e instanceof Error && e.name === "AbortError" && !signal?.aborted) throw new ProviderError(provider, 504, `no answer within ${TIMEOUT_MS} ms`);
+    throw e;
   } finally {
     clearTimeout(timer);
   }
 }
 
-/** Errors worth trying the next model for: overloaded (503/500/502) or model missing (404). */
-const tryNextModel = (e: unknown) => e instanceof ProviderError && [404, 500, 502, 503].includes(e.status);
+/** Errors worth trying the next model for: overloaded (500/502/503), timed out (504) or model missing (404). */
+const tryNextModel = (e: unknown) => e instanceof ProviderError && [404, 500, 502, 503, 504].includes(e.status);
 
 /**
  * Walk a model list: on overload, retry once after a short pause, then move to the next
  * model; on "model not found", move on immediately. Auth errors and rate limits stop here
  * so the chain can switch provider.
  */
-async function withModels<T>(models: string[], call: (model: string) => Promise<T>): Promise<T> {
+async function withModels<T>(provider: string, models: string[], call: (model: string) => Promise<T>): Promise<T> {
+  if (!models.length) throw new ProviderError(provider, 404, "no model configured for this task");
   let last: unknown;
   for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -49,7 +54,7 @@ async function withModels<T>(models: string[], call: (model: string) => Promise<
       } catch (e) {
         last = e;
         if (!tryNextModel(e)) throw e;
-        if ((e as ProviderError).status === 404) break; // no point retrying a missing model
+        if ([404, 504].includes((e as ProviderError).status)) break; // missing or slow: move on, don't wait again
         if (attempt === 0) await sleep(1200);
       }
     }
@@ -72,7 +77,7 @@ export class GeminiProvider implements LlmProvider {
     if (req.image && contents.length) {
       contents[contents.length - 1].parts.push({ inline_data: { mime_type: req.image.mimeType, data: req.image.base64 } });
     }
-    return withModels(this.models, async (model) => {
+    return withModels(this.name, this.models, async (model) => {
       const data = (await post(
         this.name,
         `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
@@ -118,7 +123,7 @@ export class GroqProvider implements LlmProvider {
       } else messages.push({ role: m.role, content: m.content });
     });
     const models = req.image || opts.vision ? this.visionModels : this.chatModels;
-    return withModels(models, async (model) => {
+    return withModels(this.name, models, async (model) => {
       const data = (await post(
         this.name,
         "https://api.groq.com/openai/v1/chat/completions",

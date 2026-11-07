@@ -40,6 +40,7 @@ async function test(p: LlmProvider) {
 }
 
 function report(name: string, available: string[], wanted: string[]) {
+  if (!wanted.length) return console.log(`  ${name}: not used (documents are read by Gemini, then Tesseract)`);
   const usable = wanted.filter((m) => available.includes(m));
   console.log(`  ${name}: ${usable.length ? `will use ${usable.join(" → ")}` : "NONE of the configured models are available"}`);
   if (!usable.length) console.log(`  available: ${available.slice(0, 25).join(", ")}`);
