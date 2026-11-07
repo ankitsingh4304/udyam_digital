@@ -19,10 +19,11 @@ const VisionSchema = z.object({
 const VISION_PROMPT = `You read one Indian business KYC document image and return JSON only.
 docType: "gst" (GST Registration Certificate), "udyam" (Udyam Registration Certificate), "signatory" (Authorised Signatory ID), "addressProof" (electricity bill), else "unknown".
 Fields by type (omit what is not printed):
-gst: gstin, legalName, tradeName, constitution, address (join wrapped lines), dateOfLiability (YYYY-MM-DD)
+gst: gstin, legalName, tradeName, constitution, address (join wrapped lines; keep the 6-digit PIN code), dateOfLiability (YYYY-MM-DD)
 udyam: udyamNumber, enterpriseName, majorActivity, city, state, dateOfRegistration (YYYY-MM-DD)
 signatory: name, designation, business, validTill (YYYY-MM-DD)
-addressProof: billedTo, address (join wrapped lines), billDate (YYYY-MM-DD)
+addressProof: billedTo, address (join wrapped lines; keep the 6-digit PIN code), billDate (YYYY-MM-DD)
+Keep normal spaces between words in names and addresses.
 CRITICAL: copy every identifier EXACTLY as printed, character by character. Do not correct, complete or normalise anything.
 If a GSTIN prints the digit zero where a letter would be expected, output the digit 0. If a field is blank on the document, omit it.`;
 

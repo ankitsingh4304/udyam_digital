@@ -40,7 +40,10 @@ if (existsSync(".env.local")) {
     if (pass) ok++;
     const readers = r.documents.map((d) => `${d.slot}:${d.reader ?? "preflight"}`).join(" ");
     console.log(`${pass ? "✓" : "✗"} ${id} ${r.verdict.padEnd(18)} expected ${expected.padEnd(18)} ${String(Date.now() - t).padStart(6)} ms  ${readers}`);
-    if (!pass) for (const c of r.checks.filter((c) => c.status === "fail" || c.status === "warn")) console.log(`     [${c.status}] ${c.code}: ${c.message}`);
+    if (!pass) {
+      for (const c of r.checks.filter((c) => c.status === "fail" || c.status === "warn")) console.log(`     [${c.status}] ${c.code}: ${c.message}`);
+      for (const d of r.documents) console.log(`     read ${d.slot}: ${JSON.stringify(d.fields ?? {})}`);
+    }
   }
   console.log(`\n${ok}/12 match the expected verdicts`);
   await shutdownOcr();
