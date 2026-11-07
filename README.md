@@ -8,7 +8,7 @@ pure, unit-tested TypeScript in `src/domain`.
 
 ```bash
 npm install
-npm test          # 44 tests: 15 advisor scenarios, cart rules, 2,000-profile fuzz, K01–K12 answer key
+npm test          # 58 tests: 15 advisor scenarios, conversations (EN/HI), LLM fallback, cart rules, 2,000-profile fuzz, K01–K12
 npm run typecheck
 npm run dev       # http://localhost:3000
 npx tsx scripts/kyc-report.ts   # print the K01–K12 verdict board
@@ -46,8 +46,20 @@ API: `POST /api/recommend`, `POST /api/kyc/verify`, `GET /api/registry/gstin/:gs
 
 "Today" is fixed at 2026-07-15 per the dataset README.
 
+## Advisor (step 3)
+
+Open http://localhost:3000 → chat in English, हिंदी or Hinglish (voice input in Chrome/Edge) → live quote with add-on toggles.
+
+- `src/adapters/llm` — Gemini first, Groq as fallback, with rate-limit cooldown. No keys? It runs on the built-in parser.
+- `src/domain/advisor` — question flow (max 5), offline English/Hindi/Hinglish parser, explanation guard
+  (an LLM explanation that mentions a product or ₹ amount we didn't compute is discarded).
+- `src/server/advisor-service.ts` — one turn: extract → GSTIN registry check → next question or bundle.
+- API: `POST /api/advisor`, `POST /api/quote`.
+
+Keys: copy `.env.example` to `.env.local` and fill `GEMINI_API_KEY`, `GROQ_API_KEY`.
+
 ## Next
 
-3. Advisor chat (LLM extracts `BusinessProfile`, explains the computed bundle) → quote UI
+3. ~~Advisor chat (LLM extracts `BusinessProfile`, explains the computed bundle) → quote UI~~ done
 4. KYC upload: real extraction (Tesseract + vision model) feeding `runKycChecks`, consent screen
 5. Order tracker · 6. Partner rescue queue + propensity · 7. Hindi/voice, ops dashboard

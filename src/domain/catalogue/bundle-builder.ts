@@ -46,7 +46,7 @@ const SEGMENT_DEFAULTS: Record<Segment, Need[]> = {
   mfg: ["firewall", "security", "email"],
 };
 
-const WHY: Record<string, string> = {
+export const WHY: Record<string, string> = {
   P01: "100 Mbps business fibre: enough for UPI, billing and video calls",
   P02: "300 Mbps business fibre: room for a full office on one line",
   P03: "1 Gbps fibre with priority support for heavy traffic",

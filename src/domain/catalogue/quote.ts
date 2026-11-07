@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { checkDependency, checkEligibility } from "./eligibility";
-import { summarise } from "./bundle-builder";
+import { WHY, summarise } from "./bundle-builder";
 import {
   BusinessProfileSchema,
   type BlockedItem,
@@ -57,7 +57,7 @@ export function applyCartChanges(
       unitPrice: product.priceMin,
       monthly: product.priceMin * change.quantity,
       setup: product.setupFee * change.quantity,
-      why: lines.get(product.id)?.why ?? product.description,
+      why: lines.get(product.id)?.why ?? WHY[product.id] ?? product.description,
     });
     trace.push({ step: "cart-set", detail: `${product.id} x${change.quantity}` });
   }
