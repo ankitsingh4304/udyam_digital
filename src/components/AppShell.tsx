@@ -21,9 +21,9 @@ const STEP_ICONS = [MessageCircle, IndianRupee, FileCheck2, Wrench];
 const STEP_HREF = ["/advisor", "/advisor#quote", "/kyc", undefined];
 
 /** Brand mark: original red tile with a white signal arc (not any real operator's logo). */
-export function BrandMark({ small = false }: { small?: boolean }) {
+export function BrandMark({ small = false, href = "/" }: { small?: boolean; href?: string }) {
   return (
-    <Link href="/" className="flex items-center gap-2.5" aria-label="Accel Business home">
+    <Link href={href} className="flex items-center gap-2.5" aria-label="Accel Business home">
       <span className={`grid place-items-center rounded-xl bg-brand text-white ${small ? "h-8 w-8" : "h-10 w-10"}`} aria-hidden>
         <svg viewBox="0 0 24 24" className={small ? "h-5 w-5" : "h-6 w-6"} fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round">
           <path d="M5 16a9 9 0 0 1 14 0" />
@@ -101,7 +101,7 @@ export function AppShell({ step, back, wide = false, children }: { step?: 1 | 2 
                 <ArrowLeft className="h-6 w-6" />
               </Link>
             )}
-            <BrandMark small={!!back} />
+            <BrandMark small={!!back} href="/business" />
           </div>
           <LanguageSwitch />
         </div>
