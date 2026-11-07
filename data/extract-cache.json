@@ -1,0 +1,24 @@
+{
+ "ocr:970754fe9d9573b52776dc5a427e2808c96d2d32e52f055d45cf0b4c79b9c189": {
+  "docType": "signatory",
+  "name": "Pooja Agarwal",
+  "designation": "Owner",
+  "business": "Star Electronics",
+  "validTill": "2029-03-03"
+ },
+ "ocr:7d735237fc648f17be59721bc4edadbe4f00f5c58e810cb4221679c135fcfe4a": {
+  "docType": "addressProof",
+  "billedTo": "Star Electronics",
+  "address": "Shop/Unit 216, Nehru Nagar, Visakhapatnam, Andhra Pradesh - 762071",
+  "billDate": "2026-07-06"
+ },
+ "ocr:380df624f93cc55666bf0790dc4acea3424ab7509ae598bf11ebb54ce645a946": {
+  "docType": "gst",
+  "gstin": "37NBLXS1145E1ZU",
+  "legalName": "Pooja Agarwal (Prop. Star Electronics)",
+  "tradeName": "Star Electronics",
+  "constitution": "Proprietorship",
+  "address": "Shop/Unit 216, Nehru Nagar, Visakhapatnam, Andhra Pradesh - 762071",
+  "dateOfLiability": "2017-01-08"
+ }
+}

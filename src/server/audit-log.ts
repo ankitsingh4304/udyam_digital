@@ -27,9 +27,11 @@ const hashOf = (e: Omit<AuditEntry, "hash">) =>
 
 function load(): AuditEntry[] {
   if (entries) return entries;
-  entries = existsSync(FILE)
-    ? readFileSync(FILE, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l) as AuditEntry)
-    : [];
+  try {
+    entries = existsSync(FILE) ? readFileSync(FILE, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l) as AuditEntry) : [];
+  } catch {
+    entries = [];
+  }
   return entries;
 }
 
@@ -38,9 +40,14 @@ export function appendAudit(type: AuditEntry["type"], caseId: string, data: Reco
   const prev = log.at(-1);
   const base = { seq: (prev?.seq ?? 0) + 1, ts: now.toISOString(), type, caseId, data, prevHash: prev?.hash ?? GENESIS };
   const entry: AuditEntry = { ...base, hash: hashOf(base) };
-  mkdirSync(path.dirname(FILE), { recursive: true });
-  appendFileSync(FILE, JSON.stringify(entry) + "\n");
   log.push(entry);
+  try {
+    mkdirSync(path.dirname(FILE), { recursive: true });
+    appendFileSync(FILE, JSON.stringify(entry) + "\n");
+  } catch (e) {
+    // Never fail the customer's request because the log file can't be written; keep it in memory.
+    console.warn(`audit log not persisted: ${(e as Error).message}`);
+  }
   return entry;
 }
 
