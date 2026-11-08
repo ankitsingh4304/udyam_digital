@@ -18,7 +18,10 @@ export type AuditType =
   | "ORDER_UPDATED"
   | "LEAD_CLAIMED"
   | "DATA_DELETION_REQUESTED"
-  | "WA_OPT_OUT";
+  | "WA_OPT_OUT"
+  | "WA_CHAT_STARTED"
+  | "WA_QUOTED"
+  | "WA_HANDOFF";
 
 export interface AuditEntry {
   seq: number;

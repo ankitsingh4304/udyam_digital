@@ -10,6 +10,7 @@ import { getCatalogue, getRegistry } from "@/server/data";
 import { signToken } from "@/server/signed-token";
 import { getStore } from "@/server/store";
 import { shortLink } from "@/server/shortlink";
+import { createHandoff } from "./handoff";
 import { LANG_MENU, MENU_LANGS, WA } from "./copy";
 import { sendWhatsApp } from "./channels";
 import { milestones, type OrderEvent, type OrderPayload } from "@/domain/orders/tracker";
@@ -78,7 +79,8 @@ function questionReplies(r: AdvisorTurnResult, lang: Lang): { text: string[]; mu
   const multi = r.state.lastAsked === "needs";
   const last = r.reply.at(-1) ?? "";
   const head = r.reply.slice(0, -1);
-  const body = r.quickReplies.length ? `${last}\n\n${numbered(r.quickReplies)}\n\n_${multi ? WA[lang].pickMany : WA[lang].pickOne}_` : last;
+  const hint = `_${multi ? WA[lang].pickMany : WA[lang].pickOne} ${WA[lang].agentHint}._`;
+  const body = r.quickReplies.length ? `${last}\n\n${numbered(r.quickReplies)}\n\n${hint}` : `${last}\n\n_${WA[lang].agentHint}._`;
   return { text: [...head, body], multi };
 }
 
@@ -109,8 +111,13 @@ export async function handleWhatsApp(msg: { channel: Channel; from: string; text
     await appendAudit("WA_OPT_OUT", ref, { channel: msg.channel });
     return [WA[s?.lang ?? "en"].stopped];
   }
-  if (!s || ["HI", "HELLO", "HEY", "START", "MENU", "RESTART", "NAMASTE"].includes(cmd) || /^join\s/i.test(text)) {
+  const isGreeting = ["HI", "HELLO", "HEY", "START", "MENU", "RESTART", "NAMASTE"].includes(cmd) || /^join\s/i.test(text);
+  if (!s || isGreeting || (s.stage === "lang" && scriptLang(text))) {
+    if (!s) await appendAudit("WA_CHAT_STARTED", ref, { channel: msg.channel });
     s = { ref, channel: msg.channel, to: msg.from, origin: msg.origin, stage: "lang", orders: s?.orders ?? [], outbox: s?.outbox, updatedAt: "" };
+    // Wrote in an Indian script (e.g. "नमस्ते", "வணக்கம்")? Start in that language, no menu.
+    const auto = isGreeting ? undefined : scriptLang(text);
+    if (auto) return startAdvisor(s, auto);
     await saveWa(s);
     return [LANG_MENU];
   }
@@ -123,11 +130,11 @@ export async function handleWhatsApp(msg: { channel: Channel; from: string; text
     const n = Number(text);
     const chosen = Number.isInteger(n) && n >= 1 && n <= MENU_LANGS.length ? MENU_LANGS[n - 1] : MENU_LANGS.find((l) => LANG_LABEL[l].toLowerCase() === text.toLowerCase());
     if (!chosen) return [LANG_MENU];
-    const r = await advisorTurn({ message: "", lang: chosen });
-    const q = questionReplies(r, chosen);
-    await saveWa({ ...s, lang: chosen, stage: "advisor", advisor: r.state, quick: r.quickReplies, multi: q.multi });
-    return q.text;
+    return startAdvisor(s, chosen);
   }
+
+  // "Talk to a person": works at any point after the language is chosen.
+  if (cmd === "0" || cmd === "AGENT" || cmd === "HUMAN") return handoffToPartner(s);
 
   if (s.stage === "done") return [`${WA[lang].help}`];
 
@@ -136,11 +143,48 @@ export async function handleWhatsApp(msg: { channel: Channel; from: string; text
   const r = await advisorTurn({ state: s.advisor, message: answer });
   if (r.bundle) {
     await saveWa({ ...s, stage: "done", advisor: r.state, quick: [], multi: false });
+    await appendAudit("WA_QUOTED", s.ref, { monthly: r.bundle.monthlyTotal, lang });
     return await bundleReplies(r, s);
   }
   const q = questionReplies(r, lang);
   await saveWa({ ...s, advisor: r.state, quick: r.quickReplies, multi: q.multi });
   return q.text;
+}
+
+async function startAdvisor(s: WaState, lang: Lang): Promise<string[]> {
+  const r = await advisorTurn({ message: "", lang });
+  const q = questionReplies(r, lang);
+  await saveWa({ ...s, lang, stage: "advisor", advisor: r.state, quick: r.quickReplies, multi: q.multi });
+  return q.text;
+}
+
+/** Script of the first message → language (Devanagari defaults to Hindi; Marathi users pick 4 from the menu). */
+export function scriptLang(text: string): Lang | undefined {
+  if (/[\u0A80-\u0AFF]/.test(text)) return "gu";
+  if (/[\u0C80-\u0CFF]/.test(text)) return "kn";
+  if (/[\u0C00-\u0C7F]/.test(text)) return "te";
+  if (/[\u0B80-\u0BFF]/.test(text)) return "ta";
+  if (/[\u0980-\u09FF]/.test(text)) return "bn";
+  if (/[\u0900-\u097F]/.test(text)) return "hi";
+  return undefined;
+}
+
+async function handoffToPartner(s: WaState): Promise<string[]> {
+  const lang = s.lang ?? "en";
+  const d = s.advisor?.draft;
+  const summary = d
+    ? [d.businessType, d.employees != null ? `${d.employees} staff` : "", d.sites ? `${d.sites} site(s)` : "", d.city, d.gstinStatus ? `GSTIN ${d.gstinStatus}` : "", d.currentInternet ? `uses ${d.currentInternet}` : "", d.needs?.length ? `needs ${d.needs.join(", ")}` : ""].filter(Boolean).join(" · ")
+    : "Asked for a person before answering";
+  const contact = s.channel === "sim" ? "Simulator chat (demo)" : s.to.replace(/^whatsapp:/, "");
+  await createHandoff({ ref: s.ref, city: d?.city, summary: summary || "Asked for a person", lang, channel: s.channel, contact });
+  await appendAudit("WA_HANDOFF", s.ref, { city: d?.city ?? null });
+  return [WA[lang].agentQueued(d?.city ?? "")];
+}
+
+/** Partner took the chat: tell the owner who will contact them. */
+export async function notifyHandoffTaken(ref: string, partnerName: string): Promise<void> {
+  const s = await loadWa(ref);
+  if (s) await sendWhatsApp(s, WA[s.lang ?? "en"].agentTaken(partnerName));
 }
 
 async function statusText(s: WaState): Promise<string> {

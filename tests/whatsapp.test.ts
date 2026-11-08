@@ -70,3 +70,40 @@ describe("WhatsApp bot", () => {
     expect(twilioSignatureOk(url, { ...params, Body: "tampered" }, sig, "secret")).toBe(false);
   });
 });
+
+describe("WhatsApp extras", async () => {
+  const { listHandoffs, takeHandoff } = await import("@/server/whatsapp/handoff");
+  it("typing in Tamil skips the language menu", async () => {
+    const r = await chat("sim:dddddddddddddddd")("வணக்கம்");
+    expect(r.join(" ")).toMatch(/[஀-௿]/);
+    expect((await loadWa(waRefOf("sim", "sim:dddddddddddddddd")))!.lang).toBe("ta");
+  });
+  it("0 sends the chat to the city's partner queue with a summary, and the owner hears who took it", async () => {
+    const from = "sim:eeeeeeeeeeeeeeee";
+    const say = chat(from);
+    await say("Hi");
+    await say("1"); // English
+    await say("1"); // Kirana store
+    await say("1"); // 2 staff, 1 shop
+    await say("4"); // Nagpur
+    expect((await say("0"))[0]).toContain("Nagpur");
+    const h = (await listHandoffs("Nagpur")).find((x) => x.ref === waRefOf("sim", from))!;
+    expect(h.summary).toMatch(/2 staff.*Nagpur/);
+    await takeHandoff(h.id, "P-NAG-01", "Sharma Telecom");
+    const { notifyHandoffTaken } = await import("@/server/whatsapp/bot");
+    await notifyHandoffTaken(h.ref, "Sharma Telecom");
+    expect((await loadWa(h.ref))!.outbox!.at(-1)!.text).toContain("Sharma Telecom");
+  });
+});
+
+describe("P15 WhatsApp Business for the owner's own customers", async () => {
+  const { buildBundle } = await import("@/domain/catalogue/bundle-builder");
+  const { getCatalogue } = await import("@/server/data");
+  const base = { segment: "micro" as const, employees: 3, sites: 1, cityTier: 2 as const, needs: ["whatsapp" as const] };
+  it("offered with an active GSTIN, refused with a reason without one", () => {
+    expect(buildBundle({ ...base, gstinStatus: "active" }, getCatalogue()).lines.map((l) => l.productId)).toContain("P15");
+    const noGst = buildBundle({ ...base, gstinStatus: "none" }, getCatalogue());
+    expect(noGst.lines.map((l) => l.productId)).not.toContain("P15");
+    expect(noGst.blocked.find((b) => b.productId === "P15")!.failures[0].message).toMatch(/GSTIN/);
+  });
+});

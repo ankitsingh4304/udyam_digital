@@ -2,6 +2,7 @@
 
 import { BackOfficeShell, type BackOfficeUser } from "@/components/BackOfficeShell";
 import { useCallback, useEffect, useState } from "react";
+import { WhatsAppHandoffs } from "./WhatsAppHandoffs";
 import type { RescueLead, rescueSummary } from "@/server/leads-service";
 
 type Summary = ReturnType<typeof rescueSummary>;
@@ -110,6 +111,8 @@ export function PartnerApp({ user }: { user: BackOfficeUser }) {
           <option>Small manufacturers</option>
         </select>
       </div>
+
+      <WhatsAppHandoffs canTake={user.role === "partner"} />
 
       {claimError && <p className="mt-4 rounded-2xl bg-brand-soft p-3 text-sm text-brand">{claimError}</p>}
       <ol className="mt-4 space-y-3">

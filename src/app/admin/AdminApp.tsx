@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, ArrowRight, CheckCircle2, ShieldAlert, ShieldCheck, Target, XCircle } from "lucide-react";
+import { Activity, ArrowRight, CheckCircle2, MessageCircle, ShieldAlert, ShieldCheck, Target, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BackOfficeShell, type BackOfficeUser } from "@/components/BackOfficeShell";
@@ -17,7 +17,7 @@ const VERDICT_CLS: Record<string, string> = {
   REJECT: "bg-brand-soft text-brand",
 };
 const VERDICT_LABEL: Record<string, string> = { PASS: "Pass", PASS_WITH_WARNINGS: "Pass (note)", NEEDS_REUPLOAD: "Re-upload", MANUAL_REVIEW: "Agent review", REJECT: "Reject" };
-const EVENT_LABEL: Record<string, string> = { CONSENT_GIVEN: "Consent given", CONSENT_WITHDRAWN: "Consent withdrawn", KYC_PROCESSED: "Documents checked", DOCS_DISCARDED: "Images discarded", ORDER_PLACED: "Order placed", ESIGN_COMPLETED: "Form e-signed", REVIEW_DECIDED: "Agent decided", ORDER_UPDATED: "Order updated", LEAD_CLAIMED: "Partner took lead" };
+const EVENT_LABEL: Record<string, string> = { CONSENT_GIVEN: "Consent given", CONSENT_WITHDRAWN: "Consent withdrawn", KYC_PROCESSED: "Documents checked", DOCS_DISCARDED: "Images discarded", ORDER_PLACED: "Order placed", ESIGN_COMPLETED: "Form e-signed", REVIEW_DECIDED: "Agent decided", ORDER_UPDATED: "Order updated", LEAD_CLAIMED: "Partner took lead", WA_CHAT_STARTED: "WhatsApp chat started", WA_QUOTED: "WhatsApp bundle quoted", WA_HANDOFF: "WhatsApp: asked for a person", WA_OPT_OUT: "WhatsApp opt-out" };
 
 export function AdminApp({ user }: { user: BackOfficeUser }) {
   const [d, setD] = useState<Data>();
@@ -112,6 +112,28 @@ export function AdminApp({ user }: { user: BackOfficeUser }) {
                     {VERDICT_LABEL[v] ?? v}: {n}
                   </span>
                 ))}
+              </div>
+              <div className="mt-4 rounded-2xl border-2 border-[#008069]/40 bg-white p-5 shadow-card">
+                <p className="flex items-center gap-2 font-semibold">
+                  <MessageCircle className="h-5 w-5 text-[#008069]" aria-hidden /> WhatsApp front door
+                </p>
+                <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
+                  {[
+                    ["Chats started", d.live.whatsapp.chats],
+                    ["Bundles quoted", d.live.whatsapp.quoted],
+                    ["Asked for a person", d.live.whatsapp.handoffs],
+                    ["Orders from WhatsApp", d.live.whatsapp.orders],
+                    ["Share of all orders", d.live.orders ? `${Math.round((d.live.whatsapp.orders / d.live.orders) * 100)}%` : "—"],
+                  ].map(([k, v]) => (
+                    <div key={String(k)}>
+                      <dt className="text-sm text-ink-soft">{k}</dt>
+                      <dd className="text-2xl font-bold">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-2 text-sm text-ink-soft">
+                  Last quarter&apos;s WhatsApp campaign leads converted at 2.8%, the lowest of any source, mostly lost to &quot;unreachable after 3 attempts&quot;. Here the owner continues in the same chat; nobody has to reach them.
+                </p>
               </div>
               <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_20rem]">
                 <div className={card}>
