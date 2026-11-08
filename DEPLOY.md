@@ -16,6 +16,14 @@
    `KV_REST_API_URL` and `KV_REST_API_TOKEN`. Then **Deployments → ⋯ → Redeploy**.
    The operations panel's yellow "Shared storage is not connected" note disappears when it works.
 
+7. **WhatsApp (optional, ~10 minutes, free).** The in-app simulator at `/whatsapp` works without this.
+   1. Sign up at twilio.com (free trial). Console → **Messaging → Try it out → Send a WhatsApp message**.
+   2. Note the sandbox number (+1 415 523 8886) and your join code (e.g. `join silver-tiger`).
+   3. **Sandbox settings** → "When a message comes in": `https://<your-app>.vercel.app/api/whatsapp/twilio`, method **POST** → Save.
+   4. Vercel env vars: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` (Console home page), `TWILIO_SANDBOX_JOIN` = your join text. Redeploy.
+   5. From any phone, send the join text to the sandbox number on WhatsApp, then send **Hi**.
+   Sandbox joins last 72 hours; judges join with the same code shown on the first page of the app.
+
 Notes
 - Every push to `main` redeploys automatically.
 - Orders, consent and KYC results travel as signed tokens, so any server instance can verify them.

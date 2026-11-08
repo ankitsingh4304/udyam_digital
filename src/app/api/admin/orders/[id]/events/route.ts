@@ -4,6 +4,7 @@ import { MILESTONE_KEYS, nextStep, plannedDate, type MilestoneKey, type OrderEve
 import { appendAudit } from "@/server/audit-log";
 import { addOrderEvent, getOrder } from "@/server/ops";
 import { requireRole } from "@/server/session";
+import { notifyOrderUpdate } from "@/server/whatsapp/bot";
 
 export const runtime = "nodejs";
 
@@ -42,5 +43,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         };
   const updated = await addOrderEvent(params.id, ev);
   await appendAudit("ORDER_UPDATED", rec.order.caseId, { orderId: params.id, kind: ev.kind, step: MILESTONE_KEYS.indexOf(step) >= 0 ? step : "?", ...(ev.kind === "delay" ? { days: b.kind === "delay" ? b.days : 0 } : {}) });
+  if (rec.order.waRef && updated)
+    await notifyOrderUpdate(rec.order.waRef, rec.order.id, rec.token, ev, rec.order, updated.events).catch((e) => console.warn(`whatsapp notify failed: ${e.message}`));
   return NextResponse.json({ ok: true, events: updated?.events ?? [] });
 }

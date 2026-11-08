@@ -1,7 +1,7 @@
 "use client";
 
 import { fromPacks } from "@/i18n/packs";
-import { ArrowRight, ClipboardCheck, ShieldCheck, Store, Users } from "lucide-react";
+import { ArrowRight, ClipboardCheck, MessageCircle, ShieldCheck, Store, Users } from "lucide-react";
 import Link from "next/link";
 import { BrandMark, LanguageSwitch } from "@/components/AppShell";
 import { LANGS } from "@/domain/advisor/state";
@@ -9,10 +9,10 @@ import { LANG_LABEL } from "@/i18n";
 import { useLang } from "@/components/LangContext";
 import type { Lang } from "@/domain/advisor/state";
 
-const T: Record<Lang, { title: string; sub: string; owner: string; ownerSub: string; ownerCta: string; staff: string; chooseLang: string }> = {
-  en: { title: "Welcome to Accel Business", sub: "Choose how you want to continue.", owner: "I run a business", ownerSub: "Get internet, phones and digital tools for your shop or office. No account needed.", ownerCta: "Start as a customer", staff: "Accel team and partners", chooseLang: "Choose your language" },
-  hi: { title: "Accel Business में आपका स्वागत है", sub: "चुनें कि आप कैसे आगे बढ़ना चाहते हैं।", owner: "मेरा बिज़नेस है", ownerSub: "अपनी दुकान या ऑफिस के लिए इंटरनेट, फ़ोन और डिजिटल टूल लें। कोई अकाउंट नहीं चाहिए।", ownerCta: "ग्राहक के रूप में शुरू करें", staff: "Accel टीम और पार्टनर", chooseLang: "भाषा चुनें" },
-  hinglish: { title: "Accel Business mein swagat hai", sub: "Chunein ki aap kaise aage badhna chahte hain.", owner: "Mera business hai", ownerSub: "Apni dukaan ya office ke liye internet, phone aur digital tools lein. Koi account nahi chahiye.", ownerCta: "Customer ke roop mein shuru karein", staff: "Accel team aur partners", chooseLang: "Bhasha chunein" },
+const T: Record<Lang, { title: string; sub: string; owner: string; ownerSub: string; ownerCta: string; staff: string; chooseLang: string; wa: string; waSub: string }> = {
+  en: { title: "Welcome to Accel Business", sub: "Choose how you want to continue.", owner: "I run a business", ownerSub: "Get internet, phones and digital tools for your shop or office. No account needed.", ownerCta: "Start as a customer", staff: "Accel team and partners", chooseLang: "Choose your language", wa: "Prefer WhatsApp?", waSub: "Same questions in chat. Voice notes welcome." },
+  hi: { title: "Accel Business में आपका स्वागत है", sub: "चुनें कि आप कैसे आगे बढ़ना चाहते हैं।", owner: "मेरा बिज़नेस है", ownerSub: "अपनी दुकान या ऑफिस के लिए इंटरनेट, फ़ोन और डिजिटल टूल लें। कोई अकाउंट नहीं चाहिए।", ownerCta: "ग्राहक के रूप में शुरू करें", staff: "Accel टीम और पार्टनर", chooseLang: "भाषा चुनें", wa: "WhatsApp पसंद है?", waSub: "चैट में वही सवाल। वॉइस नोट भी भेज सकते हैं।" },
+  hinglish: { title: "Accel Business mein swagat hai", sub: "Chunein ki aap kaise aage badhna chahte hain.", owner: "Mera business hai", ownerSub: "Apni dukaan ya office ke liye internet, phone aur digital tools lein. Koi account nahi chahiye.", ownerCta: "Customer ke roop mein shuru karein", staff: "Accel team aur partners", chooseLang: "Bhasha chunein", wa: "WhatsApp pasand hai?", waSub: "Chat mein wahi sawaal. Voice note bhi bhej sakte hain." },
   ...fromPacks("chooser"),
 };
 
@@ -64,6 +64,15 @@ export function RoleChooser() {
           <span className="mt-5 inline-flex h-14 items-center gap-2 rounded-full bg-white px-6 text-lg font-semibold text-brand">
             {t.ownerCta} <ArrowRight className="h-5 w-5 transition group-hover:translate-x-0.5" aria-hidden />
           </span>
+        </Link>
+
+        <Link href="/whatsapp" className="mt-3 flex items-center gap-4 rounded-3xl bg-[#008069] p-5 text-white shadow-card hover:bg-[#006e5a]">
+          <MessageCircle className="h-9 w-9 shrink-0" aria-hidden />
+          <span className="min-w-0 flex-1">
+            <span className="block text-lg font-bold">{t.wa}</span>
+            <span className="block text-white/90">{t.waSub}</span>
+          </span>
+          <ArrowRight className="h-5 w-5 shrink-0" aria-hidden />
         </Link>
 
         <h2 className="mt-10 text-sm font-semibold uppercase tracking-wide text-ink-soft">{t.staff}</h2>
