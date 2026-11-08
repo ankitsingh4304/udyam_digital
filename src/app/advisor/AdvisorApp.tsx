@@ -39,9 +39,9 @@ const BUSINESS_ICONS: LucideIcon[] = [Store, Stethoscope, Briefcase, UtensilsCro
 const NEED_ICONS: LucideIcon[] = [CreditCard, Video, MessageCircle, Mail, RadioTower];
 
 const UI: Record<Lang, Record<string, string>> = {
-  en: { placeholder: "Type here, or tap the mic", send: "Send", listen: "Tap and speak", listening: "Listening… tap to stop", readAloud: "Read replies aloud", restart: "Start again", source: "Understood by", pickMany: "Tap all that you need, then continue", next: "Continue", none: "Nothing else", seeBundle: "See my bundle", perMonth: "/month", thinking: "Thinking…", noVoice: "Voice input isn't available in this browser. Please type, or use Chrome.", failed: "The advisor didn't answer. Check your internet and send again.", micBlocked: "Microphone is blocked. Tap the lock icon in the address bar and allow the microphone.", noSpeech: "I didn't hear anything. Tap the mic and speak a little louder.", sttFailed: "Couldn't understand the recording. Please try again or type.", transcribing: "Writing down what you said…", ttsNoVoice: "This phone has no Hindi voice installed. Add Hindi in your phone's text-to-speech settings, or switch to Hinglish.", ttsUnsupported: "Read aloud isn't supported in this browser.", replay: "Listen" },
-  hi: { placeholder: "यहाँ लिखें, या माइक दबाएँ", send: "भेजें", listen: "दबाएँ और बोलें", listening: "सुन रहे हैं… रोकने के लिए दबाएँ", readAloud: "जवाब सुनाएँ", restart: "फिर से शुरू करें", source: "समझा गया:", pickMany: "जो चाहिए सब चुनें, फिर आगे बढ़ें", next: "आगे बढ़ें", none: "और कुछ नहीं", seeBundle: "मेरा बंडल देखें", perMonth: "/महीना", thinking: "सोच रहे हैं…", noVoice: "इस ब्राउज़र में आवाज़ नहीं चलती। कृपया लिखें या Chrome इस्तेमाल करें।", failed: "जवाब नहीं आया। इंटरनेट जाँचें और फिर भेजें।", micBlocked: "माइक बंद है। एड्रेस बार में ताले के निशान को दबाकर माइक की अनुमति दें।", noSpeech: "कुछ सुनाई नहीं दिया। माइक दबाकर थोड़ा ज़ोर से बोलें।", sttFailed: "रिकॉर्डिंग समझ नहीं आई। फिर कोशिश करें या लिखें।", transcribing: "आपकी बात लिख रहे हैं…", ttsNoVoice: "इस फ़ोन में हिंदी आवाज़ नहीं है। फ़ोन की टेक्स्ट-टू-स्पीच सेटिंग में हिंदी जोड़ें, या Hinglish चुनें।", ttsUnsupported: "इस ब्राउज़र में सुनने की सुविधा नहीं है।", replay: "सुनें" },
-  hinglish: { placeholder: "Yahan likhein, ya mic dabayein", send: "Bhejein", listen: "Dabayein aur bolein", listening: "Sun rahe hain… rokne ke liye dabayein", readAloud: "Jawab sunayein", restart: "Phir se shuru karein", source: "Samjha gaya:", pickMany: "Jo chahiye sab chunein, phir aage badhein", next: "Aage badhein", none: "Aur kuch nahi", seeBundle: "Mera bundle dekhein", perMonth: "/month", thinking: "Soch rahe hain…", noVoice: "Is browser mein voice nahi chalti. Please likhein ya Chrome use karein.", failed: "Jawab nahi aaya. Internet check karke phir bhejein.", micBlocked: "Mic blocked hai. Address bar mein lock icon dabakar mic allow karein.", noSpeech: "Kuch sunai nahi diya. Mic dabakar thoda zor se bolein.", sttFailed: "Recording samajh nahi aayi. Phir try karein ya likhein.", transcribing: "Aapki baat likh rahe hain…", ttsNoVoice: "Is phone mein Hindi voice nahi hai. Phone ki text-to-speech setting mein Hindi add karein.", ttsUnsupported: "Is browser mein sunne ki suvidha nahi hai.", replay: "Sunein" },
+  en: { showChat: "Show the whole chat", placeholder: "Type here, or tap the mic", send: "Send", listen: "Tap and speak", listening: "Listening… tap to stop", readAloud: "Read replies aloud", restart: "Start again", source: "Understood by", pickMany: "Tap all that you need, then continue", next: "Continue", none: "Nothing else", seeBundle: "See my bundle", perMonth: "/month", thinking: "Thinking…", noVoice: "Voice input isn't available in this browser. Please type, or use Chrome.", failed: "The advisor didn't answer. Check your internet and send again.", micBlocked: "Microphone is blocked. Tap the lock icon in the address bar and allow the microphone.", noSpeech: "I didn't hear anything. Tap the mic and speak a little louder.", sttFailed: "Couldn't understand the recording. Please try again or type.", transcribing: "Writing down what you said…", ttsNoVoice: "This phone has no Hindi voice installed. Add Hindi in your phone's text-to-speech settings, or switch to Hinglish.", ttsUnsupported: "Read aloud isn't supported in this browser.", replay: "Listen" },
+  hi: { showChat: "पूरी चैट देखें", placeholder: "यहाँ लिखें, या माइक दबाएँ", send: "भेजें", listen: "दबाएँ और बोलें", listening: "सुन रहे हैं… रोकने के लिए दबाएँ", readAloud: "जवाब सुनाएँ", restart: "फिर से शुरू करें", source: "समझा गया:", pickMany: "जो चाहिए सब चुनें, फिर आगे बढ़ें", next: "आगे बढ़ें", none: "और कुछ नहीं", seeBundle: "मेरा बंडल देखें", perMonth: "/महीना", thinking: "सोच रहे हैं…", noVoice: "इस ब्राउज़र में आवाज़ नहीं चलती। कृपया लिखें या Chrome इस्तेमाल करें।", failed: "जवाब नहीं आया। इंटरनेट जाँचें और फिर भेजें।", micBlocked: "माइक बंद है। एड्रेस बार में ताले के निशान को दबाकर माइक की अनुमति दें।", noSpeech: "कुछ सुनाई नहीं दिया। माइक दबाकर थोड़ा ज़ोर से बोलें।", sttFailed: "रिकॉर्डिंग समझ नहीं आई। फिर कोशिश करें या लिखें।", transcribing: "आपकी बात लिख रहे हैं…", ttsNoVoice: "इस फ़ोन में हिंदी आवाज़ नहीं है। फ़ोन की टेक्स्ट-टू-स्पीच सेटिंग में हिंदी जोड़ें, या Hinglish चुनें।", ttsUnsupported: "इस ब्राउज़र में सुनने की सुविधा नहीं है।", replay: "सुनें" },
+  hinglish: { showChat: "Poori chat dekhein", placeholder: "Yahan likhein, ya mic dabayein", send: "Bhejein", listen: "Dabayein aur bolein", listening: "Sun rahe hain… rokne ke liye dabayein", readAloud: "Jawab sunayein", restart: "Phir se shuru karein", source: "Samjha gaya:", pickMany: "Jo chahiye sab chunein, phir aage badhein", next: "Aage badhein", none: "Aur kuch nahi", seeBundle: "Mera bundle dekhein", perMonth: "/month", thinking: "Soch rahe hain…", noVoice: "Is browser mein voice nahi chalti. Please likhein ya Chrome use karein.", failed: "Jawab nahi aaya. Internet check karke phir bhejein.", micBlocked: "Mic blocked hai. Address bar mein lock icon dabakar mic allow karein.", noSpeech: "Kuch sunai nahi diya. Mic dabakar thoda zor se bolein.", sttFailed: "Recording samajh nahi aayi. Phir try karein ya likhein.", transcribing: "Aapki baat likh rahe hain…", ttsNoVoice: "Is phone mein Hindi voice nahi hai. Phone ki text-to-speech setting mein Hindi add karein.", ttsUnsupported: "Is browser mein sunne ki suvidha nahi hai.", replay: "Sunein" },
   ...fromPacks("advisorUi"),
 };
 
@@ -60,6 +60,7 @@ export function AdvisorApp() {
   const [speakOn, setSpeakOn] = useState(false);
   const [total, setTotal] = useState<number>();
   const [ctaVisible, setCtaVisible] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   // Hide the phone price bar while the bundle's own "Next" button is on screen.
   useEffect(() => {
@@ -119,6 +120,7 @@ export function AdvisorApp() {
     (l: Lang) => {
       generation.current += 1;
       setBubbles([]);
+      setShowAll(false);
       setResult(undefined);
       setState(undefined);
       void turn("", { lang: l });
@@ -174,23 +176,34 @@ export function AdvisorApp() {
   return (
     <AppShell step={result ? 2 : 1}>
       <div className="mx-auto flex max-w-lg flex-col pb-28">
-        <section className="flex min-h-[calc(100dvh-7.5rem)] flex-col bg-white" aria-label="Advisor chat">
-          <ol className="flex-1 space-y-3 overflow-y-auto px-4 py-5" aria-live="polite">
-            {bubbles.map((b, i) => (
-              <li key={i} className={`flex items-end gap-2 ${b.from === "owner" ? "justify-end" : "justify-start"}`}>
-                {b.from === "advisor" && (
-                  <span className="mb-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-soft text-brand" aria-hidden>
-                    <MessageCircle className="h-4 w-4" />
-                  </span>
-                )}
-                <p className={`max-w-[82%] whitespace-pre-line rounded-3xl px-4 py-3 text-[17px] leading-relaxed ${b.from === "owner" ? "rounded-br-md bg-brand text-white" : "rounded-bl-md bg-page text-ink"}`}>{b.text}</p>
-                {b.from === "advisor" && (
-                  <button onClick={() => void speak([b.text], true)} aria-label={`${ui.replay}: ${b.text.slice(0, 40)}`} title={ui.replay} className="mb-1 grid h-9 w-9 shrink-0 place-items-center rounded-full text-ink-soft hover:bg-page hover:text-brand">
-                    <Volume2 className="h-5 w-5" />
-                  </button>
-                )}
+        <section className={`flex flex-col bg-white ${done ? "" : "min-h-[calc(100dvh-7.5rem)]"}`} aria-label="Advisor chat">
+          <ol className="flex-1 space-y-1.5 overflow-y-auto px-4 py-5" aria-live="polite">
+            {done && !showAll && bubbles.length > 3 && (
+              <li className="flex justify-center">
+                <button onClick={() => setShowAll(true)} className="rounded-full bg-page px-4 py-2 text-sm font-semibold text-ink-soft hover:text-ink">
+                  {ui.showChat} ({bubbles.length - 2})
+                </button>
               </li>
-            ))}
+            )}
+            {(done && !showAll ? bubbles.slice(-2) : bubbles).map((b, i, list) => {
+              const lastAdvisor = b.from === "advisor" && !list.slice(i + 1).some((x) => x.from === "advisor");
+              const startsGroup = i === 0 || list[i - 1].from !== b.from;
+              return (
+                <li key={`${i}-${b.text.slice(0, 12)}`} className={`flex items-end gap-2 ${b.from === "owner" ? "justify-end" : "justify-start"} ${startsGroup ? "pt-2" : ""}`}>
+                  {b.from === "advisor" && (
+                    <span className={`mb-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand text-white ${startsGroup ? "" : "invisible"}`} aria-hidden>
+                      <MessageCircle className="h-4 w-4" />
+                    </span>
+                  )}
+                  <p className={`max-w-[80%] whitespace-pre-line rounded-[1.4rem] px-4 py-3 text-[17px] leading-relaxed ${b.from === "owner" ? "rounded-br-md bg-brand-soft font-medium text-ink" : "rounded-bl-md bg-page text-ink"}`}>{b.text}</p>
+                  {lastAdvisor && (
+                    <button onClick={() => void speak([b.text], true)} aria-label={`${ui.replay}: ${b.text.slice(0, 40)}`} title={ui.replay} className="mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-full text-ink-soft hover:bg-page hover:text-brand">
+                      <Volume2 className="h-5 w-5" />
+                    </button>
+                  )}
+                </li>
+              );
+            })}
             {busy && (
               <li className="flex items-center gap-2 pl-10 text-ink-soft" aria-label={ui.thinking}>
                 <span className="inline-flex gap-1" aria-hidden>

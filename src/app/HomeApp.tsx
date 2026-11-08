@@ -1,7 +1,7 @@
 "use client";
 
 import { fromPacks } from "@/i18n/packs";
-import { BadgeIndianRupee, FileCheck2, Headphones, Mic, ReceiptText, Truck, Wrench, MessageCircle, IndianRupee } from "lucide-react";
+import { BadgeIndianRupee, FileCheck2, Headphones, Mic, ReceiptText, Wrench, MessageCircle, IndianRupee } from "lucide-react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { useLang } from "@/components/LangContext";
@@ -13,7 +13,7 @@ const T: Record<Lang, { title: string; sub: string; start: string; voice: string
     title: "Internet, phones and digital tools for your business",
     sub: "Answer a few easy questions. See one clear monthly price. Upload documents from your phone. No sales visit needed.",
     start: "Start now",
-    voice: "You can speak in Hindi or English",
+    voice: "You can speak in your own language",
     how: "How it works",
     steps: [
       ["Tell us about your shop or office", "Tap the answers or just speak"],
@@ -32,7 +32,7 @@ const T: Record<Lang, { title: string; sub: string; start: string; voice: string
     title: "आपके बिज़नेस के लिए इंटरनेट, फ़ोन और डिजिटल टूल",
     sub: "कुछ आसान सवालों के जवाब दें। एक साफ़ मासिक कीमत देखें। फ़ोन से डॉक्यूमेंट अपलोड करें। किसी विज़िट की ज़रूरत नहीं।",
     start: "अभी शुरू करें",
-    voice: "आप हिंदी या अंग्रेज़ी में बोल सकते हैं",
+    voice: "आप अपनी भाषा में बोल सकते हैं",
     how: "यह कैसे काम करता है",
     steps: [
       ["अपनी दुकान या ऑफिस के बारे में बताएँ", "जवाब दबाएँ या बस बोलें"],
@@ -51,7 +51,7 @@ const T: Record<Lang, { title: string; sub: string; start: string; voice: string
     title: "Aapke business ke liye internet, phone aur digital tools",
     sub: "Kuch aasaan sawaalon ke jawab dein. Ek clear monthly price dekhein. Phone se documents upload karein. Koi visit nahi chahiye.",
     start: "Abhi shuru karein",
-    voice: "Aap Hindi ya English mein bol sakte hain",
+    voice: "Aap apni bhasha mein bol sakte hain",
     how: "Yeh kaise kaam karta hai",
     steps: [
       ["Apni dukaan ya office ke baare mein batayein", "Jawab dabayein ya bas bolein"],
@@ -71,12 +71,6 @@ const T: Record<Lang, { title: string; sub: string; start: string; voice: string
 
 const STEP_ICONS = [MessageCircle, IndianRupee, FileCheck2, Wrench];
 const PERK_ICONS = [ReceiptText, BadgeIndianRupee, Headphones];
-
-const FINDINGS = [
-  { figure: "7.4%", text: "of 5,000 leads became customers last quarter, at ₹15,053 acquisition cost each." },
-  { figure: "48", text: "of 368 activated customers were sold a bundle the catalogue doesn't allow. This advisor can't do that." },
-  { figure: "6% → 28%", text: "six-month churn as status-chasing calls rise from 1 to 5. The tracker removes those calls." },
-];
 
 export function HomeApp() {
   const { lang } = useLang();
@@ -126,69 +120,29 @@ export function HomeApp() {
 
         <section className="mt-12">
           <h2 className="text-2xl font-bold">{t.why}</h2>
-          <ul className="mt-4 grid gap-3">
+          <ul className="mt-4 divide-y divide-rule overflow-hidden rounded-2xl bg-white shadow-card">
             {t.perks.map(([title, body], i) => {
               const Icon = PERK_ICONS[i];
               return (
-                <li key={title} className="rounded-2xl bg-white p-5 shadow-card">
-                  <Icon className="h-8 w-8 text-brand" aria-hidden />
-                  <p className="mt-3 text-lg font-bold">{title}</p>
-                  <p className="mt-1 text-ink-soft">{body}</p>
+                <li key={title} className="flex items-start gap-4 px-5 py-4">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-soft text-brand" aria-hidden>
+                    <Icon className="h-6 w-6" />
+                  </span>
+                  <span>
+                    <span className="block text-lg font-bold leading-snug">{title}</span>
+                    <span className="block text-ink-soft">{body}</span>
+                  </span>
                 </li>
               );
             })}
           </ul>
         </section>
 
-        <section className="mt-14 grid gap-6 border-t border-rule pt-10">
-          <div>
-            <h2 className="text-xl font-bold">What last quarter&apos;s leads told us</h2>
-            <dl className="mt-4 space-y-4">
-              {FINDINGS.map((f) => (
-                <div key={f.figure} className="grid grid-cols-[7rem_1fr] items-baseline gap-4">
-                  <dt className="text-2xl font-bold text-brand">{f.figure}</dt>
-                  <dd className="text-ink-soft">{f.text}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-          <aside className="rounded-2xl bg-white p-6 shadow-card">
-            <h2 className="flex items-center gap-2 text-lg font-bold">
-              <Truck className="h-5 w-5 text-brand" aria-hidden /> For judges and partners
-            </h2>
-            <ul className="mt-3 space-y-3 text-[15px]">
-              <li>
-                <Link className="font-semibold text-brand underline underline-offset-4" href="/judge">
-                  Rule tester
-                </Link>
-                <span className="block text-sm text-ink-soft">Any business in, bundle and refusals out; 15 one-click checks.</span>
-              </li>
-              <li>
-                <Link className="font-semibold text-brand underline underline-offset-4" href="/kyc">
-                  Document check
-                </Link>
-                <span className="block text-sm text-ink-soft">Load sample applicants K01–K12 in one tap.</span>
-              </li>
-              <li>
-                <Link className="font-semibold text-brand underline underline-offset-4" href="/login?role=partner">
-                  Partner panel
-                </Link>
-                <span className="block text-sm text-ink-soft">Lost leads in the partner&apos;s city, ranked by likelihood to buy. Demo PIN 1234.</span>
-              </li>
-              <li>
-                <Link className="font-semibold text-brand underline underline-offset-4" href="/login?role=admin">
-                  Operations dashboard
-                </Link>
-                <span className="block text-sm text-ink-soft">The 5 metrics vs targets, live activity, audit log. ID ADMIN, PIN 9999.</span>
-              </li>
-              <li>
-                <a className="font-semibold text-brand underline underline-offset-4" href="/api/health">
-                  System health
-                </a>
-              </li>
-            </ul>
-          </aside>
-        </section>
+        <p className="mt-10 text-center text-[15px] text-ink-soft">
+          <Link href="/" className="font-semibold text-ink underline underline-offset-4">
+            Partner or Accel team? Sign in from the start page
+          </Link>
+        </p>
         <p className="mt-12 text-xs text-ink-soft">Accel Telecom is the fictional operator from the YTL Hackathon 2026 case. All businesses, people and identifiers are synthetic.</p>
       </main>
     </AppShell>

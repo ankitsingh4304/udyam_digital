@@ -13,19 +13,19 @@ const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
 const T: Record<Lang, Record<string, string>> = {
   en: {
-    title: "Your bundle", empty: "Answer a few questions and your bundle, with one monthly price, appears here.",
+    more: "More options", title: "Your bundle", empty: "Answer a few questions and your bundle, with one monthly price, appears here.",
     month: "a month", setup: "One-time setup", contract: "Contract", months: "months", live: "Ready to use in about", days: "days after documents",
     why: "Why this fits", blocked: "Not offered, and why", addons: "Add or remove", unavailable: "Not available for your business",
     next: "Next: upload documents  →", qty: "Quantity", none: "No setup fee", remove: "Remove", add: "Add",
   },
   hi: {
-    title: "आपका बंडल", empty: "कुछ सवालों के जवाब दें, आपका बंडल और एक मासिक कीमत यहाँ दिखेगी।",
+    more: "और विकल्प", title: "आपका बंडल", empty: "कुछ सवालों के जवाब दें, आपका बंडल और एक मासिक कीमत यहाँ दिखेगी।",
     month: "हर महीने", setup: "एक बार का सेटअप", contract: "कॉन्ट्रैक्ट", months: "महीने", live: "डॉक्यूमेंट के बाद लगभग", days: "दिन में चालू",
     why: "यह क्यों सही है", blocked: "ये नहीं मिल सकते, और क्यों", addons: "जोड़ें या हटाएँ", unavailable: "आपके बिज़नेस के लिए उपलब्ध नहीं",
     next: "आगे: डॉक्यूमेंट अपलोड करें  →", qty: "संख्या", none: "कोई सेटअप फ़ीस नहीं", remove: "हटाएँ", add: "जोड़ें",
   },
   hinglish: {
-    title: "Aapka bundle", empty: "Kuch sawaalon ke jawab dein, aapka bundle aur ek monthly price yahan dikhega.",
+    more: "Aur options", title: "Aapka bundle", empty: "Kuch sawaalon ke jawab dein, aapka bundle aur ek monthly price yahan dikhega.",
     month: "har mahine", setup: "One-time setup", contract: "Contract", months: "mahine", live: "Documents ke baad lagbhag", days: "din mein chalu",
     why: "Yeh kyun sahi hai", blocked: "Yeh nahi mil sakte, aur kyun", addons: "Jodein ya hatayein", unavailable: "Aapke business ke liye available nahi",
     next: "Aage: documents upload karein  →", qty: "Quantity", none: "Koi setup fee nahi", remove: "Hatayein", add: "Jodein",
@@ -37,6 +37,7 @@ export function QuoteLedger({ result, lang, onTotal }: { result?: AdvisorTurnRes
   const t = T[lang];
   const [bundle, setBundle] = useState<Bundle | undefined>();
   const [addons, setAddons] = useState<AddonOption[]>([]);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [profile, setProfile] = useState<BusinessProfileInput | undefined>();
   const [blocked, setBlocked] = useState<Bundle["blocked"]>([]);
@@ -202,7 +203,7 @@ export function QuoteLedger({ result, lang, onTotal }: { result?: AdvisorTurnRes
         <section className="mt-6">
           <h3 className="font-bold">{t.addons}</h3>
           <ul className="mt-2 divide-y divide-rule overflow-hidden rounded-2xl bg-white shadow-card">
-            {available.map((a) => (
+            {(moreOpen ? available : [...available].sort((x, y) => Number(y.inCart) - Number(x.inCart)).slice(0, 5)).map((a) => (
               <li key={a.productId} className="flex min-h-16 items-center justify-between gap-3 px-4 py-2.5">
                 <div className="min-w-0">
                   <p className="text-[15px] leading-snug">{a.name}</p>
@@ -224,6 +225,11 @@ export function QuoteLedger({ result, lang, onTotal }: { result?: AdvisorTurnRes
               </li>
             ))}
           </ul>
+          {!moreOpen && available.length > 5 && (
+            <button onClick={() => setMoreOpen(true)} className="mt-2 h-11 w-full rounded-full border-2 border-rule bg-white font-semibold text-ink hover:border-brand">
+              {t.more} ({available.length - 5})
+            </button>
+          )}
         </section>
       )}
 
