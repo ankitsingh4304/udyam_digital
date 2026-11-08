@@ -137,8 +137,9 @@ export async function handleAdvisorTurn(input: AdvisorTurnInput, deps: Deps): Pr
   // 3. Ask the next question, or recommend.
   const slot = nextSlot(state, needsAnswered);
   if (slot) {
-    if (!reply.length && JSON.stringify(before) !== JSON.stringify(draft)) reply.push(c.ack);
-    reply.push(c.questions[slot]);
+    // One bubble per turn: a short "Got it." joins the next question instead of its own message.
+    const ack = !reply.length && JSON.stringify(before) !== JSON.stringify(draft) ? `${c.ack} ` : "";
+    reply.push(ack + c.questions[slot]);
     state = { ...state, asked: [...state.asked, slot], lastAsked: slot };
     return { state, reply, quickReplies: c.quick[slot], provider };
   }

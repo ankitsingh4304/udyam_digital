@@ -275,12 +275,12 @@ export function KycApp() {
   return (
     <AppShell step={3} back={{ href: "/advisor", label: t.back }}>
     <main className="mx-auto max-w-lg px-4 pb-[calc(4rem+env(safe-area-inset-bottom))] pt-4">
-      <ol className="flex flex-wrap gap-2" aria-label="Document check progress">
+      <ol className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none]" aria-label="Document check progress">
         {[t.step1, t.step2, t.step3].map((label, i) => {
           const active = i === (result ? 2 : caseInfo ? 1 : 0);
           const passed = i < (result ? 2 : caseInfo ? 1 : 0);
           return (
-            <li key={label} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold ${active ? "bg-ink text-white" : passed ? "bg-ok-soft text-ok" : "bg-white text-ink-soft"}`}>
+            <li key={label} className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold ${active ? "bg-ink text-white" : passed ? "bg-ok-soft text-ok" : "bg-white text-ink-soft"}`}>
               {passed ? <CheckCircle2 className="h-4 w-4" aria-hidden /> : <span>{i + 1}.</span>} {label}
             </li>
           );
