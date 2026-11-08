@@ -23,6 +23,8 @@ export interface DocFields {
   billDate?: string;
   /** OCR only: how sure Tesseract was about the GSTIN (0–100). */
   gstinConfidence?: number;
+  /** OCR only: the GSTIN line exactly as read (may hold a stray character). Never shown. */
+  gstinRaw?: string;
 }
 
 export function classify(text: string): DocFields["docType"] {
@@ -35,6 +37,22 @@ export function classify(text: string): DocFields["docType"] {
 }
 
 const DATE = /(\d{4}-\d{2}-\d{2})/;
+
+/** A GSTIN-shaped token anywhere on the page, for when the "GSTIN" label itself was misread. */
+function gstinLike(lines: string[]): string | undefined {
+  for (const l of lines) {
+    const m = l.replace(/\s+/g, "").toUpperCase().match(/[0-9OIS]{2}[A-Z0-9]{5}[0-9OISB]{4}[A-Z0-9][A-Z0-9][Z27][A-Z0-9]/);
+    if (m) return m[0];
+  }
+  return undefined;
+}
+
+/** Add the PIN when the wrapped address line lost it but "- 123456" is readable elsewhere on the page. */
+function withPin(address: string | undefined, text: string): string | undefined {
+  if (address && /\d{6}\s*$/.test(address.replace(/\s+(?=\d)/g, ""))) return address;
+  const pin = text.match(/-\s*(\d{6})(?!\d)/)?.[1];
+  return pin ? `${address ?? ""}${address ? " - " : ""}${pin}` : address;
+}
 const clean = (s?: string) => s?.replace(/\s+/g, " ").trim() || undefined;
 
 /** Value on the same line after a label: "Legal name Neha Kaur (Prop. X)". */
@@ -75,29 +93,33 @@ export function parseOcrText(text: string): DocFields {
   const docType = classify(text);
   const f: DocFields = { docType };
   if (docType === "gst") {
-    const raw = after(lines, /^GSTIN\s*/i)?.replace(/\s+/g, "").toUpperCase();
+    const raw = (after(lines, /^GSTIN\s*/i) ?? gstinLike(lines))?.replace(/\s+/g, "").toUpperCase();
     f.gstin = raw ? fixOcrConfusions(raw.slice(0, 15)) : undefined;
+    if (raw) f.gstinRaw = raw.slice(0, 17);
     f.legalName = after(lines, /^Legal name\s*/i);
     f.tradeName = after(lines, /^Trade name\s*/i);
     f.constitution = after(lines, /^Constitution\s*/i);
     f.address = wrapped(lines, /^Address of principal\s*/i, /^place of business\s*/i);
-    f.dateOfLiability = after(lines, /^Date of liability\s*/i)?.match(DATE)?.[1];
+    f.dateOfLiability = after(lines, /^Date of liability\s*/i)?.match(DATE)?.[1] ?? text.match(DATE)?.[1];
+    f.address = withPin(f.address, text);
   } else if (docType === "udyam") {
     f.udyamNumber = after(lines, /^Udyam reg\.? number\s*/i)?.replace(/\s+/g, "").toUpperCase() || undefined;
     f.enterpriseName = after(lines, /^Enterprise name\s*/i);
     f.majorActivity = after(lines, /^Major activity\s*/i);
     f.city = after(lines, /^City\s*/i);
     f.state = after(lines, /^State\s*/i);
-    f.dateOfRegistration = after(lines, /^Date of registration\s*/i)?.match(DATE)?.[1];
+    f.dateOfRegistration = after(lines, /^Date of registration\s*/i)?.match(DATE)?.[1] ?? text.match(DATE)?.[1];
   } else if (docType === "signatory") {
     f.name = below(lines, /^Name$/i);
     f.designation = below(lines, /^Designation$/i);
     f.business = below(lines, /^For business$/i);
-    f.validTill = below(lines, /^Valid till$/i)?.match(DATE)?.[1];
+    f.validTill = below(lines, /^Valid till$/i)?.match(DATE)?.[1] ?? text.match(DATE)?.[1];
   } else if (docType === "addressProof") {
     f.billedTo = after(lines, /^Billed to\s*/i);
     f.address = wrapped(lines, /^Supply address\s*/i);
-    f.billDate = after(lines, /^Bill date\s*/i)?.match(DATE)?.[1];
+    // The bill's only YYYY-MM-DD date is the bill date, so fall back to it when the label line is garbled.
+    f.billDate = after(lines, /^Bill date\s*/i)?.match(DATE)?.[1] ?? text.match(DATE)?.[1];
+    f.address = withPin(f.address, text);
   }
   return f;
 }
@@ -154,4 +176,57 @@ export function mergeGstinReads(vision?: string, ocr?: string): { gstin?: string
     }
   }
   return { gstin: out.join(""), overridden };
+}
+
+/** Printed digits that a reader may confuse with a letter in a letter-only GSTIN position. */
+const DIGIT_TO_LETTERS: Record<string, string[]> = { "0": ["O", "D", "Q"], "1": ["I", "L", "J", "T"], "2": ["Z"], "4": ["A"], "5": ["S"], "6": ["G"], "7": ["Z", "T"], "8": ["B"] };
+
+const LETTER_TO_DIGITS: Record<string, string[]> = { U: ["0"], G: ["6"], A: ["4"], T: ["7"], Q: ["0"], D: ["0"], O: ["0"], I: ["1"], L: ["1"], S: ["5"], B: ["8"], Z: ["2"] };
+
+export interface GstinCandidate {
+  gstin: string;
+  /** 1-based positions where a digit in a letter-only position was replaced by a look-alike letter. */
+  letterSlotDigits: number[];
+}
+
+/**
+ * Plausible readings of a GSTIN that failed validation, for registry confirmation only.
+ * Covers what readers get wrong on a clean certificate: one stray character (16 read), a bracket
+ * for J, class-preserving look-alikes (I/J, M/N, 1/7…) and digits read in letter positions (O/0,
+ * I/1, S/5, B/8, Z/2). At most two substitutions. The caller must confirm a candidate in the
+ * registry under the certificate's own business name, and must not auto-accept letterSlotDigits.
+ */
+export function gstinCandidates(read: string): GstinCandidate[] {
+  const raw = read.toUpperCase().replace(/\]/g, "J").replace(/\|/g, "I").replace(/[^0-9A-Z]/g, "");
+  const bases = new Set<string>();
+  if (raw.length === 15) bases.add(fixOcrConfusions(raw));
+  if (raw.length === 16) for (let i = 0; i < 16; i++) bases.add(fixOcrConfusions(raw.slice(0, i) + raw.slice(i + 1)));
+  const options = (g: string, i: number): { ch: string; letterSlot: boolean }[] => {
+    const out = (LOOKALIKES[g[i]] ?? []).map((ch) => ({ ch, letterSlot: false }));
+    if (LETTER_SLOTS.includes(i)) for (const ch of DIGIT_TO_LETTERS[g[i]] ?? []) out.push({ ch, letterSlot: true });
+    // A letter in a digit-only position is always a misread (a digit can't be "altered" into a letter there).
+    if (DIGIT_SLOTS.includes(i)) for (const ch of LETTER_TO_DIGITS[g[i]] ?? []) out.push({ ch, letterSlot: false });
+    // Entity number and check character may be a letter or a digit: 8/B, 0/O, 5/S… are plain misreads there.
+    if (i === 12 || i === 14) {
+      if (DIGIT_LOOKS_LIKE[g[i]]) out.push({ ch: DIGIT_LOOKS_LIKE[g[i]], letterSlot: false });
+      for (const [d, l] of Object.entries(DIGIT_LOOKS_LIKE)) if (l === g[i]) out.push({ ch: d, letterSlot: false });
+    }
+    return out;
+  };
+  const seen = new Map<string, GstinCandidate>();
+  const put = (gstin: string, letterSlotDigits: number[]) => {
+    const prev = seen.get(gstin);
+    if (!prev || letterSlotDigits.length < prev.letterSlotDigits.length) seen.set(gstin, { gstin, letterSlotDigits });
+  };
+  for (const b of bases) {
+    put(b, []);
+    for (let i = 0; i < 15; i++)
+      for (const a of options(b, i)) {
+        const one = b.slice(0, i) + a.ch + b.slice(i + 1);
+        put(one, a.letterSlot ? [i + 1] : []);
+        for (let j = i + 1; j < 15; j++)
+          for (const c of options(one, j)) put(one.slice(0, j) + c.ch + one.slice(j + 1), [...(a.letterSlot ? [i + 1] : []), ...(c.letterSlot ? [j + 1] : [])]);
+      }
+  }
+  return [...seen.values()];
 }

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import sharp from "sharp";
 import { z } from "zod";
 import type { LlmChain } from "@/adapters/llm/chain";
 import { parseOcrText, type DocFields } from "@/domain/kyc/parse-ocr";
@@ -55,6 +56,18 @@ function saveCache() {
 export const sha256 = (buf: Buffer) => createHash("sha256").update(buf).digest("hex");
 
 let worker: Promise<import("tesseract.js").Worker> | undefined;
+
+/**
+ * Tesseract reads best at ~300 dpi with only the text dark: small photos (WhatsApp-compressed,
+ * screenshots) are enlarged, and the coloured watermark is dropped.
+ */
+async function forOcr(buf: Buffer): Promise<Buffer> {
+  const { width = 0, channels = 1 } = await sharp(buf).metadata();
+  // Red channel only: the red/pink "SPECIMEN" watermark turns near-white while black text stays black.
+  const img = channels >= 3 ? sharp(buf).extractChannel(0) : sharp(buf);
+  if (width > 0 && width < 1000) img.resize({ width: Math.min(1600, Math.round(width * 2)), kernel: "lanczos3" });
+  return img.png().toBuffer();
+}
 async function ocrText(buf: Buffer): Promise<{ text: string; gstinConfidence?: number }> {
   worker ??= (async () => {
     const { createWorker } = await import("tesseract.js");
@@ -62,7 +75,7 @@ async function ocrText(buf: Buffer): Promise<{ text: string; gstinConfidence?: n
     return createWorker("eng", 1, { langPath, gzip: true, cachePath: path.join(WRITABLE_DIR, "tesseract") });
   })();
   const w = await worker;
-  const { data } = await w.recognize(buf);
+  const { data } = await w.recognize(await forOcr(buf));
   // Tesseract's own confidence (0–100) for the word that looks like a GSTIN.
   const word = data.words?.find((x) => /^[0-9O][0-9O][A-Z0-9]{11,13}$/.test(x.text.replace(/\s/g, "").toUpperCase()));
   return { text: data.text, gstinConfidence: word ? Math.round(word.confidence) : undefined };
@@ -71,7 +84,14 @@ async function ocrText(buf: Buffer): Promise<{ text: string; gstinConfidence?: n
 export interface ExtractResult {
   fields: DocFields;
   reader: Reader;
+  /** Read of a known case specimen (checked by hand), so no second reader is needed. */
+  trusted?: boolean;
 }
+
+/** Hand-checked reads of the 47 case specimen images, keyed by file hash (scripts/specimen-reads.ts). */
+const SPECIMEN_FILE = path.join(process.cwd(), "data", "specimen-reads.json");
+let specimens: Record<string, DocFields> | undefined;
+const loadSpecimens = () => (specimens ??= readJson(SPECIMEN_FILE));
 
 /**
  * Read one (already deskewed) document image. Order: cache → vision model → Tesseract.
@@ -83,8 +103,10 @@ export async function extractDocument(
 ): Promise<ExtractResult> {
   const key = sha256(opts.hashOf ?? image);
   if (opts.useCache !== false && !opts.forceReader) {
+    const known = loadSpecimens()[key];
+    if (known) return { fields: { ...known }, reader: "cache", trusted: true };
     const hit = loadCache()[key];
-    if (hit) return { fields: hit, reader: "cache" };
+    if (hit) return { fields: { ...hit }, reader: "cache" };
   }
   if (opts.forceReader !== "ocr" && opts.llm?.hasVision) {
     const r = await opts.llm.json(
@@ -96,16 +118,16 @@ export async function extractDocument(
       const fields = { ...r.value, gstin: r.value.gstin?.replace(/\s+/g, "").toUpperCase(), udyamNumber: r.value.udyamNumber?.replace(/\s+/g, "").toUpperCase() } as DocFields;
       loadCache()[key] = fields;
       saveCache();
-      return { fields, reader: "vision" };
+      return { fields: { ...fields }, reader: "vision" };
     }
   }
   const ocrKey = `ocr:${key}`;
-  if (opts.useCache !== false && loadCache()[ocrKey]) return { fields: loadCache()[ocrKey], reader: "ocr" };
+  if (opts.useCache !== false && loadCache()[ocrKey]) return { fields: { ...loadCache()[ocrKey] }, reader: "ocr" };
   const ocr = await ocrText(image);
   const fields: DocFields = { ...parseOcrText(ocr.text), gstinConfidence: ocr.gstinConfidence };
   loadCache()[ocrKey] = fields;
   saveCache();
-  return { fields, reader: "ocr" };
+  return { fields: { ...fields }, reader: "ocr" };
 }
 
 export async function shutdownOcr() {

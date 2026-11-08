@@ -56,6 +56,8 @@ const cityOf = (addr = "") => {
   const parts = addr.split(",").map((s) => s.trim());
   return parts.length >= 2 ? parts[parts.length - 2] : undefined;
 };
+/** A reader sometimes picks up a stray 1–2 letter fragment from the card edge before a name ("hn Thomas Kulkarni"). */
+const dropStray = (name = "") => name.replace(/^(?:\S{1,2}\s+)+(?=\S{3,})/, "");
 const proprietorOf = (legalName = "") => legalName.match(/^(.*?)\s*\(Prop\./i)?.[1]?.trim();
 const daysBetween = (from: string, to: string) => Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000);
 const addDays = (d: string, n: number) => new Date(Date.parse(d) + n * 86_400_000).toISOString().slice(0, 10);
@@ -162,7 +164,10 @@ export function runKycChecks(
           doc: "gst",
           status: "fail",
           impact: "review",
-          message: `${!legalOk ? `Legal name "${gst.legalName}" ` : `Trade name "${gst.tradeName}" `}doesn't match the registry ("${!legalOk ? rec.legalName : rec.tradeName}"). Possible tampering.`,
+          message: (() => {
+            const [label, read, want] = !legalOk ? ["Legal name", gst.legalName, rec.legalName] : ["Trade name", gst.tradeName, rec.tradeName];
+            return read ? `${label} "${read}" doesn't match the registry ("${want}"). Possible tampering.` : `${label} couldn't be read on the certificate, so it can't be matched to the registry ("${want}").`;
+          })(),
         },
         "Send to a verification agent before activation.",
       );
@@ -178,7 +183,7 @@ export function runKycChecks(
       add({ code: "SIGNATORY_EXPIRED", doc: "signatory", status: "fail", impact: "reupload", message: `Signatory ID expired on ${sig.validTill}.` }, "Upload a valid signatory ID.");
     const proprietor = proprietorOf(rec.legalName);
     if (rec.constitution === "Proprietorship" && proprietor) {
-      if (similarity(sig.name, proprietor) >= o.nameSimilarity)
+      if (similarity(sig.name, proprietor) >= o.nameSimilarity || similarity(dropStray(sig.name), proprietor) >= o.nameSimilarity)
         add({ code: "SIGNATORY_MATCH", doc: "signatory", status: "pass", impact: "none", message: `Signatory ${sig.name} is the registered proprietor.` });
       else
         add({ code: "SIGNATORY_MATCH", doc: "signatory", status: "fail", impact: "review", message: `Signatory ${sig.name} is not the registered proprietor (${proprietor}).` }, "Collect an authorisation letter signed by the proprietor.");
@@ -254,6 +259,8 @@ export function runKycChecks(
       if (!u) add({ code: "UDYAM_FOUND", doc: "udyam", status: "fail", impact: "review", message: `${num} is not in the Udyam registry.` });
       else if (similarity(udyam.enterpriseName, u.enterpriseName) < o.nameSimilarity)
         add({ code: "UDYAM_NAME", doc: "udyam", status: "fail", impact: "review", message: `Udyam ${num} belongs to "${u.enterpriseName}", not "${udyam.enterpriseName}".` });
+      else if (rec && similarity(u.enterpriseName, rec.tradeName) < o.nameSimilarity && similarity(u.enterpriseName, rec.legalName) < o.nameSimilarity)
+        add({ code: "UDYAM_NAME", doc: "udyam", status: "fail", impact: "review", message: `Udyam ${num} is registered to "${u.enterpriseName}", a different business from the GST certificate ("${rec.tradeName}").` });
       else {
         verified.udyamNumber = u.udyamNumber;
         add({ code: "UDYAM_FOUND", doc: "udyam", status: "pass", impact: "none", message: `Udyam ${num} found; enterprise name matches.` });

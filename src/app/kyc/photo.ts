@@ -1,11 +1,12 @@
 /**
  * Prepare a phone photo for upload: phones take 8–50 MP pictures (5–15 MB) and iPhones may send HEIC.
- * Large or unusual images are shrunk to 2000 px and re-encoded as JPEG in the browser, which makes
+ * Large (over 1 MB) or unusual images are shrunk to 2000 px and re-encoded as JPEG in the browser, which makes
  * uploads fast on mobile data. Small PNG/JPEG files (e.g. the sample documents) are sent untouched,
  * so their saved readings still match.
  */
 const MAX_SIDE = 2000;
-const KEEP_BYTES = 2_000_000;
+/** Four photos must fit in one request (the host caps a request at 4.5 MB). Specimens are ~0.3 MB. */
+const KEEP_BYTES = 1_000_000;
 
 export async function preparePhoto(file: File): Promise<File | null> {
   const simple = file.type === "image/png" || file.type === "image/jpeg" || file.type === "image/webp";
