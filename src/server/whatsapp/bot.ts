@@ -100,7 +100,9 @@ async function bundleReplies(r: AdvisorTurnResult, s: WaState): Promise<string[]
   ];
 }
 
-export async function handleWhatsApp(msg: { channel: Channel; from: string; text: string; origin: string }): Promise<string[]> {
+export async function handleWhatsApp(input: { channel: Channel; from: string; text: string; origin: string }): Promise<string[]> {
+  // Links in chat use the public address (PUBLIC_ORIGIN) when set, e.g. behind a proxy or a custom domain.
+  const msg = { ...input, origin: process.env.PUBLIC_ORIGIN?.replace(/\/$/, "") || input.origin };
   const ref = waRefOf(msg.channel, msg.from);
   const text = msg.text.trim().slice(0, 500);
   const cmd = text.toUpperCase();
