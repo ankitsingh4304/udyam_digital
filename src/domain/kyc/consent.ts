@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { fromPacks } from "@/i18n/packs";
-import type { Lang } from "../advisor/state";
+import { LANGS, type Lang } from "../advisor/state";
 
 export const NOTICE_VERSION = "2026-11-v1";
 
@@ -10,7 +10,7 @@ export const REQUIRED_PURPOSES: Purpose[] = ["kyc", "installation"];
 
 export const ConsentRequestSchema = z.object({
   purposes: z.object({ kyc: z.boolean(), installation: z.boolean(), offers: z.boolean() }),
-  lang: z.enum(["en", "hi", "hinglish"]).default("en"),
+  lang: z.enum(LANGS).default("en"),
   noticeVersion: z.literal(NOTICE_VERSION),
 });
 
