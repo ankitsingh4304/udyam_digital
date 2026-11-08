@@ -89,6 +89,15 @@ npx tsx scripts/kyc-check-all.ts --ocr  # offline reader only
   (logistic regression, AUC 0.71, `scripts/train-propensity.py` → `src/domain/leads/propensity-model.json`).
 - Production: rate limits, CSP/HSTS headers, `/api/health`, Vercel config (Mumbai region). See `DEPLOY.md`.
 
+## WhatsApp front door
+
+- Same advisor in chat: language menu (9 languages), the 6 questions with numbered replies, **voice notes** transcribed by Whisper,
+  bundle + reasons, then a short signed link that opens the document check with the quote filled in.
+- The order placed from that link is confirmed in the chat, and every operations update or delay is pushed there.
+  `STATUS` lists orders with tracker links; `STOP` deletes the chat data.
+- Channels: Twilio sandbox (`/api/whatsapp/twilio`, judges can join), Meta Cloud API (`/api/whatsapp/meta`, production),
+  and an in-app simulator at `/whatsapp` that needs no phone. One bot (`src/server/whatsapp/bot.ts`) behind all three.
+
 ## Who updates what
 
 | Event | Demo | Production |

@@ -11,12 +11,15 @@ import { signToken, verifyToken } from "@/server/signed-token";
 import { appendAudit } from "@/server/audit-log";
 import { esignFor } from "@/server/esign";
 import { isWithdrawn, registerOrder } from "@/server/ops";
+import { linkOrder } from "@/server/whatsapp/bot";
 
 export const runtime = "nodejs";
 
 const OrderRequest = z.object({
   kycToken: z.string().max(2000),
   esignToken: z.string().max(2000).optional(),
+  /** Signed link from a WhatsApp chat: the order is confirmed and tracked in that chat. */
+  waToken: z.string().max(4000).optional(),
   quote: z.object({ profile: BusinessProfileSchema, cart: z.array(CartChangeSchema).max(30) }).optional(),
   demo: z.boolean().default(true),
 });
@@ -60,8 +63,11 @@ export async function POST(req: Request) {
     spotCheck: !!kyc.backupRead,
     speed: parsed.data.demo ? 1440 : 1,
   };
+  const waRef = parsed.data.waToken ? verifyToken<{ waRef?: string }>(parsed.data.waToken)?.waRef : undefined;
+  if (waRef && /^[a-f0-9]{16}$/.test(waRef)) order.waRef = waRef;
   const token = signToken(order);
   await registerOrder(order, token).catch((e) => console.warn(`order not registered: ${e.message}`));
   await appendAudit("ORDER_PLACED", kyc.caseId, { orderId: order.id, monthly: order.monthly, lines: order.lines.length, installDays: order.installDays, esign: esign.requestId, spotCheck: !!kyc.backupRead });
+  if (order.waRef) await linkOrder(order.waRef, order.id, token).catch((e) => console.warn(`whatsapp link failed: ${e.message}`));
   return NextResponse.json({ orderId: order.id, token });
 }

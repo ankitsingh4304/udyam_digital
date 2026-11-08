@@ -13,7 +13,7 @@ export interface ExplainCopy {
 
 /** Everything an owner sees, for one regional language. Missing keys fall back to English. */
 export interface LangPack {
-  chooser: { title: string; sub: string; owner: string; ownerSub: string; ownerCta: string; staff: string; chooseLang: string };
+  chooser: { title: string; sub: string; owner: string; ownerSub: string; ownerCta: string; staff: string; chooseLang: string; wa: string; waSub: string };
   home: { title: string; sub: string; start: string; voice: string; how: string; steps: [string, string][]; why: string; perks: [string, string][] };
   steps: string[];
   advisorUi: Strings;

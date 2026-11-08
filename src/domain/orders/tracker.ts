@@ -15,6 +15,8 @@ export interface OrderPayload {
   caseId: string;
   /** Documents were read by the backup reader: operations spot-check before activation. */
   spotCheck?: boolean;
+  /** Chat the order came from (hashed id), for WhatsApp updates. */
+  waRef?: string;
   /** Demo speed: 1 = real time; 1440 = one day passes per minute. */
   speed: number;
 }

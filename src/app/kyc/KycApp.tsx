@@ -244,10 +244,16 @@ export function KycApp() {
     } catch {
       quote = undefined;
     }
+    let waToken: string | undefined;
+    try {
+      waToken = sessionStorage.getItem("udyam.wa") ?? undefined;
+    } catch {
+      waToken = undefined;
+    }
     const res = await fetch("/api/orders", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ kycToken: kycTokenOf(result), esignToken, quote, demo: true }),
+      body: JSON.stringify({ kycToken: kycTokenOf(result), esignToken, quote, waToken, demo: true }),
     });
     const data = await res.json();
     setPlacing(false);

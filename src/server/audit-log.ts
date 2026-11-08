@@ -17,7 +17,8 @@ export type AuditType =
   | "ORDER_PLACED"
   | "ORDER_UPDATED"
   | "LEAD_CLAIMED"
-  | "DATA_DELETION_REQUESTED";
+  | "DATA_DELETION_REQUESTED"
+  | "WA_OPT_OUT";
 
 export interface AuditEntry {
   seq: number;
