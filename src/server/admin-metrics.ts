@@ -89,6 +89,12 @@ export async function adminMetrics() {
       kycChecks: count("KYC_PROCESSED"),
       verdicts,
       esigns: count("ESIGN_COMPLETED"),
+      whatsapp: {
+        chats: count("WA_CHAT_STARTED"),
+        quoted: count("WA_QUOTED"),
+        handoffs: count("WA_HANDOFF"),
+        orders: entries.filter((e) => e.type === "ORDER_PLACED" && e.data.channel === "whatsapp").length,
+      },
       orders: count("ORDER_PLACED"),
       monthlyRevenue: revenue,
       medianMinutesConsentToOrder: durations.length ? durations.sort((x, y) => x - y)[Math.floor(durations.length / 2)] : null,

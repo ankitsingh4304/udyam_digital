@@ -17,6 +17,9 @@ export interface WaCopy {
   update: (id: string, step: string) => string;
   delayed: (id: string, step: string, reason: string, date: string) => string;
   track: string;
+  agentHint: string;
+  agentQueued: (city: string) => string;
+  agentTaken: (who: string) => string;
 }
 
 export const WA: Record<Lang, WaCopy> = {
@@ -29,6 +32,7 @@ export const WA: Record<Lang, WaCopy> = {
     voiceFailed: "Sorry, I couldn't hear that voice note. Please type or try again.",
     orderPlaced: (id) => `✅ Order ${id} placed. We'll message you here at every step.`, update: (id, s) => `📦 Order ${id}: ${s}.`,
     delayed: (id, s, r, d) => `⚠️ Order ${id}: ${s} is delayed (${r}). New date: ${d}. Sorry, no need to call.`, track: "Track:",
+    agentHint: "0 = talk to a person", agentQueued: (c) => `Done. A local Accel partner${c ? ` (${c})` : ""} will contact you here soon. You can keep chatting meanwhile.`, agentTaken: (w) => `👋 ${w} has taken your request and will contact you shortly.`,
   },
   hi: {
     pickOne: "एक नंबर लिखकर जवाब दें।", pickMany: "नंबर लिखें, जैसे 1,3 (या अपना जवाब लिखें)।",
@@ -39,6 +43,7 @@ export const WA: Record<Lang, WaCopy> = {
     voiceFailed: "माफ़ कीजिए, वॉइस नोट सुनाई नहीं दिया। कृपया लिखें या फिर से भेजें।",
     orderPlaced: (id) => `✅ ऑर्डर ${id} हो गया। हर कदम पर हम यहीं मैसेज करेंगे।`, update: (id, s) => `📦 ऑर्डर ${id}: ${s}।`,
     delayed: (id, s, r, d) => `⚠️ ऑर्डर ${id}: ${s} में देरी (${r})। नई तारीख: ${d}। माफ़ी, कॉल की ज़रूरत नहीं।`, track: "ट्रैक करें:",
+    agentHint: "0 = किसी व्यक्ति से बात करें", agentQueued: (c) => `हो गया। Accel के लोकल पार्टनर${c ? ` (${c})` : ""} जल्द ही आपसे संपर्क करेंगे। तब तक आप चैट जारी रख सकते हैं।`, agentTaken: (w) => `👋 ${w} ने आपका अनुरोध लिया है और जल्द संपर्क करेंगे।`,
   },
   hinglish: {
     pickOne: "Ek number likhkar jawab dein.", pickMany: "Number likhein, jaise 1,3 (ya apna jawab likhein).",
@@ -49,6 +54,7 @@ export const WA: Record<Lang, WaCopy> = {
     voiceFailed: "Maaf kijiye, voice note sunai nahi diya. Please likhein ya phir bhejein.",
     orderPlaced: (id) => `✅ Order ${id} ho gaya. Har step par hum yahin message karenge.`, update: (id, s) => `📦 Order ${id}: ${s}.`,
     delayed: (id, s, r, d) => `⚠️ Order ${id}: ${s} mein delay (${r}). Nayi date: ${d}. Maafi, call ki zaroorat nahi.`, track: "Track karein:",
+    agentHint: "0 = kisi insaan se baat karein", agentQueued: (c) => `Ho gaya. Accel ke local partner${c ? ` (${c})` : ""} jaldi aapse contact karenge. Tab tak chat jaari rakh sakte hain.`, agentTaken: (w) => `👋 ${w} ne aapki request li hai aur jaldi contact karenge.`,
   },
   mr: {
     pickOne: "एक क्रमांक लिहून उत्तर द्या.", pickMany: "क्रमांक लिहा, उदा. 1,3 (किंवा तुमचे उत्तर लिहा).",
@@ -59,6 +65,7 @@ export const WA: Record<Lang, WaCopy> = {
     voiceFailed: "माफ करा, व्हॉइस नोट ऐकू आली नाही. कृपया लिहा किंवा पुन्हा पाठवा.",
     orderPlaced: (id) => `✅ ऑर्डर ${id} झाली. प्रत्येक टप्प्यावर आम्ही इथेच कळवू.`, update: (id, s) => `📦 ऑर्डर ${id}: ${s}.`,
     delayed: (id, s, r, d) => `⚠️ ऑर्डर ${id}: ${s} ला उशीर (${r}). नवी तारीख: ${d}. क्षमस्व, फोन करायची गरज नाही.`, track: "ट्रॅक करा:",
+    agentHint: "0 = व्यक्तीशी बोला", agentQueued: (c) => `झाले. Accel चे स्थानिक पार्टनर${c ? ` (${c})` : ""} लवकरच तुमच्याशी संपर्क करतील. तोपर्यंत चॅट सुरू ठेवू शकता.`, agentTaken: (w) => `👋 ${w} यांनी तुमची विनंती घेतली आहे आणि लवकरच संपर्क करतील.`,
   },
   gu: {
     pickOne: "એક નંબર લખીને જવાબ આપો.", pickMany: "નંબર લખો, જેમ કે 1,3 (અથવા તમારો જવાબ લખો).",
@@ -69,6 +76,7 @@ export const WA: Record<Lang, WaCopy> = {
     voiceFailed: "માફ કરશો, વૉઇસ નોટ સંભળાઈ નહીં. કૃપા કરી લખો અથવા ફરી મોકલો.",
     orderPlaced: (id) => `✅ ઓર્ડર ${id} થઈ ગયો. દરેક પગલે અમે અહીં જ જણાવીશું.`, update: (id, s) => `📦 ઓર્ડર ${id}: ${s}.`,
     delayed: (id, s, r, d) => `⚠️ ઓર્ડર ${id}: ${s} માં વિલંબ (${r}). નવી તારીખ: ${d}. માફ કરશો, ફોન કરવાની જરૂર નથી.`, track: "ટ્રેક કરો:",
+    agentHint: "0 = કોઈ વ્યક્તિ સાથે વાત કરો", agentQueued: (c) => `થઈ ગયું. Accel ના સ્થાનિક પાર્ટનર${c ? ` (${c})` : ""} જલ્દી તમારો સંપર્ક કરશે. ત્યાં સુધી ચેટ ચાલુ રાખી શકો.`, agentTaken: (w) => `👋 ${w} એ તમારી વિનંતી લીધી છે અને જલ્દી સંપર્ક કરશે.`,
   },
   kn: {
     pickOne: "ಒಂದು ಸಂಖ್ಯೆ ಬರೆದು ಉತ್ತರಿಸಿ.", pickMany: "ಸಂಖ್ಯೆಗಳನ್ನು ಬರೆಯಿರಿ, ಉದಾ. 1,3 (ಅಥವಾ ನಿಮ್ಮ ಉತ್ತರ ಬರೆಯಿರಿ).",
@@ -79,6 +87,7 @@ export const WA: Record<Lang, WaCopy> = {
     voiceFailed: "ಕ್ಷಮಿಸಿ, ವಾಯ್ಸ್ ನೋಟ್ ಕೇಳಿಸಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಬರೆಯಿರಿ ಅಥವಾ ಮತ್ತೆ ಕಳುಹಿಸಿ.",
     orderPlaced: (id) => `✅ ಆರ್ಡರ್ ${id} ಆಗಿದೆ. ಪ್ರತಿ ಹಂತದಲ್ಲೂ ಇಲ್ಲೇ ತಿಳಿಸುತ್ತೇವೆ.`, update: (id, s) => `📦 ಆರ್ಡರ್ ${id}: ${s}.`,
     delayed: (id, s, r, d) => `⚠️ ಆರ್ಡರ್ ${id}: ${s} ವಿಳಂಬ (${r}). ಹೊಸ ದಿನಾಂಕ: ${d}. ಕ್ಷಮಿಸಿ, ಕರೆ ಮಾಡುವ ಅಗತ್ಯವಿಲ್ಲ.`, track: "ಟ್ರ್ಯಾಕ್ ಮಾಡಿ:",
+    agentHint: "0 = ವ್ಯಕ್ತಿಯೊಂದಿಗೆ ಮಾತನಾಡಿ", agentQueued: (c) => `ಆಯಿತು. Accel ನ ಸ್ಥಳೀಯ ಪಾಲುದಾರರು${c ? ` (${c})` : ""} ಶೀಘ್ರದಲ್ಲೇ ಸಂಪರ್ಕಿಸುತ್ತಾರೆ. ಅಲ್ಲಿಯವರೆಗೆ ಚಾಟ್ ಮುಂದುವರಿಸಬಹುದು.`, agentTaken: (w) => `👋 ${w} ನಿಮ್ಮ ವಿನಂತಿಯನ್ನು ತೆಗೆದುಕೊಂಡಿದ್ದಾರೆ, ಶೀಘ್ರದಲ್ಲೇ ಸಂಪರ್ಕಿಸುತ್ತಾರೆ.`,
   },
   te: {
     pickOne: "ఒక సంఖ్య రాసి సమాధానం ఇవ్వండి.", pickMany: "సంఖ్యలు రాయండి, ఉదా. 1,3 (లేదా మీ సమాధానం రాయండి).",
@@ -89,6 +98,7 @@ export const WA: Record<Lang, WaCopy> = {
     voiceFailed: "క్షమించండి, వాయిస్ నోట్ వినిపించలేదు. దయచేసి రాయండి లేదా మళ్లీ పంపండి.",
     orderPlaced: (id) => `✅ ఆర్డర్ ${id} అయింది. ప్రతి దశలో ఇక్కడే తెలియజేస్తాం.`, update: (id, s) => `📦 ఆర్డర్ ${id}: ${s}.`,
     delayed: (id, s, r, d) => `⚠️ ఆర్డర్ ${id}: ${s} ఆలస్యం (${r}). కొత్త తేదీ: ${d}. క్షమించండి, కాల్ చేయాల్సిన అవసరం లేదు.`, track: "ట్రాక్ చేయండి:",
+    agentHint: "0 = వ్యక్తితో మాట్లాడండి", agentQueued: (c) => `అయింది. Accel స్థానిక భాగస్వామి${c ? ` (${c})` : ""} త్వరలో మిమ్మల్ని సంప్రదిస్తారు. అప్పటివరకు చాట్ కొనసాగించవచ్చు.`, agentTaken: (w) => `👋 ${w} మీ అభ్యర్థన తీసుకున్నారు, త్వరలో సంప్రదిస్తారు.`,
   },
   ta: {
     pickOne: "ஒரு எண்ணை எழுதிப் பதில் அளிக்கவும்.", pickMany: "எண்களை எழுதுங்கள், எ.கா. 1,3 (அல்லது உங்கள் பதிலை எழுதுங்கள்).",
@@ -99,6 +109,7 @@ export const WA: Record<Lang, WaCopy> = {
     voiceFailed: "மன்னிக்கவும், குரல் செய்தி கேட்கவில்லை. தயவுசெய்து எழுதுங்கள் அல்லது மீண்டும் அனுப்புங்கள்.",
     orderPlaced: (id) => `✅ ஆர்டர் ${id} பதிவானது. ஒவ்வொரு படியிலும் இங்கேயே தெரிவிப்போம்.`, update: (id, s) => `📦 ஆர்டர் ${id}: ${s}.`,
     delayed: (id, s, r, d) => `⚠️ ஆர்டர் ${id}: ${s} தாமதம் (${r}). புதிய தேதி: ${d}. மன்னிக்கவும், அழைக்கத் தேவையில்லை.`, track: "கண்காணிக்க:",
+    agentHint: "0 = ஒருவருடன் பேசுங்கள்", agentQueued: (c) => `முடிந்தது. Accel உள்ளூர் கூட்டாளர்${c ? ` (${c})` : ""} விரைவில் உங்களைத் தொடர்புகொள்வார். அதுவரை அரட்டையைத் தொடரலாம்.`, agentTaken: (w) => `👋 ${w} உங்கள் கோரிக்கையை ஏற்றுக்கொண்டார், விரைவில் தொடர்புகொள்வார்.`,
   },
   bn: {
     pickOne: "একটা নম্বর লিখে উত্তর দিন।", pickMany: "নম্বর লিখুন, যেমন 1,3 (বা আপনার উত্তর লিখুন)।",
@@ -109,6 +120,7 @@ export const WA: Record<Lang, WaCopy> = {
     voiceFailed: "দুঃখিত, ভয়েস নোট শোনা যায়নি। দয়া করে লিখুন বা আবার পাঠান।",
     orderPlaced: (id) => `✅ অর্ডার ${id} হয়েছে। প্রতিটি ধাপে এখানেই জানাব।`, update: (id, s) => `📦 অর্ডার ${id}: ${s}।`,
     delayed: (id, s, r, d) => `⚠️ অর্ডার ${id}: ${s}-এ দেরি (${r})। নতুন তারিখ: ${d}। দুঃখিত, ফোন করার দরকার নেই।`, track: "ট্র্যাক করুন:",
+    agentHint: "0 = একজন মানুষের সঙ্গে কথা বলুন", agentQueued: (c) => `হয়ে গেছে। Accel-এর স্থানীয় পার্টনার${c ? ` (${c})` : ""} শিগগিরই যোগাযোগ করবেন। ততক্ষণ চ্যাট চালিয়ে যেতে পারেন।`, agentTaken: (w) => `👋 ${w} আপনার অনুরোধ নিয়েছেন, শিগগিরই যোগাযোগ করবেন।`,
   },
 };
 

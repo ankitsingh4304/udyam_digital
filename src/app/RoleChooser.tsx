@@ -3,6 +3,7 @@
 import { fromPacks } from "@/i18n/packs";
 import { ArrowRight, ClipboardCheck, MessageCircle, ShieldCheck, Store, Users } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { BrandMark, LanguageSwitch } from "@/components/AppShell";
 import { LANGS } from "@/domain/advisor/state";
 import { LANG_LABEL } from "@/i18n";
@@ -20,6 +21,13 @@ const T: Record<Lang, { title: string; sub: string; owner: string; ownerSub: str
 export function RoleChooser() {
   const { lang, setLang } = useLang();
   const t = T[lang];
+  const [wa, setWa] = useState<{ number: string; join: string; link: string } | null>(null);
+  useEffect(() => {
+    fetch("/api/whatsapp/info")
+      .then((r) => r.json())
+      .then((d) => setWa(d.twilio))
+      .catch(() => setWa(null));
+  }, []);
   const staff = [
     { href: "/login?role=partner", icon: Users, title: "Channel partner", sub: "Your city's lost leads, ranked by likelihood to buy.", demo: "Demo PIN 1234" },
     { href: "/login?role=admin", icon: ShieldCheck, title: "Accel operations", sub: "Verification queue, orders to fulfil, the 5 metrics, audit log.", demo: "Demo ID ADMIN · PIN 9999" },
@@ -66,13 +74,26 @@ export function RoleChooser() {
           </span>
         </Link>
 
-        <Link href="/whatsapp" className="mt-3 flex items-center gap-4 rounded-3xl bg-[#008069] p-5 text-white shadow-card hover:bg-[#006e5a]">
-          <MessageCircle className="h-9 w-9 shrink-0" aria-hidden />
-          <span className="min-w-0 flex-1">
-            <span className="block text-lg font-bold">{t.wa}</span>
-            <span className="block text-white/90">{t.waSub}</span>
-          </span>
-          <ArrowRight className="h-5 w-5 shrink-0" aria-hidden />
+        <div className="mt-3 flex items-stretch gap-3 rounded-3xl bg-[#008069] p-3 text-white shadow-card">
+          <Link href={wa?.link ?? "/whatsapp"} className="flex min-w-0 flex-1 items-center gap-4 rounded-2xl p-2 hover:bg-white/10">
+            <MessageCircle className="h-9 w-9 shrink-0" aria-hidden />
+            <span className="min-w-0 flex-1">
+              <span className="block text-lg font-bold">{t.wa}</span>
+              <span className="block text-white/90">{t.waSub}</span>
+              {wa && (
+                <span className="mt-1 block text-sm text-white/90">
+                  {wa.join} → {wa.number}
+                </span>
+              )}
+            </span>
+            <ArrowRight className="h-5 w-5 shrink-0" aria-hidden />
+          </Link>
+          {/* On a laptop, scan with your phone to open WhatsApp with the join text ready. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/api/whatsapp/qr" alt="QR code to open the WhatsApp chat" width={112} height={112} className="hidden h-28 w-28 shrink-0 rounded-xl bg-white p-1.5 sm:block" />
+        </div>
+        <Link href="/whatsapp" className="mt-2 block text-center text-sm font-semibold text-[#005c4b] underline">
+          No phone handy? Open the WhatsApp preview here
         </Link>
 
         <h2 className="mt-10 text-sm font-semibold uppercase tracking-wide text-ink-soft">{t.staff}</h2>

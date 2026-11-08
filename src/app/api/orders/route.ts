@@ -67,7 +67,7 @@ export async function POST(req: Request) {
   if (waRef && /^[a-f0-9]{16}$/.test(waRef)) order.waRef = waRef;
   const token = signToken(order);
   await registerOrder(order, token).catch((e) => console.warn(`order not registered: ${e.message}`));
-  await appendAudit("ORDER_PLACED", kyc.caseId, { orderId: order.id, monthly: order.monthly, lines: order.lines.length, installDays: order.installDays, esign: esign.requestId, spotCheck: !!kyc.backupRead });
+  await appendAudit("ORDER_PLACED", kyc.caseId, { orderId: order.id, monthly: order.monthly, lines: order.lines.length, installDays: order.installDays, esign: esign.requestId, spotCheck: !!kyc.backupRead, channel: order.waRef ? "whatsapp" : "web" });
   if (order.waRef) await linkOrder(order.waRef, order.id, token).catch((e) => console.warn(`whatsapp link failed: ${e.message}`));
   return NextResponse.json({ orderId: order.id, token });
 }
