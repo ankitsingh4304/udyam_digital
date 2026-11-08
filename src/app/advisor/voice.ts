@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Lang } from "@/domain/advisor/state";
+import { LANG_TAG } from "@/i18n";
 
 export type VoiceState = "idle" | "listening" | "transcribing";
 type SpeechRec = {
@@ -15,7 +16,7 @@ type SpeechRec = {
   stop: () => void;
 };
 
-const SPEECH_LANG: Record<Lang, string> = { en: "en-IN", hi: "hi-IN", hinglish: "hi-IN" };
+const SPEECH_LANG: Record<Lang, string> = LANG_TAG;
 
 /**
  * Voice input. Preferred: record with the microphone and transcribe with Whisper on our server
@@ -173,7 +174,8 @@ function loadVoices(): Promise<SpeechSynthesisVoice[]> {
 
 /** Best installed voice: exact language, then same language family; prefer natural/online voices. */
 export function pickVoice(voices: SpeechSynthesisVoice[], lang: Lang): SpeechSynthesisVoice | undefined {
-  const want = lang === "hi" ? ["hi-IN", "hi"] : lang === "hinglish" ? ["hi-IN", "hi", "en-IN"] : ["en-IN", "en-GB", "en-US", "en"];
+  const code = LANG_TAG[lang].split("-")[0];
+  const want = lang === "en" ? ["en-IN", "en-GB", "en-US", "en"] : lang === "hinglish" ? ["hi-IN", "hi", "en-IN"] : [LANG_TAG[lang], code];
   const score = (v: SpeechSynthesisVoice) => (/(google|natural|online|neural)/i.test(v.name) ? 1 : 0);
   for (const w of want) {
     const matches = voices.filter((v) => v.lang.replace("_", "-").toLowerCase().startsWith(w.toLowerCase()));
@@ -203,14 +205,16 @@ export async function speakTexts(texts: string[], lang: Lang): Promise<SpeakResu
   synth.cancel();
   const voices = voicesCache.length ? voicesCache : await loadVoices();
   const voice = pickVoice(voices, lang);
-  const isDevanagari = texts.some((t) => /[ऀ-ॿ]/.test(t));
-  if (isDevanagari && !(voice && voice.lang.toLowerCase().startsWith("hi"))) return "noVoice";
+  // Indian scripts need a voice for that language; an English voice would read only the Latin words.
+  const nonLatin = texts.some((t) => /[\u0900-\u0DFF]/.test(t));
+  const code = LANG_TAG[lang].split("-")[0];
+  if (nonLatin && !(voice && voice.lang.toLowerCase().startsWith(code))) return "noVoice";
   // Small pause after cancel(): Chrome sometimes drops an utterance queued immediately after it.
   await new Promise((r) => setTimeout(r, 120));
   for (const piece of texts.flatMap((t) => chunkForSpeech(t))) {
     const u = new SpeechSynthesisUtterance(piece);
     if (voice) u.voice = voice;
-    u.lang = voice?.lang ?? (lang === "hi" ? "hi-IN" : "en-IN");
+    u.lang = voice?.lang ?? LANG_TAG[lang];
     u.rate = 0.95;
     synth.speak(u);
   }

@@ -1,20 +1,24 @@
 "use client";
 
+import { fromPacks } from "@/i18n/packs";
 import { ArrowRight, ClipboardCheck, ShieldCheck, Store, Users } from "lucide-react";
 import Link from "next/link";
 import { BrandMark, LanguageSwitch } from "@/components/AppShell";
+import { LANGS } from "@/domain/advisor/state";
+import { LANG_LABEL } from "@/i18n";
 import { useLang } from "@/components/LangContext";
 import type { Lang } from "@/domain/advisor/state";
 
-const T: Record<Lang, { title: string; sub: string; owner: string; ownerSub: string; ownerCta: string; staff: string }> = {
-  en: { title: "Welcome to Accel Business", sub: "Choose how you want to continue.", owner: "I run a business", ownerSub: "Get internet, phones and digital tools for your shop or office. No account needed.", ownerCta: "Start as a customer", staff: "Accel team and partners" },
-  hi: { title: "Accel Business में आपका स्वागत है", sub: "चुनें कि आप कैसे आगे बढ़ना चाहते हैं।", owner: "मेरा बिज़नेस है", ownerSub: "अपनी दुकान या ऑफिस के लिए इंटरनेट, फ़ोन और डिजिटल टूल लें। कोई अकाउंट नहीं चाहिए।", ownerCta: "ग्राहक के रूप में शुरू करें", staff: "Accel टीम और पार्टनर" },
-  hinglish: { title: "Accel Business mein swagat hai", sub: "Chunein ki aap kaise aage badhna chahte hain.", owner: "Mera business hai", ownerSub: "Apni dukaan ya office ke liye internet, phone aur digital tools lein. Koi account nahi chahiye.", ownerCta: "Customer ke roop mein shuru karein", staff: "Accel team aur partners" },
+const T: Record<Lang, { title: string; sub: string; owner: string; ownerSub: string; ownerCta: string; staff: string; chooseLang: string }> = {
+  en: { title: "Welcome to Accel Business", sub: "Choose how you want to continue.", owner: "I run a business", ownerSub: "Get internet, phones and digital tools for your shop or office. No account needed.", ownerCta: "Start as a customer", staff: "Accel team and partners", chooseLang: "Choose your language" },
+  hi: { title: "Accel Business में आपका स्वागत है", sub: "चुनें कि आप कैसे आगे बढ़ना चाहते हैं।", owner: "मेरा बिज़नेस है", ownerSub: "अपनी दुकान या ऑफिस के लिए इंटरनेट, फ़ोन और डिजिटल टूल लें। कोई अकाउंट नहीं चाहिए।", ownerCta: "ग्राहक के रूप में शुरू करें", staff: "Accel टीम और पार्टनर", chooseLang: "भाषा चुनें" },
+  hinglish: { title: "Accel Business mein swagat hai", sub: "Chunein ki aap kaise aage badhna chahte hain.", owner: "Mera business hai", ownerSub: "Apni dukaan ya office ke liye internet, phone aur digital tools lein. Koi account nahi chahiye.", ownerCta: "Customer ke roop mein shuru karein", staff: "Accel team aur partners", chooseLang: "Bhasha chunein" },
+  ...fromPacks("chooser"),
 };
 
 /** First page of the shared link: customer, partner or operations. Customers never need to sign in. */
 export function RoleChooser() {
-  const { lang } = useLang();
+  const { lang, setLang } = useLang();
   const t = T[lang];
   const staff = [
     { href: "/login?role=partner", icon: Users, title: "Channel partner", sub: "Your city's lost leads, ranked by likelihood to buy.", demo: "Demo PIN 1234" },
@@ -32,6 +36,24 @@ export function RoleChooser() {
       <main className="mx-auto max-w-3xl px-4 pb-[calc(3rem+env(safe-area-inset-bottom))] pt-8">
         <h1 className="text-3xl font-bold leading-tight sm:text-4xl">{t.title}</h1>
         <p className="mt-2 text-lg text-ink-soft">{t.sub}</p>
+
+        {/* Language first, in each language's own script, so an owner who can't read English finds theirs. */}
+        <section className="mt-5" aria-label="Language / भाषा">
+          <p className="text-sm font-semibold text-ink-soft">{t.chooseLang}</p>
+          <div role="radiogroup" className="mt-2 flex flex-wrap gap-2">
+            {LANGS.map((l) => (
+              <button
+                key={l}
+                role="radio"
+                aria-checked={lang === l}
+                onClick={() => setLang(l)}
+                className={`h-11 rounded-full border-2 px-4 font-semibold ${lang === l ? "border-brand bg-brand text-white" : "border-rule bg-white text-ink hover:border-brand"}`}
+              >
+                {LANG_LABEL[l]}
+              </button>
+            ))}
+          </div>
+        </section>
 
         <Link href="/business" className="group mt-6 block rounded-3xl bg-brand p-6 text-white shadow-card transition hover:bg-brand-dark focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-brand">
           <span className="grid h-14 w-14 place-items-center rounded-2xl bg-white/15">

@@ -1,21 +1,18 @@
 "use client";
 
-import { ArrowLeft, FileCheck2, IndianRupee, MessageCircle, Wrench } from "lucide-react";
+import { fromPacks } from "@/i18n/packs";
+import { ArrowLeft, ChevronDown, FileCheck2, IndianRupee, Languages, MessageCircle, Wrench } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { Lang } from "@/domain/advisor/state";
+import { LANGS, type Lang } from "@/domain/advisor/state";
+import { LANG_LABEL } from "@/i18n";
 import { useLang } from "./LangContext";
-
-const LANGS: { id: Lang; label: string }[] = [
-  { id: "en", label: "English" },
-  { id: "hi", label: "हिंदी" },
-  { id: "hinglish", label: "Hinglish" },
-];
 
 const STEPS: Record<Lang, string[]> = {
   en: ["Your business", "Your price", "Documents", "Installation"],
   hi: ["आपका बिज़नेस", "आपकी कीमत", "डॉक्यूमेंट", "इंस्टॉलेशन"],
   hinglish: ["Aapka business", "Aapki price", "Documents", "Installation"],
+  ...fromPacks("steps"),
 };
 const STEP_ICONS = [MessageCircle, IndianRupee, FileCheck2, Wrench];
 const STEP_HREF = ["/advisor", "/advisor#quote", "/kyc", undefined];
@@ -41,20 +38,26 @@ export function BrandMark({ small = false, href = "/" }: { small?: boolean; href
 
 export function LanguageSwitch() {
   const { lang, setLang } = useLang();
+  // Nine languages don't fit as buttons on a phone: a native picker is large, familiar and accessible.
   return (
-    <div role="radiogroup" aria-label="Language / भाषा" className="flex rounded-full bg-page p-1">
-      {LANGS.map((l) => (
-        <button
-          key={l.id}
-          role="radio"
-          aria-checked={lang === l.id}
-          onClick={() => setLang(l.id)}
-          className={`h-10 rounded-full px-2.5 text-sm font-semibold ${lang === l.id ? "bg-white text-brand shadow-card" : "text-ink-soft"}`}
-        >
-          {l.label}
-        </button>
-      ))}
-    </div>
+    <label className="relative flex h-11 items-center gap-1.5 rounded-full bg-page pl-3 pr-8 text-sm font-semibold text-brand">
+      <Languages className="h-5 w-5 shrink-0" aria-hidden />
+      <span className="sr-only">Language / भाषा</span>
+      <select
+        value={lang}
+        onChange={(e) => setLang(e.target.value as Lang)}
+        className="absolute inset-0 cursor-pointer appearance-none rounded-full bg-transparent pl-9 pr-8 text-sm font-semibold text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        aria-label="Language / भाषा"
+      >
+        {LANGS.map((l) => (
+          <option key={l} value={l}>
+            {LANG_LABEL[l]}
+          </option>
+        ))}
+      </select>
+      <span aria-hidden className="invisible whitespace-nowrap">{LANG_LABEL[lang]}</span>
+      <ChevronDown className="pointer-events-none absolute right-2.5 h-4 w-4" aria-hidden />
+    </label>
   );
 }
 

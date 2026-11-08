@@ -1,5 +1,6 @@
 "use client";
 
+import { fromPacks } from "@/i18n/packs";
 import { BadgeIndianRupee, FileCheck2, Headphones, Mic, ReceiptText, Truck, Wrench, MessageCircle, IndianRupee } from "lucide-react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
@@ -65,6 +66,7 @@ const T: Record<Lang, { title: string; sub: string; start: string; voice: string
       ["Zaroorat par madad", "Aap chahein to local partner aayenge"],
     ],
   },
+  ...fromPacks("home"),
 };
 
 const STEP_ICONS = [MessageCircle, IndianRupee, FileCheck2, Wrench];

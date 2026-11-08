@@ -1,4 +1,5 @@
 import type { Bundle, Catalogue } from "../catalogue/types";
+import { PACKS, fromPacks } from "@/i18n/packs";
 import { COPY, inr } from "./copy";
 import type { Lang } from "./state";
 
@@ -6,6 +7,7 @@ const NEED_LABEL: Record<Lang, Record<string, string>> = {
   en: { pos: "billing and UPI", cctv: "CCTV", whatsapp: "WhatsApp", sms: "SMS", email: "business email", backup: "backup", security: "device security", failover: "backup internet", static_ip: "a fixed IP", website: "a website", telephony: "phone lines", tollfree: "a toll-free number", wifi: "Wi-Fi", iot: "machine monitoring", fleet: "vehicle tracking", sdwan: "multi-site management", firewall: "a firewall", leased_line: "a dedicated line" },
   hi: { pos: "बिलिंग और UPI", cctv: "CCTV", whatsapp: "WhatsApp", sms: "SMS", email: "बिज़नेस ईमेल", backup: "बैकअप", security: "डिवाइस सुरक्षा", failover: "बैकअप इंटरनेट", static_ip: "फ़िक्स्ड IP", website: "वेबसाइट", telephony: "फ़ोन लाइनें", tollfree: "टोल-फ़्री नंबर", wifi: "Wi-Fi", iot: "मशीन मॉनिटरिंग", fleet: "गाड़ी ट्रैकिंग", sdwan: "सभी ब्रांच का मैनेजमेंट", firewall: "फ़ायरवॉल", leased_line: "डेडिकेटेड लाइन" },
   hinglish: { pos: "billing aur UPI", cctv: "CCTV", whatsapp: "WhatsApp", sms: "SMS", email: "business email", backup: "backup", security: "device security", failover: "backup internet", static_ip: "fixed IP", website: "website", telephony: "phone lines", tollfree: "toll-free number", wifi: "Wi-Fi", iot: "machine monitoring", fleet: "vehicle tracking", sdwan: "sab branches ka management", firewall: "firewall", leased_line: "dedicated line" },
+  ...fromPacks("needLabel"),
 };
 
 interface ExplainContext {
@@ -22,6 +24,9 @@ export function templateExplanation(bundle: Bundle, ctx: ExplainContext, lang: L
   const needs = ctx.needs.map((n) => NEED_LABEL[lang][n]).filter(Boolean).join(", ");
   const where = ctx.city ?? "";
   const k = bundle.blocked.length;
+  const pack = lang in PACKS ? PACKS[lang as keyof typeof PACKS].explain : undefined;
+  if (pack)
+    return [pack.chosen(ctx.employees, ctx.sites, where), base ? pack.base(base.name) : "", needs ? pack.needs(needs) : "", k ? pack.blocked(k) : pack.allOk].filter(Boolean);
   if (lang === "hi")
     return [
       `${ctx.employees} लोगों और ${ctx.sites} जगह${where ? ` (${where})` : ""} वाले बिज़नेस के लिए चुना गया।`,

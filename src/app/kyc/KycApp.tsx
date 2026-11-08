@@ -1,5 +1,6 @@
 "use client";
 
+import { fromPacks } from "@/i18n/packs";
 import { Camera, CheckCircle2, PenLine } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useLang } from "@/components/LangContext";
@@ -26,6 +27,7 @@ const SAMPLE_GSTIN: Record<string, string> = {
 
 const T: Record<Lang, Record<string, string>> = {
   en: {
+    vPASS: "Documents verified", vPASS_WITH_WARNINGS: "Verified — one step left", vNEEDS_REUPLOAD: "Please re-upload", vMANUAL_REVIEW: "Sent to a verification agent", vREJECT: "We can't verify these documents", mPass: "Passed", mInfo: "Note", mWarn: "Needs attention", mFail: "Failed",
     esignAuth: "Your signature also signs the authorisation letter the registry needs for this signatory.",
     reviewWait: "A verification agent is looking at your case now. Keep this page open; it updates by itself.", reviewRef: "Case reference", reviewApproved: "Approved by a verification agent. You can sign and order now.", reviewRejected: "The agent could not verify these documents.",
     esignTitle: "E-sign the application form", esignBody: "Sign with a one-time code sent to the mobile linked to the signatory's Aadhaar. No paper, no visit.", esignSend: "Send code", esignSentTo: "Code sent to", esignDemo: "Demo code", esignCode: "6-digit code", esignVerify: "Sign", esignDone: "Application signed", esignResend: "Send a new code",
@@ -38,6 +40,7 @@ const T: Record<Lang, Record<string, string>> = {
     vision: "AI reader", ocr: "offline OCR", cache: "AI reader (saved)", preflight: "stopped before reading",
   },
   hi: {
+    vPASS: "डॉक्यूमेंट सत्यापित", vPASS_WITH_WARNINGS: "सत्यापित — एक कदम बाकी", vNEEDS_REUPLOAD: "कृपया दोबारा अपलोड करें", vMANUAL_REVIEW: "वेरिफ़िकेशन एजेंट को भेजा गया", vREJECT: "हम इन डॉक्यूमेंट की पुष्टि नहीं कर सकते", mPass: "पास", mInfo: "नोट", mWarn: "ध्यान दें", mFail: "फ़ेल",
     esignAuth: "आपका साइन इस हस्ताक्षरकर्ता के लिए ज़रूरी अधिकार-पत्र पर भी होगा।",
     reviewWait: "एक वेरिफ़िकेशन एजेंट अभी आपका केस देख रहा है। यह पेज खुला रखें; यह खुद अपडेट होगा।", reviewRef: "केस नंबर", reviewApproved: "वेरिफ़िकेशन एजेंट ने मंज़ूरी दी। अब साइन करके ऑर्डर करें।", reviewRejected: "एजेंट इन डॉक्यूमेंट की पुष्टि नहीं कर सका।",
     esignTitle: "आवेदन फ़ॉर्म पर ई-साइन करें", esignBody: "हस्ताक्षरकर्ता के आधार से जुड़े मोबाइल पर आए कोड से साइन करें। न कागज़, न विज़िट।", esignSend: "कोड भेजें", esignSentTo: "कोड भेजा गया", esignDemo: "डेमो कोड", esignCode: "6 अंकों का कोड", esignVerify: "साइन करें", esignDone: "आवेदन साइन हो गया", esignResend: "नया कोड भेजें",
@@ -50,6 +53,7 @@ const T: Record<Lang, Record<string, string>> = {
     vision: "AI रीडर", ocr: "ऑफ़लाइन OCR", cache: "AI रीडर (सेव)", preflight: "पढ़ने से पहले रोका गया",
   },
   hinglish: {
+    vPASS: "Documents verified", vPASS_WITH_WARNINGS: "Verified — ek step baaki", vNEEDS_REUPLOAD: "Please dobara upload karein", vMANUAL_REVIEW: "Verification agent ko bheja gaya", vREJECT: "Hum in documents ko verify nahi kar sakte", mPass: "Pass", mInfo: "Note", mWarn: "Dhyan dein", mFail: "Fail",
     esignAuth: "Aapka sign is signatory ke liye zaroori authorisation letter par bhi hoga.",
     reviewWait: "Ek verification agent abhi aapka case dekh raha hai. Yeh page khula rakhein; yeh khud update hoga.", reviewRef: "Case reference", reviewApproved: "Verification agent ne approve kiya. Ab sign karke order karein.", reviewRejected: "Agent in documents ko verify nahi kar saka.",
     esignTitle: "Application form par e-sign karein", esignBody: "Signatory ke Aadhaar se jude mobile par aaye code se sign karein. Na kaagaz, na visit.", esignSend: "Code bhejein", esignSentTo: "Code bheja gaya", esignDemo: "Demo code", esignCode: "6 digit code", esignVerify: "Sign karein", esignDone: "Application sign ho gaya", esignResend: "Naya code bhejein",
@@ -61,6 +65,7 @@ const T: Record<Lang, Record<string, string>> = {
     sharpness: "Sharpness", straightened: "Seedha kiya", readBy: "Padha gaya", again: "Doosre documents check karein", next: "Installation par jaayein",
     vision: "AI reader", ocr: "offline OCR", cache: "AI reader (saved)", preflight: "padhne se pehle roka gaya",
   },
+  ...fromPacks("kyc"),
 };
 
 const VERDICT: Record<KycVerdict, { title: string; tone: string }> = {
@@ -70,6 +75,7 @@ const VERDICT: Record<KycVerdict, { title: string; tone: string }> = {
   MANUAL_REVIEW: { title: "Sent to a verification agent", tone: "border-hold bg-hold/5" },
   REJECT: { title: "We can't verify these documents", tone: "border-khata bg-khata/5" },
 };
+const MARK_KEY: Record<KycCheck["status"], string> = { pass: "mPass", info: "mInfo", warn: "mWarn", fail: "mFail" };
 const MARK: Record<KycCheck["status"], { sign: string; cls: string; label: string }> = {
   pass: { sign: "✓", cls: "text-ok", label: "Passed" },
   info: { sign: "i", cls: "text-ink-soft", label: "Note" },
@@ -416,7 +422,7 @@ export function KycApp() {
           {result && (
             <section className="mt-4 space-y-4" aria-live="polite">
               <div className={`rounded-2xl border-l-4 bg-white p-5 ${VERDICT[result.verdict].tone}`}>
-                <h1 className="text-2xl font-bold">{VERDICT[result.verdict].title}</h1>
+                <h1 className="text-2xl font-bold">{t[`v${result.verdict}`] ?? VERDICT[result.verdict].title}</h1>
                 {result.documents.some((d) => d.reader === "ocr") && <p className="mt-1 text-sm text-ink-soft">{t.backupNote}</p>}
                 {result.verdict === "MANUAL_REVIEW" && review?.status !== "rejected" && (
                   <p role="status" className="mt-2 flex items-start gap-2 text-[15px]">
@@ -462,7 +468,7 @@ export function KycApp() {
                     <ul className="mt-3 space-y-1.5">
                       {checks.map((c, i) => (
                         <li key={i} className="flex gap-2 text-[15px]">
-                          <span className={`w-4 shrink-0 text-center font-bold ${MARK[c.status].cls}`} aria-label={MARK[c.status].label}>
+                          <span className={`w-4 shrink-0 text-center font-bold ${MARK[c.status].cls}`} aria-label={t[MARK_KEY[c.status]] ?? MARK[c.status].label}>
                             {MARK[c.status].sign}
                           </span>
                           <span>
