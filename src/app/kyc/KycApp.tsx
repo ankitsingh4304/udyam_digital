@@ -35,7 +35,7 @@ const T: Record<Lang, Record<string, string>> = {
     esignAuth: "Your signature also signs the authorisation letter the registry needs for this signatory.",
     reviewWait: "A verification agent is looking at your case now. Keep this page open; it updates by itself.", reviewRef: "Case reference", reviewApproved: "Approved by a verification agent. You can sign and order now.", reviewRejected: "The agent could not verify these documents.",
     esignTitle: "E-sign the application form", esignBody: "Sign with a one-time code sent to the mobile linked to the signatory's Aadhaar. No paper, no visit.", esignSend: "Send code", esignSentTo: "Code sent to", esignDemo: "Demo code", esignCode: "6-digit code", esignVerify: "Sign", esignDone: "Application signed", esignResend: "Send a new code",
-    photoUnreadable: "This photo format can't be opened. Please take the photo again with the camera.", gstinLabel: "Your GSTIN", gstinHint: "We look it up first; the photo then only has to confirm it.", lookup: "Look up", backupNote: "Some documents were read by our backup reader; a verification agent double-checks before activation.", back: "Back to your bundle", step1: "Your consent", step2: "Upload documents", step3: "Result",
+    tooLarge: "The photos are too large to send together. Retake them with the camera, or upload them one at a time.", photoUnreadable: "This photo format can't be opened. Please take the photo again with the camera.", gstinLabel: "Your GSTIN", gstinHint: "We look it up first; the photo then only has to confirm it.", lookup: "Look up", backupNote: "Some documents were read by our backup reader; a verification agent double-checks before activation.", back: "Back to your bundle", step1: "Your consent", step2: "Upload documents", step3: "Result",
     gst: "GST certificate", udyam: "Udyam certificate", signatory: "Authorised signatory's ID", addressProof: "Electricity bill (last 90 days)",
     optional: "optional", choose: "Tap to add photo", replace: "Replace", sample: "Try a sample applicant", sampleHint: "Loads the hackathon specimen documents",
     check: "Check documents", checking: "Checking… usually under 20 seconds", collect: "What we ask for", keep: "How long we keep it",
@@ -48,7 +48,7 @@ const T: Record<Lang, Record<string, string>> = {
     esignAuth: "आपका साइन इस हस्ताक्षरकर्ता के लिए ज़रूरी अधिकार-पत्र पर भी होगा।",
     reviewWait: "एक वेरिफ़िकेशन एजेंट अभी आपका केस देख रहा है। यह पेज खुला रखें; यह खुद अपडेट होगा।", reviewRef: "केस नंबर", reviewApproved: "वेरिफ़िकेशन एजेंट ने मंज़ूरी दी। अब साइन करके ऑर्डर करें।", reviewRejected: "एजेंट इन डॉक्यूमेंट की पुष्टि नहीं कर सका।",
     esignTitle: "आवेदन फ़ॉर्म पर ई-साइन करें", esignBody: "हस्ताक्षरकर्ता के आधार से जुड़े मोबाइल पर आए कोड से साइन करें। न कागज़, न विज़िट।", esignSend: "कोड भेजें", esignSentTo: "कोड भेजा गया", esignDemo: "डेमो कोड", esignCode: "6 अंकों का कोड", esignVerify: "साइन करें", esignDone: "आवेदन साइन हो गया", esignResend: "नया कोड भेजें",
-    photoUnreadable: "यह फ़ोटो नहीं खुल पाई। कृपया कैमरे से दोबारा फ़ोटो लें।", gstinLabel: "आपका GSTIN", gstinHint: "हम पहले इसे रजिस्ट्री में देखते हैं; फ़ोटो सिर्फ़ पुष्टि करती है।", lookup: "देखें", backupNote: "कुछ डॉक्यूमेंट बैकअप रीडर से पढ़े गए; चालू करने से पहले एजेंट दोबारा जाँचेगा।", back: "बंडल पर वापस", step1: "आपकी सहमति", step2: "डॉक्यूमेंट अपलोड करें", step3: "नतीजा",
+    tooLarge: "फ़ोटो एक साथ भेजने के लिए बहुत बड़ी हैं। कैमरे से दोबारा लें या एक-एक करके अपलोड करें।", photoUnreadable: "यह फ़ोटो नहीं खुल पाई। कृपया कैमरे से दोबारा फ़ोटो लें।", gstinLabel: "आपका GSTIN", gstinHint: "हम पहले इसे रजिस्ट्री में देखते हैं; फ़ोटो सिर्फ़ पुष्टि करती है।", lookup: "देखें", backupNote: "कुछ डॉक्यूमेंट बैकअप रीडर से पढ़े गए; चालू करने से पहले एजेंट दोबारा जाँचेगा।", back: "बंडल पर वापस", step1: "आपकी सहमति", step2: "डॉक्यूमेंट अपलोड करें", step3: "नतीजा",
     gst: "GST सर्टिफ़िकेट", udyam: "Udyam सर्टिफ़िकेट", signatory: "अधिकृत हस्ताक्षरकर्ता की ID", addressProof: "बिजली बिल (पिछले 90 दिन)",
     optional: "वैकल्पिक", choose: "फ़ोटो जोड़ने के लिए दबाएँ", replace: "बदलें", sample: "सैंपल आवेदक आज़माएँ", sampleHint: "हैकाथॉन के नमूना डॉक्यूमेंट लोड करता है",
     check: "डॉक्यूमेंट जाँचें", checking: "जाँच हो रही है… आमतौर पर 20 सेकंड से कम", collect: "हम क्या माँगते हैं", keep: "कब तक रखते हैं",
@@ -61,7 +61,7 @@ const T: Record<Lang, Record<string, string>> = {
     esignAuth: "Aapka sign is signatory ke liye zaroori authorisation letter par bhi hoga.",
     reviewWait: "Ek verification agent abhi aapka case dekh raha hai. Yeh page khula rakhein; yeh khud update hoga.", reviewRef: "Case reference", reviewApproved: "Verification agent ne approve kiya. Ab sign karke order karein.", reviewRejected: "Agent in documents ko verify nahi kar saka.",
     esignTitle: "Application form par e-sign karein", esignBody: "Signatory ke Aadhaar se jude mobile par aaye code se sign karein. Na kaagaz, na visit.", esignSend: "Code bhejein", esignSentTo: "Code bheja gaya", esignDemo: "Demo code", esignCode: "6 digit code", esignVerify: "Sign karein", esignDone: "Application sign ho gaya", esignResend: "Naya code bhejein",
-    photoUnreadable: "Yeh photo nahi khul payi. Please camera se dobara photo lein.", gstinLabel: "Aapka GSTIN", gstinHint: "Hum pehle registry mein dekhte hain; photo sirf confirm karti hai.", lookup: "Dekhein", backupNote: "Kuch documents backup reader se padhe gaye; activation se pehle agent dobara check karega.", back: "Bundle par wapas", step1: "Aapki sahmati", step2: "Documents upload karein", step3: "Result",
+    tooLarge: "Photos ek saath bhejne ke liye bahut badi hain. Camera se dobara lein ya ek-ek karke upload karein.", photoUnreadable: "Yeh photo nahi khul payi. Please camera se dobara photo lein.", gstinLabel: "Aapka GSTIN", gstinHint: "Hum pehle registry mein dekhte hain; photo sirf confirm karti hai.", lookup: "Dekhein", backupNote: "Kuch documents backup reader se padhe gaye; activation se pehle agent dobara check karega.", back: "Bundle par wapas", step1: "Aapki sahmati", step2: "Documents upload karein", step3: "Result",
     gst: "GST certificate", udyam: "Udyam certificate", signatory: "Authorised signatory ki ID", addressProof: "Bijli bill (pichhle 90 din)",
     optional: "optional", choose: "Photo jodne ke liye dabayein", replace: "Badlein", sample: "Sample applicant try karein", sampleHint: "Hackathon ke specimen documents load karta hai",
     check: "Documents check karein", checking: "Check ho raha hai… aam taur par 20 second se kam", collect: "Hum kya maangte hain", keep: "Kab tak rakhte hain",
@@ -164,7 +164,8 @@ export function KycApp() {
       if (gstin.trim()) form.set("declaredGstin", gstin.trim().toUpperCase());
       for (const [slot, f] of Object.entries(files)) if (f) form.set(slot, f);
       const res = await fetch("/api/kyc/documents", { method: "POST", body: form });
-      const data = await res.json();
+      // The host answers a too-large or timed-out request with a non-JSON page.
+      const data = await res.json().catch(() => ({ error: res.status === 413 ? t.tooLarge : undefined }));
       if (!res.ok) throw new Error(data.error);
       setResult(data);
       setReview(undefined);

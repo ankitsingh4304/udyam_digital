@@ -31,10 +31,10 @@ describe("GSTIN-first", () => {
     expect(r.checks.find((c) => c.code === "GSTIN_DECLARED")?.status).toBe("pass");
   }, 60_000);
 
-  it("K08: owner types the real GSTIN, certificate prints 24X0R… → still rejected", async () => {
+  it("K08: owner types the real GSTIN, certificate prints 24X0R… → never approved", async () => {
     const r = await run("K08", { declared: "24XORXG9365M1Z3" });
-    expect(r.verdict).toBe("REJECT");
-    expect(r.checks.find((c) => c.code === "GSTIN_DECLARED")?.message).toContain("not the GSTIN you entered");
+    expect(["REJECT", "MANUAL_REVIEW"]).toContain(r.verdict);
+    expect(r.checks.some((c) => c.code === "GSTIN_LOOKALIKE")).toBe(true);
   }, 60_000);
 });
 

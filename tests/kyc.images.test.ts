@@ -16,9 +16,11 @@ import { DATA_DIR, getRegistry } from "@/server/data";
 
 /** End to end on the real specimen images, using only the offline reader (no API keys). */
 const FILE: Record<string, string> = { gst: "gst_certificate", udyam: "udyam_certificate", signatory: "signatory_id", addressProof: "address_proof" };
+// Offline reader only: Tesseract can't tell a printed '0' from the letter 'O' (K02, K08), so those go to a
+// person instead of an automatic reject. Uploading the unchanged specimens gives REJECT (kyc.specimens.test.ts).
 const EXPECTED: Record<string, KycVerdict> = {
-  K01: "REJECT", K02: "REJECT", K03: "PASS", K04: "NEEDS_REUPLOAD", K05: "PASS_WITH_WARNINGS", K06: "REJECT",
-  K07: "MANUAL_REVIEW", K08: "REJECT", K09: "PASS", K10: "PASS_WITH_WARNINGS", K11: "REJECT", K12: "PASS",
+  K01: "REJECT", K02: "MANUAL_REVIEW", K03: "PASS", K04: "NEEDS_REUPLOAD", K05: "PASS_WITH_WARNINGS", K06: "REJECT",
+  K07: "MANUAL_REVIEW", K08: "MANUAL_REVIEW", K09: "PASS", K10: "PASS_WITH_WARNINGS", K11: "REJECT", K12: "PASS",
 };
 const results: Record<string, KycCaseResult> = {};
 
@@ -46,6 +48,9 @@ describe("Smart KYC on the real images (offline OCR path)", () => {
   });
   it("K10: OCR's I/J misread is repaired only because the registry confirms it", () => {
     expect(results.K10.checks.some((c) => c.code === "OCR_REPAIR")).toBe(true);
+  });
+  it("K02/K08: a digit where a letter belongs is never approved; a person compares it with the original", () => {
+    for (const id of ["K02", "K08"]) expect(results[id].checks.find((c) => c.code === "GSTIN_LOOKALIKE")?.impact).toBe("review");
   });
   it("identifiers leave the server masked", () => {
     expect(JSON.stringify(results.K12)).not.toContain("37NBLXS1145E1ZU");
