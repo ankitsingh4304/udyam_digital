@@ -11,6 +11,10 @@ import { NOTICE, NOTICE_VERSION, PURPOSES, REQUIRED_PURPOSES, type Purpose } fro
 import type { Lang } from "@/domain/advisor/state";
 import type { DocKind, KycCheck, KycVerdict } from "@/domain/kyc/types";
 import type { KycCaseResult } from "@/server/kyc-service";
+import { actionLine, checkLine, fieldLabel } from "@/domain/kyc/check-copy";
+
+/** English document names used in next-step lines → our slot keys (for the local name). */
+const DOC_SLOT_OF: Record<string, string> = { "GST certificate": "gst", "Udyam certificate": "udyam", "Signatory ID": "signatory", "Address proof": "addressProof" };
 
 const SLOTS: { slot: DocKind; file: string; optional?: boolean }[] = [
   { slot: "gst", file: "gst_certificate" },
@@ -437,11 +441,11 @@ export function KycApp() {
                 {result.actions.length > 0 && (
                   <ul className="mt-2 list-disc space-y-1 pl-5">
                     {result.actions.map((a) => (
-                      <li key={a}>{a}</li>
+                      <li key={a}>{actionLine(a, lang, (en) => t[DOC_SLOT_OF[en] ?? ""] ?? en)}</li>
                     ))}
                   </ul>
                 )}
-                {result.verified.udyamAutoFetched && <p className="mt-2 text-sm text-ok">Udyam {result.verified.udyamNumber} fetched from the registry — no upload needed.</p>}
+                {result.verified.udyamAutoFetched && <p className="mt-2 text-sm text-ok">{checkLine("UDYAM_AUTOFETCH", "pass", lang) ?? "Udyam fetched from the registry — no upload needed."} ({result.verified.udyamNumber})</p>}
               </div>
 
               {result.documents.map((d) => {
@@ -459,7 +463,7 @@ export function KycApp() {
                       <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
                         {Object.entries(d.fields).map(([k, v]) => (
                           <div key={k} className="contents">
-                            <dt className="text-ink-soft">{k.replace(/([A-Z])/g, " $1").toLowerCase()}</dt>
+                            <dt className="text-ink-soft">{fieldLabel(k, lang)}</dt>
                             <dd>{v}</dd>
                           </div>
                         ))}
@@ -471,10 +475,7 @@ export function KycApp() {
                           <span className={`w-4 shrink-0 text-center font-bold ${MARK[c.status].cls}`} aria-label={t[MARK_KEY[c.status]] ?? MARK[c.status].label}>
                             {MARK[c.status].sign}
                           </span>
-                          <span>
-                            {c.message}
-                            {c.suggestion && <span className="block text-sm text-ink-soft">{c.suggestion}</span>}
-                          </span>
+                          <CheckText code={c.code} status={c.status} message={c.message} suggestion={c.suggestion} lang={lang} />
                         </li>
                       ))}
                     </ul>
@@ -488,7 +489,7 @@ export function KycApp() {
                     {result.checks.filter((c) => c.doc === "udyam").map((c, i) => (
                       <li key={i} className="flex gap-2 text-[15px]">
                         <span className={`w-4 shrink-0 text-center font-bold ${MARK[c.status].cls}`}>{MARK[c.status].sign}</span>
-                        <span>{c.message}</span>
+                        <CheckText code={c.code} status={c.status} message={c.message} lang={lang} />
                       </li>
                     ))}
                   </ul>
@@ -552,5 +553,26 @@ export function KycApp() {
       )}
     </main>
     </AppShell>
+  );
+}
+
+/** A check result: plain line in the owner's language, with the exact English detail underneath for agents. */
+function CheckText({ code, status, message, suggestion, lang }: { code: string; status: string; message: string; suggestion?: string; lang: Lang }) {
+  const local = checkLine(code, status, lang);
+  if (!local)
+    return (
+      <span>
+        {message}
+        {suggestion && <span className="block text-sm text-ink-soft">{suggestion}</span>}
+      </span>
+    );
+  return (
+    <span>
+      {local}
+      <span lang="en" className="block text-xs text-ink-soft">
+        {message}
+        {suggestion ? ` ${suggestion}` : ""}
+      </span>
+    </span>
   );
 }

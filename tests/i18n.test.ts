@@ -49,3 +49,37 @@ describe("regional languages", () => {
     }
   });
 });
+
+describe("document check lines", async () => {
+  const { CHECK_KEYS, _LINES_FOR_TESTS, checkLine } = await import("@/domain/kyc/check-copy");
+  const { KYC_FIXTURES } = await import("@/domain/kyc/sample-extractions");
+  const { runKycChecks } = await import("@/domain/kyc/checks");
+  it("every language has a line for every check", () => {
+    for (const [lang, lines] of Object.entries(_LINES_FOR_TESTS)) expect(lines!.length, lang).toBe(CHECK_KEYS.length);
+  });
+  it("every check the 12 sample applicants produce has a translated line", () => {
+    const missing = new Set<string>();
+    for (const docs of Object.values(KYC_FIXTURES)) for (const c of runKycChecks(docs, getRegistry()).checks) if (!checkLine(c.code, c.status, "ta")) missing.add(`${c.code}:${c.status}`);
+    expect([...missing]).toEqual([]);
+  });
+});
+
+describe("APIs accept every language", async () => {
+  const { ConsentRequestSchema, NOTICE_VERSION } = await import("@/domain/kyc/consent");
+  const { LANGS } = await import("@/domain/advisor/state");
+  it("consent request validates in all nine languages", () => {
+    for (const lang of LANGS) expect(ConsentRequestSchema.safeParse({ purposes: { kyc: true, installation: true, offers: false }, lang, noticeVersion: NOTICE_VERSION }).success, lang).toBe(true);
+  });
+});
+
+describe("next-step lines", async () => {
+  const { actionLine } = await import("@/domain/kyc/check-copy");
+  const { KYC_FIXTURES } = await import("@/domain/kyc/sample-extractions");
+  const { runKycChecks } = await import("@/domain/kyc/checks");
+  it("every next step the samples produce is translated, keeping dates", () => {
+    const actions = new Set(Object.values(KYC_FIXTURES).flatMap((d) => runKycChecks(d, getRegistry()).actions));
+    actions.add("Retake the GST certificate photo in good light, flat and in focus.");
+    for (const a of actions) for (const lang of ["hi", "ta", "bn"] as const) expect(actionLine(a, lang, () => "X"), `${lang}: ${a}`).not.toBe(a);
+    expect(actionLine("Upload an electricity bill dated 2026-04-16 or later.", "mr", () => "")).toContain("2026-04-16");
+  });
+});
